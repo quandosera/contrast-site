@@ -7,8 +7,14 @@ import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
-  // In Astro 5, 'static' is the default and it handles Keystatic's 
-  // server routes automatically without needing the 'hybrid' flag.
+  // SWITCHING TO SERVER MODE:
+  // This is required so that server-side logic (like the Astro.redirect
+  // check in your Layout frontmatter) runs on every single visit, 
+  // instead of only running once when the site is built.
+  output: 'server',
+
+  // The Vercel adapter handles turning the SSR app into 
+  // Vercel Serverless functions automatically.
   adapter: vercel(),
 
   integrations: [
