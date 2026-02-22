@@ -141,7 +141,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 const menuBtn = document.getElementById('mobile-menu-btn');
                 const mobileMenu = document.getElementById('mobile-menu');
 
-                // Header scroll effect
                 const handleScroll = () => {
                     if (window.scrollY > 40) {
                         headerBg?.classList.replace('bg-brand-dark/0', 'bg-brand-dark/90');
@@ -157,7 +156,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 window.addEventListener('scroll', handleScroll);
                 handleScroll();
 
-                // Mobile menu logic
                 menuBtn?.addEventListener('click', () => {
                     const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
                     menuBtn.setAttribute('aria-expanded', String(!expanded));
@@ -169,7 +167,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     if (icon) icon.className = !expanded ? 'fa-solid fa-xmark text-3xl' : 'fa-solid fa-bars text-2xl';
                 });
 
-                // Auto-close menu on link click
                 const mobileLinks = mobileMenu?.querySelectorAll('a');
                 mobileLinks?.forEach(link => {
                     link.addEventListener('click', () => {
@@ -189,7 +186,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
-    /* PLAYER MARQUEE SYSTEM */
+    /* PLAYER MARQUEE SYSTEM: Prevents text truncation from image_30d03d.png */
     .player-marquee-container {
         mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
@@ -207,7 +204,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         100% { transform: translateX(-33.333%); }
     }
 
-    /* FOOTER & UTILITIES */
+    /* FOOTER UTILITIES */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
