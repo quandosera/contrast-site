@@ -1,0 +1,188 @@
+---
+// src/components/Player.astro
+interface Props {
+    currentShow: string;
+    djName?: string;
+}
+
+const { 
+    currentShow = "Contrast Selection", 
+    djName = "Contrast DJ" 
+} = Astro.props;
+
+const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
+---
+
+<div class="fixed bottom-0 left-0 w-full bg-brand-surface/95 backdrop-blur-3xl z-50 px-4 py-4 md:py-5 border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.8)]" transition:persist>
+    <div class="container mx-auto flex items-center justify-between gap-6 max-w-7xl">
+        
+        <div class="flex items-center gap-4 min-w-0 flex-1 md:flex-none md:w-1/3">
+            <div class="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
+                <i id="player-vinyl" class="fa-solid fa-compact-disc text-4xl md:text-5xl text-zinc-800 animate-spin-slow pause-spin"></i>
+                <div id="player-status-icon" class="absolute inset-0 bg-black/40 hidden items-center justify-center">
+                    <i class="fa-solid fa-chart-simple text-brand-accent text-lg animate-pulse"></i>
+                </div>
+            </div>
+            <div class="flex flex-col min-w-0">
+                <span class="text-[10px] md:text-xs font-black text-brand-accent tracking-[0.3em] uppercase flex items-center gap-2 mb-1">
+                    <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span> NOW PLAYING
+                </span>
+                <div id="now-playing" class="text-sm md:text-lg font-black text-white truncate italic uppercase">
+                    {displayInfo}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center flex-shrink-0 md:w-1/3">
+            <button id="master-play-btn" class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-brand-accent text-white flex items-center justify-center hover:scale-110 transition-all border-2 border-brand-accent/50 shadow-lg">
+                <i class="fa-solid fa-play ml-1 text-xl md:text-2xl"></i>
+            </button>
+        </div>
+
+        <div class="hidden md:flex items-center justify-end gap-4 w-1/3">
+            <button id="mute-btn" class="text-gray-400 hover:text-white transition-colors w-6">
+                <i id="volume-icon" class="fa-solid fa-volume-high text-lg"></i>
+            </button>
+            <div class="w-32 flex items-center">
+                <input id="volume-slider" class="premium-slider" type="range" min="0" max="1" step="0.01" value="0.8">
+            </div>
+        </div>
+    </div>
+    <audio id="stream-audio" crossorigin="anonymous" transition:persist></audio>
+</div>
+
+<script>
+    const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
+    let previousVolume = 0.8;
+
+    function syncAllButtons() {
+        const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+        if (!audio) return;
+
+        const isPlaying = !audio.paused && audio.src.includes('listen.mp3');
+        const vinyl = document.getElementById('player-vinyl');
+        const statusIcon = document.getElementById('player-status-icon');
+        const masterBtn = document.getElementById('master-play-btn');
+
+        // 1. Update Player Bar
+        if (isPlaying) {
+            vinyl?.classList.remove('pause-spin');
+            statusIcon?.classList.replace('hidden', 'flex');
+            masterBtn?.classList.add('animate-pulse');
+            if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-stop text-xl md:text-2xl';
+        } else {
+            vinyl?.classList.add('pause-spin');
+            statusIcon?.classList.replace('flex', 'hidden');
+            masterBtn?.classList.remove('animate-pulse');
+            if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-play ml-1 text-xl md:text-2xl';
+        }
+
+        // 2. Update Every Trigger (Header, Hero, Mobile)
+        document.querySelectorAll('.player-trigger, .nav-player-trigger').forEach((btn: any) => {
+            const icon = btn.querySelector('i');
+            const textSpan = btn.querySelector('.btn-text');
+            const isNav = btn.classList.contains('nav-player-trigger');
+
+            if (isPlaying) {
+                if (icon) icon.className = isNav ? 'fa-solid fa-pause btn-icon' : 'fa-solid fa-stop mr-2';
+                if (textSpan) textSpan.textContent = isNav ? 'PAUSE' : 'STOP';
+                if (isNav) {
+                    btn.classList.add('bg-white', 'text-brand-dark');
+                    btn.classList.remove('bg-brand-accent', 'text-white');
+                }
+            } else {
+                if (icon) icon.className = isNav ? 'fa-solid fa-play btn-icon' : 'fa-solid fa-play mr-2';
+                if (textSpan) textSpan.textContent = isNav ? 'LISTEN' : 'TUNE IN NOW';
+                if (isNav) {
+                    btn.classList.remove('bg-white', 'text-brand-dark');
+                    btn.classList.add('bg-brand-accent', 'text-white');
+                }
+            }
+        });
+    }
+
+    function initPlayer() {
+        const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+        if (!audio) return;
+
+        if (!window.__eventListenersBound) {
+            document.addEventListener('click', async (e) => {
+                const target = (e.target as HTMLElement).closest('#master-play-btn, .player-trigger, .nav-player-trigger');
+                if (!target) return;
+
+                const isPlaying = !audio.paused && audio.src.includes('listen.mp3');
+
+                if (!isPlaying) {
+                    audio.src = STREAM_URL;
+                    try { await audio.play(); } catch (err) { console.error("Error playing stream:", err); }
+                } else {
+                    audio.pause();
+                    audio.src = ""; 
+                }
+                syncAllButtons();
+            });
+
+            audio.addEventListener('play', syncAllButtons);
+            audio.addEventListener('pause', syncAllButtons);
+            window.__eventListenersBound = true;
+        }
+
+        // Re-attach Volume Logic
+        const slider = document.getElementById('volume-slider') as HTMLInputElement;
+        const volIcon = document.getElementById('volume-icon');
+        const muteBtn = document.getElementById('mute-btn');
+
+        if (slider) {
+            const updateVisuals = (v: number) => {
+                const p = v * 100;
+                slider.style.background = `linear-gradient(to right, var(--player-accent) 0%, var(--player-accent) ${p}%, rgba(255,255,255,0.1) ${p}%, rgba(255,255,255,0.1) 100%)`;
+                if (volIcon) volIcon.className = v === 0 ? 'fa-solid fa-volume-xmark text-brand-accent' : v < 0.5 ? 'fa-solid fa-volume-low text-gray-300' : 'fa-solid fa-volume-high text-white';
+            };
+
+            slider.value = audio.volume.toString();
+            updateVisuals(audio.volume);
+
+            slider.oninput = (e) => {
+                const v = parseFloat((e.target as HTMLInputElement).value);
+                audio.volume = v;
+                updateVisuals(v);
+                if (v > 0) previousVolume = v;
+            };
+
+            if (muteBtn) {
+                muteBtn.onclick = () => {
+                    if (audio.volume > 0) {
+                        previousVolume = audio.volume;
+                        audio.volume = 0;
+                    } else {
+                        audio.volume = previousVolume;
+                    }
+                    slider.value = audio.volume.toString();
+                    updateVisuals(audio.volume);
+                };
+            }
+        }
+
+        syncAllButtons();
+    }
+
+    document.addEventListener('astro:page-load', initPlayer);
+</script>
+
+<style is:global>
+    :root { --player-accent: theme('colors.brand.accent'); }
+    .animate-spin-slow { animation: spin 4s linear infinite; }
+    .pause-spin { animation-play-state: paused !important; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .premium-slider {
+        -webkit-appearance: none; appearance: none;
+        width: 100%; height: 6px; border-radius: 999px;
+        background: rgba(255,255,255,0.1); outline: none;
+    }
+    .premium-slider::-webkit-slider-thumb {
+        -webkit-appearance: none; height: 16px; width: 16px;
+        border-radius: 50%; background: #ffffff; cursor: pointer;
+        box-shadow: 0 0 10px theme('colors.brand.accent/50');
+    }
+</style>

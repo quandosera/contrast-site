@@ -1,18 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Hero from '../components/Hero.astro'; // Import the new component
+import Hero from '../components/Hero.astro'; 
 import { getCollection, getEntry } from 'astro:content';
 
-// 1. DATA FETCHING
+// 1. DATA FETCHING (Keep your existing logic)
 const allFlyers = await getCollection('flyers');
 const allShows = await getCollection('shows');
 const sortedFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id));
 
-// Fetch current show data for header status sync
 const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
 
-// 2. TIME LOGIC (For Header Status Synchronization)
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
 const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
@@ -38,74 +36,66 @@ const currentShowName = currentSlot ?
     : "Auto DJ Mix";
 ---
 
-<Layout title="Event Flyers | Contrast Radio" currentShow={currentShowName}>
+<Layout title="Gallery | Contrast Radio" currentShow={currentShowName}>
     
     <Hero 
         title="EVENT" 
         accent="FLYERS" 
         subtextText="Visual Transmission" 
         subtextHighlight="The Session Archive"
-        bgImage="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1920&q=80"
+        bgImage="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop"
     />
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-32">
         
-        <div class="max-w-4xl mx-auto text-center mb-20">
-            <div class="flex items-center justify-center gap-4 mb-6">
-                <div class="w-12 h-[1px] bg-white/10"></div>
-                <div class="text-brand-accent text-xl drop-shadow-[0_0_10px_rgba(255,59,59,0.5)]"><i class="fa-solid fa-images"></i></div>
-                <h2 class="text-2xl font-black uppercase italic tracking-tighter text-white">The Collection</h2>
-                <div class="w-12 h-[1px] bg-white/10"></div>
-            </div>
-            <p class="text-gray-400 leading-relaxed text-lg italic font-medium">
-                Step into the visual world of Contrast Radio. A collection of event flyers from our club nights, guest residencies, and special broadcasts across the city.
+        <div class="max-w-3xl mx-auto text-center mt-12 mb-20">
+            <p class="text-gray-400 leading-relaxed text-base md:text-lg italic font-medium opacity-80">
+                A visual history of Contrast Radio. Archive of club nights, guest residencies, and special broadcasts across the city.
             </p>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-10">
             {sortedFlyers.length > 0 ? (
                 sortedFlyers.map(flyer => (
-                    <button class="flyer-card group relative rounded-[2.5rem] overflow-hidden aspect-[4/5] bg-brand-surface/40 border border-white/5 text-left transition-all duration-700 hover:border-brand-accent/30 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.5)] active:scale-95" aria-label={`View full flyer for ${flyer.data.title}`}>
+                    <button class="flyer-card group relative rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden aspect-[4/5] bg-brand-surface/40 border border-white/5 text-left transition-all duration-700 hover:border-brand-accent/30 hover:-translate-y-3 hover:shadow-[0_30px_60px_rgba(0,0,0,0.5)] active:scale-95" aria-label={`View full flyer for ${flyer.data.title}`}>
                         {flyer.data.image ? (
                             <img src={flyer.data.image} alt={flyer.data.title} class="flyer-img w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy" />
                         ) : (
                             <div class="w-full h-full flex flex-col items-center justify-center text-gray-700 p-8 text-center">
                                 <i class="fa-solid fa-image text-4xl mb-4 opacity-20"></i>
-                                <span class="text-[10px] font-black uppercase tracking-widest leading-tight">No Image Available</span>
+                                <span class="text-[10px] font-black uppercase tracking-widest leading-tight">No Image</span>
                             </div>
                         )}
                         
-                        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/95 via-brand-dark/20 to-transparent flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/95 via-brand-dark/20 to-transparent flex flex-col justify-end p-6 md:p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                             <div class="flex flex-col transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
-                                <span class="text-brand-accent text-[9px] font-black uppercase tracking-[0.3em] mb-2">Session Visual</span>
-                                <h3 class="text-white font-black text-lg leading-tight uppercase italic group-hover:text-brand-accent transition-colors">{flyer.data.title}</h3>
+                                <span class="text-brand-accent text-[8px] font-black uppercase tracking-[0.3em] mb-2">Visual Transmission</span>
+                                <h3 class="text-white font-black text-base md:text-lg leading-tight uppercase italic group-hover:text-brand-accent transition-colors">{flyer.data.title}</h3>
                             </div>
                         </div>
-
-                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     </button>
                 ))
             ) : (
                 <div class="col-span-full flex flex-col items-center justify-center py-40 px-10 rounded-[3rem] bg-brand-surface/30 border-2 border-dashed border-white/5 text-center group">
                     <i class="fa-regular fa-folder-open text-6xl text-gray-800 mb-8 group-hover:text-brand-accent transition-colors duration-700"></i>
                     <h3 class="text-white font-black text-2xl mb-3 uppercase italic">The Archive is Empty</h3>
-                    <p class="text-gray-500 text-sm max-w-sm tracking-widest uppercase font-bold">No flyers uploaded yet. Head to the admin panel to transmit your first visual.</p>
+                    <p class="text-gray-500 text-sm max-w-sm tracking-widest uppercase font-bold">No flyers uploaded yet.</p>
                 </div>
             )}
         </div>
-
     </div>
 
     <div id="flyer-modal" class="fixed inset-0 z-[60] bg-brand-dark/98 backdrop-blur-3xl hidden flex items-center justify-center p-8 transition-opacity duration-300 opacity-0" role="dialog" aria-modal="true">
-        <button class="absolute top-10 right-10 text-white hover:text-brand-accent text-6xl w-16 h-16 flex items-center justify-center transition-all hover:rotate-90 active:scale-90 z-[70]">&times;</button>
+        <button class="absolute top-6 right-6 md:top-10 md:right-10 text-white hover:text-brand-accent text-5xl md:text-6xl w-16 h-16 flex items-center justify-center transition-all hover:rotate-90 active:scale-90 z-[70]">&times;</button>
         <div class="relative max-w-full max-h-[85vh] group">
-            <img id="modal-img" src="" alt="Full Flyer" class="max-w-full max-h-[85vh] object-contain rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 scale-95 transition-transform duration-500">
+            <img id="modal-img" src="" alt="Full Flyer" class="max-w-full max-h-[85vh] object-contain rounded-[1.5rem] md:rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 scale-95 transition-transform duration-500">
         </div>
     </div>
 
 </Layout>
 
 <script>
+    // Script stays exactly as you had it - it's solid.
     document.addEventListener('astro:page-load', () => {
         const flyerCards = document.querySelectorAll('.flyer-card');
         const modal = document.getElementById('flyer-modal');
