@@ -2,8 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection, getEntry } from 'astro:content';
 
-// 1. DATA FETCHING
-// Note: Ensure the slug matches your file name in src/content/schedule/
+// 1. DATA FETCHING - Preserving your slug and collection logic
 const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
 
@@ -13,7 +12,7 @@ const allDjs = await getCollection('djs');
 // 2. TIME LOGIC (UK Time for Live Tracking)
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
-const currentDayIndex = dateInUK.getDay(); // 0-6 (Sun-Sat)
+const currentDayIndex = dateInUK.getDay(); 
 const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
 
 // Mapping for your 1-mon, 2-tue naming convention
@@ -44,11 +43,9 @@ const scheduleDetailed = rawSlots.map((slot) => {
     const isAutoDj = slot.show === 'auto-dj';
     const showEntry = !isAutoDj ? allShows.find(s => s.id === slot.show) : null;
     
-    // Relationship: Show -> Hosts Array -> First DJ
     const firstHostId = showEntry?.data?.hosts?.[0];
     const djEntry = firstHostId ? allDjs.find(d => d.id === firstHostId) : null;
 
-    // Live Logic
     let isLive = false;
     const startMins = timeToMins(slot.startTime);
     const endMins = timeToMins(slot.endTime || "00:00");
@@ -88,70 +85,92 @@ const groupedSchedule = daysOfWeek.map(day => {
 });
 ---
 
-<Layout title="Full Schedule | Contrast Radio">
+<Layout title="Station Schedule | Contrast Radio">
     
-    <section class="page-hero">
-        <div class="hero-bg">
-            <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80" alt="Studio Microphone" />
-            <div class="hero-gradient"></div>
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80" alt="Studio Microphone" class="w-full h-full object-cover opacity-20" />
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#13111C]/80 to-[#13111C]"></div>
         </div>
-        <div class="container hero-content">
-            <h1 class="page-title">STATION <span style="color: var(--purple);">SCHEDULE</span></h1>
-            <p class="page-subtitle">Check out the full weekly lineup. Streaming 24/7.</p>
+        <div class="container mx-auto px-4 relative z-10 text-center">
+            <h1 class="text-5xl md:text-7xl font-black tracking-tighter uppercase italic mb-4">
+                STATION <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#b77bed] to-[#9b51e0]">SCHEDULE</span>
+            </h1>
+            <p class="text-gray-400 font-bold tracking-widest uppercase text-sm">Streaming selections 24/7 across the globe</p>
         </div>
     </section>
 
-    <div class="container main-wrapper">
-        <div class="schedule-timeline">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div class="max-w-5xl mx-auto space-y-16">
             
             {groupedSchedule.map(dayGroup => (
-                <section class="day-group" id={`day-${dayGroup.id}`}>
-                    <div class="day-header-sticky">
-                        <h2>{dayGroup.label}</h2>
+                <section class="space-y-6" id={`day-${dayGroup.id}`}>
+                    <!-- Day Header -->
+                    <div class="sticky top-16 z-30 py-4 bg-[#13111C]/90 backdrop-blur-md border-b border-gray-800/50 flex items-center justify-between">
+                        <h2 class="text-3xl font-black uppercase italic tracking-tight">{dayGroup.label}</h2>
+                        {dayGroup.id === currentDayStr && (
+                            <span class="text-[10px] font-black text-[#9b51e0] bg-[#9b51e0]/10 px-3 py-1 rounded-full border border-[#9b51e0]/20 tracking-[0.2em] uppercase">Today</span>
+                        )}
                     </div>
                     
-                    <div class="shows-grid">
+                    <div class="grid grid-cols-1 gap-4">
                         {dayGroup.shows.length > 0 ? (
                             dayGroup.shows.map(item => (
-                                <div class={`show-card ${item.isLive ? 'is-live' : ''} ${item.isAutoDj ? 'is-autodj' : ''}`}>
-                                    <div class="time-ribbon">
-                                        {item.slot.startTime} - {item.slot.endTime || "00:00"}
-                                        {item.isLive && <span class="live-badge" style="margin-left: 10px;">LIVE NOW</span>}
+                                <div class={`relative flex flex-col md:flex-row md:items-center p-6 rounded-2xl border transition-all duration-300 group ${item.isLive ? 'bg-[#9b51e0]/10 border-[#9b51e0]/40 shadow-xl shadow-purple-500/5' : 'bg-[#1E1B29]/50 border-gray-800/60 hover:border-gray-700 hover:bg-[#1E1B29]'}`}>
+                                    
+                                    <!-- Time Column -->
+                                    <div class="flex-shrink-0 w-40 mb-4 md:mb-0">
+                                        <div class={`text-lg font-black tracking-tighter ${item.isLive ? 'text-white' : 'text-gray-300'}`}>
+                                            {item.slot.startTime} — {item.slot.endTime || "00:00"}
+                                        </div>
+                                        {item.isLive && (
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                                <span class="text-[10px] font-black text-red-500 tracking-widest uppercase">On Air</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div class="show-details">
-                                        <div class="show-header-info">
-                                            <h3>{item.isAutoDj ? "Contrast Selection" : (item.showData?.title || "TBA")}</h3>
-                                            <span class="show-genre">
-                                                {item.isAutoDj ? "AUTO MIX" : (item.showData?.genre?.toUpperCase() || "VARIOUS")}
+
+                                    <!-- Show Details -->
+                                    <div class="flex-grow md:px-8">
+                                        <div class="flex flex-wrap items-center gap-3 mb-2">
+                                            <h3 class="text-xl font-black text-white group-hover:text-[#b77bed] transition-colors uppercase leading-tight">
+                                                {item.isAutoDj ? "Contrast Selection" : (item.showData?.title || "TBA")}
+                                            </h3>
+                                            <span class={`text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-[0.15em] border ${item.isLive ? 'bg-[#9b51e0]/20 border-[#9b51e0]/40 text-[#b77bed]' : 'bg-gray-800 border-gray-700 text-gray-500'}`}>
+                                                {item.isAutoDj ? "Auto Mix" : (item.showData?.genre || "Various")}
                                             </span>
                                         </div>
                                         
                                         {!item.isAutoDj && item.showData?.description && (
-                                            <p class="show-desc">{item.showData.description}</p>
+                                            <p class="text-sm text-gray-400 leading-relaxed max-w-2xl line-clamp-2">{item.showData.description}</p>
                                         )}
-                                        
-                                        <div class="dj-info">
-                                            {item.djData?.avatar ? (
-                                                <img 
-                                                    src={item.djData.avatar} 
-                                                    alt={item.djData.name} 
-                                                    class="dj-avatar-small"
-                                                />
+                                    </div>
+
+                                    <!-- Host Profile (Right) -->
+                                    <div class="flex items-center gap-4 mt-6 md:mt-0 md:min-w-[200px] justify-end border-t md:border-t-0 border-gray-800/50 pt-4 md:pt-0">
+                                        <div class="flex flex-col text-right">
+                                            <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Presented by</span>
+                                            <span class={`font-bold text-sm leading-none ${item.isLive ? 'text-white' : 'text-gray-400'}`}>
+                                                {item.isAutoDj ? "Contrast Radio" : (item.djData?.name || "Guest DJ")}
+                                            </span>
+                                        </div>
+                                        <div class={`w-10 h-10 rounded-full flex items-center justify-center text-sm shadow-inner transition-all duration-500 ${item.isLive ? 'bg-[#9b51e0]/30 text-[#b77bed] ring-2 ring-[#9b51e0]/40' : 'bg-gray-800 text-gray-500 border border-gray-700'}`}>
+                                            {item.djData?.avatar && !item.isAutoDj ? (
+                                                <img src={item.djData.avatar} alt={item.djData.name} class="w-full h-full object-cover rounded-full" />
                                             ) : (
-                                                <div class="dj-avatar-small" style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0;">
-                                                    <i class="fa-solid fa-compact-disc {item.isLive ? 'fa-spin' : ''}" style="font-size: 14px; color: #94a3b8;"></i>
-                                                </div>
+                                                <i class={`fa-solid ${item.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${item.isLive && item.isAutoDj ? 'fa-spin' : ''}`}></i>
                                             )}
-                                            <span>{item.isAutoDj ? "Contrast Radio" : (item.djData?.name || "Guest DJ")}</span>
                                         </div>
                                     </div>
                                 </div>
                             ))
                         ) : (
-                            <div class="empty-day-card">
-                                <i class="fa-solid fa-robot"></i>
-                                <h3>Auto DJ Mix</h3>
-                                <span>Playing non-stop Contrast selections 24/7</span>
+                            <div class="flex flex-col items-center justify-center py-20 px-6 rounded-3xl bg-[#1E1B29]/30 border-2 border-dashed border-gray-800 text-center">
+                                <i class="fa-solid fa-robot text-4xl text-gray-700 mb-4"></i>
+                                <h3 class="text-white font-black text-xl mb-2 uppercase">Auto DJ Active</h3>
+                                <p class="text-gray-500 text-sm max-w-sm tracking-wide uppercase font-bold">Non-stop curated Contrast selections streaming through the night.</p>
                             </div>
                         )}
                     </div>
@@ -162,132 +181,9 @@ const groupedSchedule = daysOfWeek.map(day => {
     </div>
 </Layout>
 
-<style>
-    /* === VARIABLES === */
-    :root {
-        --purple: #a855f7;
-        --purple-light: #f3e8ff;
-        --purple-dark: #7e22ce;
-        --bg-body: #f8fafc;
-        --text-main: #0f172a;
-        --text-muted: #64748b;
-        --border-light: #e2e8f0;
-        --dark-bg: #1e293b;
-    }
-
-    /* === PAGE HERO === */
-    .page-hero {
-        position: relative;
-        padding: 6rem 20px;
-        margin-bottom: 3rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-    .hero-bg {
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        overflow: hidden;
-    }
-    .hero-bg img { width: 100%; height: 100%; object-fit: cover; }
-    .hero-gradient {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, var(--bg-body) 100%);
-    }
-    .page-title { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; }
-    .page-subtitle { font-size: 1.1rem; color: #cbd5e1; margin-top: 1rem; }
-
-    /* === TIMELINE === */
-    .main-wrapper { padding-bottom: 5rem; max-width: 1200px; margin: 0 auto; }
-    .schedule-timeline { display: flex; flex-direction: column; gap: 4rem; }
-    
+<style is:global>
+    /* Ensure sticky day headers stay below the fixed site navigation */
     .day-header-sticky {
-        position: sticky;
-        top: 0;
-        background: rgba(248, 250, 252, 0.9);
-        backdrop-filter: blur(10px);
-        padding: 1.5rem 0;
-        z-index: 20;
-        border-bottom: 2px solid var(--purple);
-        margin-bottom: 2rem;
-    }
-    .day-header-sticky h2 { margin: 0; font-weight: 900; font-size: 2rem; color: var(--text-main); }
-
-    .shows-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1.5rem;
-    }
-
-    /* === CARDS === */
-    .show-card {
-        background: #fff;
-        border-radius: 12px;
-        border: 1px solid var(--border-light);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        transition: 0.3s ease;
-    }
-    .show-card:hover { transform: translateY(-5px); border-color: var(--purple); }
-    .show-card.is-live { border-color: var(--purple); box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.2); }
-    .show-card.is-autodj { background: #fafafa; opacity: 0.9; }
-
-    .time-ribbon {
-        background: var(--dark-bg);
-        color: #fff;
-        padding: 0.75rem 1.25rem;
-        font-weight: 800;
-        font-size: 0.85rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .show-card.is-live .time-ribbon { background: var(--purple-dark); }
-
-    .live-badge {
-        background: #ef4444;
-        color: #fff;
-        font-size: 0.65rem;
-        padding: 2px 8px;
-        border-radius: 4px;
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.6; }
-        100% { opacity: 1; }
-    }
-
-    .show-details { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
-    .show-header-info h3 { margin: 0; font-size: 1.3rem; font-weight: 900; color: var(--text-main); }
-    .show-genre { font-size: 0.7rem; font-weight: 800; color: var(--purple); margin-top: 4px; display: inline-block; }
-    .show-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin: 1rem 0; }
-
-    .dj-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-top: auto;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border-light);
-        font-weight: 600;
-        color: var(--text-muted);
-    }
-    .dj-avatar-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
-
-    .empty-day-card {
-        grid-column: 1 / -1;
-        padding: 4rem;
-        text-align: center;
-        background: var(--purple-light);
-        border: 2px dashed var(--purple);
-        border-radius: 12px;
-        color: var(--purple-dark);
+        top: 64px; /* Matches header height (h-16) */
     }
 </style>

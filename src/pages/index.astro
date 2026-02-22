@@ -1,9 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Image } from 'astro:assets';
 import { getCollection, getEntry } from 'astro:content';
 
-// 1. DATA FETCHING
+// 1. DATA FETCHING - Preserving your original logic exactly
 const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
 
@@ -11,7 +10,7 @@ const allShows = await getCollection('shows');
 const allDjs = await getCollection('djs');
 const allFlyers = await getCollection('flyers').catch(() => []);
 
-// 2. TIME LOGIC (UK Time for Live Tracking)
+// 2. TIME LOGIC (UK Time for Live Tracking) - Preserving your precise calculations
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
 const currentDayIndex = dateInUK.getDay(); 
@@ -35,10 +34,19 @@ const allShowsDetailed = rawSlots.map((slot) => {
     };
 });
 
+function timeToMins(timeStr: string, isEndTime: boolean = false) {
+    if (!timeStr) return 0;
+    const str = String(timeStr).trim();
+    let [h, m] = str.split(':').map(Number);
+    if (isEndTime && (h === 24 || (h === 0 && m === 0))) return 1440;
+    if (h === 24) h = 0;
+    return h * 60 + m;
+}
+
 // 4. BUILD CONTINUOUS ROLLING TIMELINE
 let timeline: any[] = [];
 
-// A. Yesterday's Crossover Logic
+// A. Yesterday's Crossover Logic - Restored from your original code
 const yesterdayIndex = (currentDayIndex + 6) % 7;
 allShowsDetailed.filter(s => s.day === daysArray[yesterdayIndex]).forEach(slot => {
     const startMins = timeToMins(slot.startTime);
@@ -52,15 +60,6 @@ allShowsDetailed.filter(s => s.day === daysArray[yesterdayIndex]).forEach(slot =
         });
     }
 });
-
-function timeToMins(timeStr: string, isEndTime: boolean = false) {
-    if (!timeStr) return 0;
-    const str = String(timeStr).trim();
-    let [h, m] = str.split(':').map(Number);
-    if (isEndTime && (h === 24 || (h === 0 && m === 0))) return 1440;
-    if (h === 24) h = 0;
-    return h * 60 + m;
-}
 
 // B. Today + Next 6 Days Sequential Timeline
 for (let i = 0; i < 7; i++) {
@@ -89,7 +88,7 @@ for (let i = 0; i < 7; i++) {
 timeline.sort((a, b) => a.absoluteStart - b.absoluteStart);
 const relevantShows = timeline.filter(show => show.absoluteEnd > currentMins);
 
-// 5. LIVE SHOW DETECTION & UPCOMING LIST
+// 5. LIVE SHOW DETECTION & UPCOMING LIST (Restoring the 5-show count you liked)
 const displayedShows = relevantShows.slice(0, 5).map(show => ({
     ...show,
     isLive: currentMins >= show.absoluteStart && currentMins < show.absoluteEnd
@@ -109,373 +108,176 @@ const activeFlyers = allFlyers
 
 <Layout title="Contrast Radio | Up and Coming" currentShow={currentShowName}>
     
-    <section class="hero-section">
-        <div class="hero-bg">
-            <img src="https://images.unsplash.com/photo-1633294666093-ab54f43a947a?q=80&w=774&auto=format&fit=crop&ixlib=rb-4.1.0" alt="DJ Mixing" />
-            <div class="hero-gradient"></div>
+    <!-- Hero Section: Premium Turntable Background -->
+    <section class="relative h-[70vh] min-h-[450px] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1603048588665-791ca8aea617?q=80&w=2070&auto=format&fit=crop" alt="Contrast Turntable" class="w-full h-full object-cover opacity-40">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#13111C] via-[#13111C]/30 to-transparent"></div>
         </div>
-        <div class="container hero-content">
-            <div class="glass-panel">
-                <div class="live-status-container">
-                    {liveShow ? (
-                        <div class="status-badge live">
-                            <span class="pulse"></span> LIVE NOW: {currentDJName}
-                        </div>
-                    ) : (
-                        <div class="status-badge offline">
-                            <i class="fa-solid fa-robot"></i> AUTO DJ MODE
-                        </div>
-                    )}
-                </div>
 
-                <h2 class="hero-headline">Broadcasting the <span style="color: var(--purple-light);">Vibe</span>.</h2>
-                <p class="hero-subline">
-                    Currently playing: <strong>{currentShowName}</strong> {liveShow && !liveShow.isAutoDj && `with ${currentDJName}`}.
-                    <br/>Welcome to the home of Contrast Radio. Streaming the finest Reggae, Soul, R&B, and House music 24/7.
-                </p>
+        <div class="container mx-auto px-4 relative z-10 text-center">
+            <!-- Live Badge -->
+            <div class="inline-flex items-center gap-2 bg-[#1E1B29]/80 border border-[#9b51e0]/20 backdrop-blur-sm px-4 py-1.5 rounded-full mb-6">
+                <span class={`w-2 h-2 rounded-full ${liveShow ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></span>
+                <span class="text-[10px] font-bold tracking-[0.2em] text-red-50 uppercase">
+                    {liveShow ? `LIVE NOW: ${currentDJName}` : 'AUTO DJ MODE'}
+                </span>
+            </div>
+            
+            <h2 class="text-5xl md:text-7xl font-black tracking-tighter mb-4 uppercase">
+                Broadcasting the <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#b77bed] to-[#9b51e0]">Vibe.</span>
+            </h2>
+            
+            <p class="text-base md:text-lg text-gray-300 max-w-xl mx-auto mb-10 leading-relaxed">
+                Currently playing: <strong class="text-white">{currentShowName}</strong>{liveShow && !liveShow.isAutoDj && ` with ${currentDJName}`}.<br>
+                Streaming the finest Reggae, Soul, R&B, and House music 24/7.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button class="player-trigger w-full sm:w-auto bg-[#9b51e0] hover:bg-purple-600 text-white px-8 py-4 rounded-full font-bold text-xs tracking-widest transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 group active:scale-95">
+                    <i class="fa-solid fa-play group-hover:scale-110 transition-transform"></i> TUNE IN NOW
+                </button>
+                <a href="#schedule" class="w-full sm:w-auto bg-[#1E1B29] hover:bg-gray-800 text-white border border-gray-700 px-8 py-4 rounded-full font-bold text-xs tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95">
+                    VIEW SCHEDULE
+                </a>
             </div>
         </div>
     </section>
 
-    <div class="container main-wrapper">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 space-y-20 py-12">
         
-        <section class="schedule-section">
-            <div class="schedule-list-wrapper">
-                <div class="schedule-header-bar">
-                    <div class="header-left">
-                        <i class="fa-solid fa-tower-broadcast"></i> UPCOMING SHOWS
+        <!-- Updated Schedule Section: Spacious 3-Column Layout -->
+        <section id="schedule" class="scroll-mt-24">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-xl font-black flex items-center gap-2 uppercase tracking-tight">
+                    <i class="fa-solid fa-tower-broadcast text-[#9b51e0]"></i> Upcoming Shows
+                </h2>
+                <a href="/schedule" class="text-[#b77bed] hover:text-white font-bold text-xs flex items-center gap-1 transition-colors uppercase tracking-widest">
+                    Full Schedule <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+
+            <div class="bg-[#1E1B29] rounded-2xl border border-gray-800/50 overflow-hidden divide-y divide-gray-800/50 shadow-2xl">
+                {displayedShows.map(slot => (
+                    <div class={`relative flex flex-col sm:flex-row sm:items-center p-6 sm:p-7 transition-all group ${slot.isLive ? 'bg-[#9b51e0]/10 border-l-4 border-[#9b51e0]' : 'hover:bg-gray-800/30'}`}>
+                        <!-- Column 1: Time -->
+                        <div class="flex-shrink-0 w-32 mb-2 sm:mb-0 flex flex-col">
+                            <span class={`text-[10px] font-black uppercase mb-0.5 tracking-widest ${slot.isLive ? 'text-[#b77bed]' : 'text-gray-500'}`}>
+                                {slot.day.split('-')[1]}
+                            </span>
+                            <span class={`text-lg font-black ${slot.isLive ? 'text-white' : 'text-gray-200'}`}>
+                                {slot.startTime} - {slot.endTime}
+                            </span>
+                            {slot.isLive && <span class="bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider mt-1.5 w-fit shadow-lg shadow-red-500/20 animate-pulse">ON AIR</span>}
+                        </div>
+
+                        <!-- Column 2: Show Info (Middle) -->
+                        <div class="flex-grow sm:px-12 text-left">
+                            <h3 class="text-xl font-black text-white mb-2 leading-tight group-hover:text-[#b77bed] transition-colors">
+                                {slot.isAutoDj ? "Contrast Selection" : (slot.showData?.title || "TBA")}
+                            </h3>
+                            <span class={`text-[10px] font-black px-2.5 py-1 rounded inline-block uppercase tracking-widest border ${slot.isLive ? 'bg-[#9b51e0]/20 border-[#9b51e0]/30 text-[#b77bed]' : 'bg-gray-800 border-gray-700 text-gray-500'}`}>
+                                {slot.isAutoDj ? "Auto Mix" : (slot.showData?.genre || "Various")}
+                            </span>
+                        </div>
+
+                        <!-- Column 3: DJ Info (Pushed Far Right) -->
+                        <div class="flex items-center justify-end gap-4 mt-5 sm:mt-0 sm:min-w-[260px]">
+                            <div class={`w-11 h-11 rounded-full flex items-center justify-center text-sm ring-2 ring-offset-2 ring-offset-[#1E1B29] transition-all duration-300 shadow-inner ${slot.isLive ? 'bg-[#9b51e0]/30 text-[#b77bed] ring-[#9b51e0]/50' : 'bg-gray-800 text-gray-400 border border-gray-700 ring-transparent'}`}>
+                                <i class={`fa-solid ${slot.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${slot.isLive && slot.isAutoDj ? 'fa-spin' : ''}`}></i>
+                            </div>
+                            <div class="flex flex-col text-right">
+                                <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">HOST</span>
+                                <span class={`font-bold text-sm leading-none ${slot.isLive ? 'text-white' : 'text-gray-400'}`}>
+                                    {slot.isAutoDj ? "Contrast Radio" : (slot.djData?.name || "Guest DJ")}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <a href="/schedule" class="view-all-link">View Full Schedule &rarr;</a>
-                </div>
-                
-                <div class="schedule-items">
-                    {displayedShows.length > 0 ? (
-                        displayedShows.map(slot => (
-                            <div class={`schedule-row ${slot.isLive ? 'is-live' : ''}`}>
-                                <div class="time-col">
-                                    <span class="day-label">{slot.day.split('-')[1].toUpperCase()}</span>
-                                    <span class="time-text">{slot.startTime} - {slot.endTime}</span>
-                                    {slot.isLive && <span class="live-badge">ON AIR</span>}
-                                </div>
-                                <div class="name-col">
-                                    <div class="show-title">{slot.isAutoDj ? "Contrast Selection" : (slot.showData?.title || "TBA")}</div>
-                                    <span class="show-genre">
-                                        {slot.isAutoDj ? "AUTO MIX" : (slot.showData?.genre?.toUpperCase() || "VARIOUS")}
-                                    </span>
-                                </div>
-                                <div class="dj-col dj-profile">
-                                    {slot.djData?.avatar ? (
-                                        <img 
-                                            src={slot.djData.avatar} 
-                                            alt={slot.djData.name} 
-                                            class="dj-avatar"
-                                        />
-                                    ) : (
-                                        <div class="dj-avatar-placeholder">
-                                            <i class={`fa-solid ${slot.isAutoDj ? 'fa-compact-disc fa-spin' : 'fa-user'}`}></i>
-                                        </div>
-                                    )}
-                                    <span class="dj-name">{slot.isAutoDj ? "Contrast Radio" : (slot.djData?.name || "Guest DJ")}</span>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div class="schedule-row">
-                            <div class="time-col">24/7</div>
-                            <div class="name-col">
-                                <div class="show-title">Auto DJ Mix</div>
-                            </div>
-                            <div class="dj-col dj-profile">
-                                <div class="dj-avatar-placeholder"><i class="fa-solid fa-robot"></i></div>
-                                <span class="dj-name">Contrast Radio</span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </section>
-
-        <section class="flyers-section">
-            <div class="section-header">
-                <div class="section-icon"><i class="fa-solid fa-ticket"></i></div>
-                <h2>LATEST EVENTS</h2>
-            </div>
-
-            <div class="flyer-grid">
-                {activeFlyers.map(flyer => (
-                    <button class="flyer-card" aria-label={`View flyer: ${flyer.data.title}`}>
-                        {flyer.data.image ? (
-                            <img src={flyer.data.image} alt={flyer.data.title} class="flyer-img" loading="lazy" />
-                        ) : (
-                            <div class="placeholder-img">No Image</div>
-                        )}
-                        <div class="flyer-overlay">
-                            <h3>{flyer.data.title}</h3>
-                        </div>
-                    </button>
                 ))}
             </div>
         </section>
 
-        <section class="sponsors-section">
-            <div class="section-header">
-                <div class="section-icon"><i class="fa-solid fa-handshake"></i></div>
-                <h2>OUR SPONSORS</h2>
-            </div>
-            <div class="sponsor-logos">
-                <a href="#" class="sponsor-logo" aria-label="SION SPACES">
-                    <img src="/uploads/sponsors/sion-spaces.png" alt="SION SPACES" loading="lazy">
-                </a>
-                <a href="#" class="sponsor-logo" aria-label="Hyde & Rowe">
-                    <img src="/uploads/sponsors/hyde-rowe.png" alt="Hyde & Rowe" loading="lazy">
-                </a>
-                <a href="#" class="sponsor-logo" aria-label="Barry's Bar">
-                    <img src="/uploads/sponsors/barrys-bar.png" alt="Barry's Bar" loading="lazy">
-                </a>
-                <a href="#" class="sponsor-logo" aria-label="Sayez Car Care">
-                    <img src="/uploads/sponsors/sayez-car-care.png" alt="Sayez Car Care" loading="lazy">
-                </a>
+        <!-- Events Section -->
+        <section id="events">
+            <h2 class="text-xl font-black flex items-center gap-2 mb-8 uppercase tracking-tight">
+                <i class="fa-solid fa-ticket text-[#9b51e0]"></i> Latest Events
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-6">
+                {activeFlyers.map(flyer => (
+                    <button class="flyer-card group relative rounded-xl overflow-hidden aspect-[4/5] bg-gray-800 border border-gray-700/50 text-left transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/10">
+                        {flyer.data.image && <img src={flyer.data.image} alt={flyer.data.title} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent flex flex-col justify-end p-5">
+                            <h3 class="text-white font-black text-sm leading-tight uppercase group-hover:text-[#b77bed] transition-colors">{flyer.data.title}</h3>
+                        </div>
+                    </button>
+                ))}
+                <!-- Host CTA -->
+                <div class="hidden md:flex rounded-xl bg-[#1E1B29] border border-dashed border-gray-700 flex flex-col items-center justify-center text-center p-6 hover:border-[#9b51e0]/50 transition-all group cursor-pointer hover:bg-[#1E1B29]/40">
+                    <i class="fa-solid fa-circle-plus text-3xl text-gray-600 mb-4 group-hover:text-[#9b51e0] group-hover:scale-110 transition-all"></i>
+                    <h3 class="text-white font-black text-xs mb-1 uppercase tracking-wider">Host an Event?</h3>
+                    <p class="text-[10px] text-gray-500 uppercase font-bold tracking-tighter">Promote your night with us.</p>
+                </div>
             </div>
         </section>
 
+        <!-- Sponsors Section -->
+        <section id="sponsors" class="pt-12 border-t border-gray-800/40">
+            <div class="flex items-center justify-center mb-10">
+                <span class="text-[10px] font-black tracking-[0.3em] text-gray-600 uppercase flex items-center gap-6">
+                    <span class="w-12 h-[1px] bg-gray-800"></span> OUR SPONSORS <span class="w-12 h-[1px] bg-gray-800"></span>
+                </span>
+            </div>
+            <div class="flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-40 hover:opacity-100 transition-opacity duration-700">
+                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-200 hover:text-white transition-colors cursor-default"><i class="fa-solid fa-building text-[#9b51e0]"></i> SION SPACES</div>
+                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-200 hover:text-white transition-colors cursor-default"><i class="fa-solid fa-house text-[#9b51e0]"></i> Hyde & Rowe</div>
+                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-200 hover:text-white transition-colors cursor-default"><i class="fa-solid fa-martini-glass text-[#9b51e0]"></i> Barry's Bar</div>
+                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-200 hover:text-white transition-colors cursor-default"><i class="fa-solid fa-car text-[#9b51e0]"></i> Sayez Car Care</div>
+            </div>
+        </section>
     </div>
 
-    <div id="flyer-modal" class="modal" role="dialog" aria-modal="true">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <img id="modal-img" src="" alt="Full Size Flyer">
-        </div>
+    <!-- Flyer Modal -->
+    <div id="flyer-modal" class="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+        <button class="absolute top-6 right-6 text-white hover:text-[#9b51e0] text-4xl w-12 h-12 flex items-center justify-center bg-black/40 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg">&times;</button>
+        <img id="modal-img" src="" alt="Full Flyer" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-95 transition-transform duration-300">
     </div>
 
 </Layout>
 
 <script>
     document.addEventListener('astro:page-load', () => {
-        const flyerCards = document.querySelectorAll('.flyer-card');
+        const flyers = document.querySelectorAll('.flyer-card');
         const modal = document.getElementById('flyer-modal');
         const modalImg = document.getElementById('modal-img') as HTMLImageElement;
-        const closeModal = document.querySelector('.close-modal');
+        const closeBtn = modal?.querySelector('button');
 
-        if (!modal || !modalImg) return;
+        flyers.forEach(card => card.addEventListener('click', () => {
+            const img = card.querySelector('img');
+            if (img && modal && modalImg) {
+                modalImg.src = img.src;
+                modal.classList.remove('hidden');
+                setTimeout(() => { 
+                    modal.classList.replace('opacity-0', 'opacity-100'); 
+                    modalImg.classList.replace('scale-95', 'scale-100'); 
+                }, 10);
+                document.body.style.overflow = 'hidden';
+            }
+        }));
 
-        flyerCards.forEach(card => {
-            card.addEventListener('click', () => {
-                const img = card.querySelector('.flyer-img') as HTMLImageElement;
-                if(img) {
-                    modalImg.src = img.src;
-                    modal.classList.add('active');
-                    document.body.style.overflow = 'hidden'; 
-                }
-            });
-        });
-
-        const hideModal = () => {
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            setTimeout(() => { modalImg.src = ""; }, 300);
+        const closeModal = () => {
+            if (modal && modalImg) {
+                modal.classList.replace('opacity-100', 'opacity-0');
+                modalImg.classList.replace('scale-100', 'scale-95');
+                setTimeout(() => { 
+                    modal.classList.add('hidden'); 
+                    document.body.style.overflow = ''; 
+                }, 300);
+            }
         };
 
-        closeModal?.addEventListener('click', hideModal);
-        modal?.addEventListener('click', (e) => { if(e.target === modal) hideModal(); });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal?.classList.contains('active')) hideModal();
-        });
+        closeBtn?.addEventListener('click', closeModal);
+        modal?.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
     });
 </script>
-
-<style>
-    /* === VARIABLES === */
-    :root {
-        --purple: #a855f7;
-        --purple-dark: #7e22ce;
-        --purple-light: #e9d5ff;
-        --dark-bg: #0f172a;
-        --bg-body: #f8fafc;
-        --text-main: #1e293b;
-        --text-muted: #64748b;
-        --border-light: #e2e8f0;
-    }
-
-    /* === HERO SECTION === */
-    .hero-section {
-        position: relative;
-        padding: 8rem 20px;
-        margin-bottom: 4rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-    .hero-bg {
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        overflow: hidden;
-    }
-    .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
-    .hero-gradient {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.9) 80%, var(--bg-body) 100%);
-    }
-    .hero-content { position: relative; z-index: 1; width: 100%; max-width: 900px; display: flex; justify-content: center;}
-    
-    .glass-panel {
-        background: rgba(15, 23, 42, 0.4);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 3rem 2rem;
-        border-radius: 24px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        width: 100%;
-    }
-
-    /* === LIVE INDICATOR === */
-    .live-status-container { margin-bottom: 1.5rem; }
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 20px;
-        border-radius: 50px;
-        font-size: 0.85rem;
-        font-weight: 800;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-    .status-badge.live { background: rgba(168, 85, 247, 0.2); color: #f0abfc; border-color: var(--purple); }
-    .status-badge.offline { background: rgba(255,255,255,0.05); color: #94a3b8; }
-    .pulse {
-        width: 10px; height: 10px; background: #ef4444; border-radius: 50%;
-        box-shadow: 0 0 0 rgba(239, 68, 68, 0.4);
-        animation: pulse-animation 2s infinite;
-    }
-    @keyframes pulse-animation {
-        0% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.7); }
-        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-        100% { box-shadow: 0 0 0 0px rgba(239, 68, 68, 0); }
-    }
-
-    .hero-headline { font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 900; letter-spacing: -1px; color: #fff; line-height: 1.1; text-transform: uppercase; margin: 0; }
-    .hero-subline { font-size: 1.15rem; color: #cbd5e1; margin: 1.5rem auto 0; line-height: 1.6; max-width: 600px;}
-
-    /* === MAIN WRAPPER === */
-    .main-wrapper { padding-bottom: 5rem; max-width: 1200px; margin: 0 auto;}
-    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
-    .section-icon { color: var(--purple); font-size: 1.8rem; }
-    .section-header h2 { margin: 0; font-weight: 900; font-size: 2rem; letter-spacing: -1px; text-transform: uppercase; color: var(--text-main); }
-
-    /* === SCHEDULE LIST === */
-    .schedule-section { 
-        margin-bottom: 5rem; 
-        max-width: 900px; /* Keeps it from stretching too wide on big screens */
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .schedule-list-wrapper { 
-        background: #fff; 
-        border-radius: 16px; 
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01); 
-        border: 1px solid var(--border-light);
-        overflow: hidden; 
-    }
-    .schedule-header-bar {
-        padding: 1.2rem 1.5rem;
-        background: #f8fafc;
-        border-bottom: 1px solid var(--border-light);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .header-left { font-weight: 800; color: var(--text-muted); font-size: 0.85rem; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
-    .view-all-link { font-size: 0.85rem; color: var(--purple); font-weight: 700; text-decoration: none; transition: 0.2s;}
-    .view-all-link:hover { color: var(--purple-dark); transform: translateX(3px); }
-
-    .schedule-items { display: flex; flex-direction: column; }
-    .schedule-row { 
-        display: flex; 
-        padding: 1.5rem; 
-        border-bottom: 1px solid var(--border-light); 
-        align-items: center; 
-        gap: 20px; 
-        transition: background 0.2s;
-    }
-    .schedule-row:hover:not(.is-live) { background: #f8fafc; }
-    .schedule-row:last-child { border-bottom: none; }
-    
-    /* Live Row Styling */
-    .schedule-row.is-live { 
-        background: linear-gradient(135deg, var(--purple-dark), var(--purple)); 
-        color: #fff;
-    }
-    .schedule-row.is-live .time-col, 
-    .schedule-row.is-live .show-title, 
-    .schedule-row.is-live .dj-col { color: #fff; }
-    .schedule-row.is-live .show-genre { background: rgba(255,255,255,0.2); color: #fff; border: none;}
-    .schedule-row.is-live .day-label { background: #fff; color: var(--purple-dark); border: none;}
-    .schedule-row.is-live .dj-avatar { border-color: #fff; }
-    
-    .time-col { flex: 1; font-weight: 700; color: var(--text-muted); font-size: 0.95rem; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-    .day-label { font-size: 0.7rem; font-weight: 900; color: var(--purple); text-transform: uppercase; background: var(--purple-light); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(168, 85, 247, 0.2); line-height: 1;}
-    .time-text { font-variant-numeric: tabular-nums; }
-    .live-badge { background: #ef4444; color: #fff; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: 900; letter-spacing: 0.5px; animation: pulse-opacity 2s infinite;}
-    
-    @keyframes pulse-opacity {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-    }
-
-    .name-col { flex: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-    .show-title { font-weight: 900; font-size: 1.15rem; color: var(--text-main); line-height: 1.2;}
-    .show-genre { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); background: #f1f5f9; padding: 3px 10px; border-radius: 6px; border: 1px solid #e2e8f0; letter-spacing: 0.5px; }
-
-    .dj-col { flex: 1.5; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; }
-    .dj-profile { display: flex; align-items: center; gap: 12px; }
-    .dj-avatar { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--purple); object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    .dj-avatar-placeholder { width: 48px; height: 48px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 2px solid #cbd5e1; font-size: 1.2rem;}
-    .dj-name { font-weight: 700; }
-
-    /* === FLYERS GRID === */
-    .flyer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
-    .flyer-card { 
-        position: relative; width: 100%; padding-top: 100%; border-radius: 16px; overflow: hidden; 
-        background: #e2e8f0; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
-        border: none; display: block;
-    }
-    .flyer-card:hover .flyer-img { transform: scale(1.08); }
-    .flyer-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-    .flyer-overlay { 
-        position: absolute; bottom: 0; left: 0; width: 100%; 
-        background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
-        padding: 2rem 1.5rem 1.5rem 1.5rem; text-align: left; pointer-events: none;
-    }
-    .flyer-overlay h3 { color: #fff; margin: 0; font-size: 1.1rem; font-weight: 800; line-height: 1.3;}
-    .placeholder-img { position: absolute; top:0; left:0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 0.9rem;}
-
-    /* === MODAL === */
-    .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 3000; display: none; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; backdrop-filter: blur(8px); }
-    .modal.active { display: flex; opacity: 1; }
-    .modal-content { position: relative; max-width: 90%; max-height: 90vh; }
-    .modal-content img { max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-    .close-modal { position: absolute; top: -50px; right: 0; color: #fff; font-size: 3rem; cursor: pointer; background: none; border: none; transition: color 0.2s; line-height: 1;}
-    .close-modal:hover { color: var(--purple); }
-
-    /* === SPONSORS === */
-    .sponsors-section { margin-top: 5rem; padding-top: 4rem; border-top: 1px solid var(--border-light); }
-    .sponsor-logos { display: flex; gap: 3rem; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 2rem; }
-    .sponsor-logo { flex: 1 1 220px; display: flex; justify-content: center; }
-    .sponsor-logo img { height: 90px; max-width: 100%; object-fit: contain; filter: grayscale(1); opacity: 0.6; transition: 0.3s; }
-    .sponsor-logo img:hover { filter: grayscale(0); opacity: 1; transform: scale(1.05); }
-
-    /* === RESPONSIVE === */
-    @media (max-width: 768px) {
-        .schedule-row { flex-direction: column; align-items: flex-start; gap: 12px; }
-        .flyer-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 480px) {
-        .flyer-grid { grid-template-columns: 1fr; }
-    }
-</style>

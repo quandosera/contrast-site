@@ -3,18 +3,21 @@ import react from '@astrojs/react';
 import keystatic from '@keystatic/astro';
 import markdoc from '@astrojs/markdoc';
 import vercel from '@astrojs/vercel';
-import tailwind from '@astrojs/tailwind';
 
-// https://astro.build/config
+import tailwindcss from '@tailwindcss/vite';
+
 export default defineConfig({
   // In Astro 5, 'static' is the default and it handles Keystatic's 
   // server routes automatically without needing the 'hybrid' flag.
   adapter: vercel(),
 
   integrations: [
-    tailwind(), // Standard Astro-Tailwind integration
     react(), 
     markdoc(), 
     keystatic()
   ],
+
+  vite: {
+    plugins: [tailwindcss()],
+  },
 });

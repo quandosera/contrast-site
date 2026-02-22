@@ -16,7 +16,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
     : title;
 ---
 <!doctype html>
-<html lang="en-GB">
+<html lang="en-GB" class="scroll-smooth bg-[#13111C]">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,198 +32,218 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
         
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
-    <body>
+    <body class="antialiased text-white selection:bg-purple-500/30 pb-20 bg-[#13111C]">
 
         <a class="skip-link" href="#main-content">Skip to content</a>
 
-        <header class="site-header">
-            <div class="container header-inner">
-                <div class="logo">
-                    <a href="/">
-                        <div class="logo-icon"><i class="fa-solid fa-podcast"></i></div>
-                        <div class="logo-text">
-                            <h1>CONTRAST<span>RADIO</span></h1>
-                            <span class="tagline">UP & COMING</span>
-                        </div>
-                    </a>
-                </div>
+        <!-- Premium Fixed Header -->
+        <header class="fixed w-full top-0 z-50 glass h-16 transition-all duration-300">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-3 group">
+                    <div class="w-8 h-8 rounded-full bg-[#9b51e0] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-lg shadow-purple-500/20">
+                        <i class="fa-solid fa-podcast text-base"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <h1 class="text-lg font-black tracking-tight leading-none uppercase italic">CONTRAST<span class="text-[#9b51e0]">RADIO</span></h1>
+                        <span class="text-[0.6rem] text-gray-400 font-semibold tracking-[0.2em] uppercase mt-0.5">Up & Coming</span>
+                    </div>
+                </a>
 
-                <nav class="desktop-nav">
-                    <a href="/">HOME</a>
-                    <a href="/about">ABOUT</a>
-                    <a href="/djs">DJ'S</a>
-                    <a href="/schedule">SCHEDULE</a>
-                    <a href="/gallery">GALLERY</a>
-                    <a href="/contact">CONTACT</a>
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="/" class="text-[0.7rem] font-black tracking-widest hover:text-[#b77bed] transition-colors uppercase">HOME</a>
+                    <a href="/about" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">ABOUT</a>
+                    <a href="/djs" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">DJ'S</a>
+                    <a href="/schedule" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">SCHEDULE</a>
+                    <a href="/gallery" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">GALLERY</a>
+                    <a href="/contact" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">CONTACT</a>
                 </nav>
 
-                <div class="header-right">
-                    <button class="btn-primary desktop-only player-trigger">LISTEN LIVE</button>
-                    <button id="mobile-menu-btn" aria-label="Toggle menu" aria-controls="mobile-menu" aria-expanded="false">
-                        <i class="fa-solid fa-bars"></i>
+                <!-- Header Actions -->
+                <div class="flex items-center gap-4">
+                    <button class="hidden md:flex player-trigger bg-white text-[#13111C] px-5 py-2 rounded-full font-black text-[0.65rem] tracking-widest hover:bg-gray-200 transition-all items-center gap-2 shadow-xl active:scale-95 uppercase">
+                        <i class="fa-solid fa-play text-[8px]"></i> Listen Live
+                    </button>
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Toggle menu" aria-expanded="false">
+                        <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                 </div>
             </div>
         </header>
 
-        <div id="mobile-menu" class="mobile-menu hidden">
-            <nav>
-                <a href="/">HOME</a>
-                <a href="/about">ABOUT</a>
-                <a href="/djs">DJ'S</a>
-                <a href="/schedule">SCHEDULE</a>
-                <a href="/gallery">GALLERY</a>
-                <a href="/contact">CONTACT</a>
-                <button class="btn-primary w-full player-trigger">LISTEN LIVE</button>
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="fixed inset-0 bg-[#13111C]/98 backdrop-blur-2xl z-40 hidden flex-col justify-center items-center space-y-8 pt-10">
+            <nav class="flex flex-col items-center space-y-8">
+                <a href="/" class="text-3xl font-black text-white hover:text-[#9b51e0]">HOME</a>
+                <a href="/about" class="text-3xl font-black text-gray-400 hover:text-white">ABOUT</a>
+                <a href="/djs" class="text-3xl font-black text-gray-400 hover:text-white">DJ'S</a>
+                <a href="/schedule" class="text-3xl font-black text-gray-400 hover:text-white">SCHEDULE</a>
+                <a href="/gallery" class="text-3xl font-black text-gray-400 hover:text-white">GALLERY</a>
+                <a href="/contact" class="text-3xl font-black text-gray-400 hover:text-white">CONTACT</a>
+                <button class="player-trigger bg-[#9b51e0] text-white px-10 py-4 rounded-full font-black text-lg mt-4 shadow-lg shadow-purple-500/30 uppercase tracking-widest">Listen Live</button>
             </nav>
         </div>
 
-        <main id="main-content" class="main-content">
+        <!-- Content Slot -->
+        <main id="main-content" class="min-h-screen">
             <slot />
         </main>
 
-        <footer class="site-footer">
-            <div class="container footer-inner">
-                <div class="footer-logo">
-                    <i class="fa-solid fa-podcast"></i> CONTRAST RADIO
+        <!-- Compact Footer -->
+        <footer class="bg-[#0a090f] py-12 border-t border-gray-800/40">
+            <div class="container mx-auto px-4 text-center">
+                <div class="flex items-center justify-center gap-2 text-xl font-black mb-6 italic">
+                    <i class="fa-solid fa-podcast text-[#9b51e0] text-lg"></i> CONTRAST RADIO
                 </div>
-                <div class="footer-copy">
-                    &copy; {new Date().getFullYear()} Contrast Radio. All rights reserved.
+                <div class="flex justify-center gap-6 mb-8">
+                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#9b51e0] hover:text-white hover:border-[#9b51e0] transition-all duration-300"><i class="fa-brands fa-facebook-f text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#9b51e0] hover:text-white hover:border-[#9b51e0] transition-all duration-300"><i class="fa-brands fa-twitter text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#9b51e0] hover:text-white hover:border-[#9b51e0] transition-all duration-300"><i class="fa-brands fa-instagram text-sm"></i></a>
                 </div>
-                <div class="footer-socials">
-                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
-                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                </div>
+                <p class="text-gray-600 text-[9px] leading-relaxed uppercase tracking-[0.3em] font-black">
+                    &copy; {new Date().getFullYear()} Contrast Radio. All rights reserved.<br>
+                    Independent community radio.
+                </p>
             </div>
         </footer>
 
-        <div class="bottom-player" transition:persist>
-            <div class="container player-inner">
-                <div class="player-info">
-                    <div class="player-icon" id="player-status-icon"><i class="fa-solid fa-wifi"></i></div>
-                    <div class="player-text">
-                        <span class="now-playing-label">NOW PLAYING</span>
-                        <div class="now-playing-title" id="now-playing">{currentShow}</div>
+        <!-- Balanced Persistent Bottom Player -->
+        <div class="fixed bottom-0 left-0 w-full glass-player z-50 px-4 py-2.5 shadow-[0_-5px_25px_rgba(0,0,0,0.7)]" transition:persist>
+            <div class="container mx-auto flex items-center justify-between gap-4">
+                <!-- Info Section -->
+                <div class="flex items-center gap-3.5 w-1/3">
+                    <div class="relative w-11 h-11 flex-shrink-0 bg-[#1E1B29] rounded-lg overflow-hidden flex items-center justify-center border border-gray-700/60 shadow-inner group">
+                        <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=100&auto=format&fit=crop" alt="Album Art" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div id="player-status-icon" class="absolute inset-0 bg-black/60 hidden items-center justify-center">
+                            <i class="fa-solid fa-chart-simple text-[#b77bed] text-xs animate-pulse"></i>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex flex-col overflow-hidden">
+                        <span class="text-[9px] font-black text-[#9b51e0] tracking-[0.2em] uppercase flex items-center gap-1.5 mb-0.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#9b51e0] animate-pulse"></span> Now playing
+                        </span>
+                        <div id="now-playing" class="text-[12px] font-black text-white truncate w-full tracking-wide uppercase">{currentShow}</div>
                     </div>
                 </div>
-                
-                <div class="player-controls">
-                    <button class="play-circle-btn" id="master-play-btn" aria-label="Play Stream" aria-pressed="false">
-                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+
+                <!-- Control Section -->
+                <div class="flex items-center justify-center w-1/3">
+                    <button id="master-play-btn" class="w-11 h-11 rounded-full bg-white text-[#13111C] flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]" aria-label="Play Stream">
+                        <i class="fa-solid fa-play ml-0.5 text-base"></i>
                     </button>
                 </div>
 
-                <div class="player-volume desktop-only" aria-label="Volume control">
-                    <button class="mute-btn" id="mute-btn" aria-label="Mute">
-                        <i class="fa-solid fa-volume-high"></i>
+                <!-- Volume Section (Desktop) -->
+                <div class="hidden md:flex items-center justify-end gap-3 w-1/3">
+                    <button id="mute-btn" class="text-gray-500 hover:text-white transition-colors w-5" aria-label="Mute">
+                        <i class="fa-solid fa-volume-high text-sm"></i>
                     </button>
-                    <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.7">
+                    <div class="w-24 flex items-center">
+                        <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.7">
+                    </div>
                 </div>
             </div>
-
+            <!-- Persistent Audio Element -->
             <audio id="stream-audio" crossorigin="anonymous" transition:persist></audio>
         </div>
 
+        <!-- Hidden Metadata to bridge data between pages -->
         <div id="show-metadata" data-show={currentShow} hidden></div>
 
+        <!-- COMPREHENSIVE SCRIPTS: Preserved from your original logic -->
         <script>
             document.addEventListener('astro:page-load', () => {
-                const menuBtn = document.getElementById('mobile-menu-btn');
-                const mobileMenu = document.getElementById('mobile-menu');
-                
-                menuBtn?.addEventListener('click', () => {
-                    const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
-                    menuBtn.setAttribute('aria-expanded', String(!expanded));
-                    mobileMenu?.classList.toggle('hidden');
-                    const icon = menuBtn.querySelector('i');
-                    if (icon) {
-                        icon.className = !expanded ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
-                    }
-                });
-
                 const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
                 const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+                const menuBtn = document.getElementById('mobile-menu-btn');
+                const mobileMenu = document.getElementById('mobile-menu');
                 const playBtns = document.querySelectorAll('#master-play-btn, .player-trigger');
                 const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
                 const muteBtn = document.getElementById('mute-btn');
                 const playerStatusIcon = document.getElementById('player-status-icon');
-                
-                // Update the "Now Playing" text when navigating to a new page
                 const nowPlayingText = document.getElementById('now-playing');
                 const metaShow = document.getElementById('show-metadata');
+
+                // 1. Mobile Menu Toggling
+                menuBtn?.addEventListener('click', () => {
+                    const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
+                    menuBtn.setAttribute('aria-expanded', String(!expanded));
+                    mobileMenu?.classList.toggle('hidden');
+                    mobileMenu?.classList.toggle('flex');
+                    const icon = menuBtn.querySelector('i');
+                    if (icon) icon.className = !expanded ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+                });
+
+                // 2. State Sync: Update text when navigating pages
                 if (nowPlayingText && metaShow) {
                     nowPlayingText.innerText = metaShow.getAttribute('data-show') || "Contrast Selection";
                 }
 
-                let previousVolume = 0.7;
-
-                const updateUIState = (isPlaying: boolean) => {
-                    const iconClass = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
-                    document.querySelectorAll('#master-play-btn i').forEach(i => {
-                        i.className = iconClass;
-                    });
-                    
-                    if (isPlaying) {
-                        playerStatusIcon?.classList.add('is-playing');
-                    } else {
-                        playerStatusIcon?.classList.remove('is-playing');
-                    }
+                const updateSliderFill = (val: number) => {
+                    if (volumeSlider) volumeSlider.style.backgroundSize = `${val * 100}% 100%`;
                 };
 
-                const updateSliderFill = (val: number) => {
-                    if (volumeSlider) {
-                        volumeSlider.style.backgroundSize = `${val * 100}% 100%`;
+                const updateUIState = (isPlaying: boolean) => {
+                    // Update master button icons
+                    document.querySelectorAll('#master-play-btn i').forEach((i: any) => {
+                        i.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play ml-0.5';
+                    });
+                    
+                    // Update status bar icon
+                    if (isPlaying) {
+                        playerStatusIcon?.classList.remove('hidden');
+                        playerStatusIcon?.classList.add('flex');
+                    } else {
+                        playerStatusIcon?.classList.remove('flex');
+                        playerStatusIcon?.classList.add('hidden');
                     }
+                    
+                    // Sync all triggers on the page (Live badges, hero buttons)
+                    document.querySelectorAll('.player-trigger').forEach((btn: any) => {
+                        btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i> PAUSE' : '<i class="fa-solid fa-play text-[10px]"></i> LISTEN LIVE';
+                    });
                 };
 
                 if (audio) {
-                    // Make sure UI matches actual audio state when navigating pages
-                    if (!audio.paused && audio.src !== "") {
-                        updateUIState(true);
-                    }
+                    // 3. Audio Continuity: Sync UI if music is already playing from previous page
+                    if (!audio.paused && audio.src !== "") updateUIState(true);
+                    
                     if (volumeSlider) {
                         volumeSlider.value = String(audio.volume);
                         updateSliderFill(audio.volume);
                     }
 
-                    // Avoid duplicate audio event listeners
+                    // 4. Global Flag Initialization
                     if (!window.__playerInitialized) {
                         window.__playerInitialized = true;
                         audio.volume = 0.7;
-                        updateSliderFill(0.7);
-
                         audio.addEventListener('play', () => updateUIState(true));
                         audio.addEventListener('pause', () => updateUIState(false));
                     }
 
-                    // Attach click events safely for the new page DOM
+                    // 5. Safe Event Re-binding (Prevents listener stacking)
                     playBtns.forEach(btn => {
-                        // Remove old listeners to prevent double-firing
                         const newBtn = btn.cloneNode(true);
                         btn.parentNode?.replaceChild(newBtn, btn);
-
                         newBtn.addEventListener('click', async () => {
                             if (audio.paused || audio.src === "") {
                                 try {
                                     audio.src = STREAM_URL;
                                     await audio.play();
-                                    updateUIState(true);
-                                } catch (err) {
-                                    console.error('Playback failed', err);
-                                }
+                                } catch (err) { console.error('Playback failed', err); }
                             } else {
                                 audio.pause();
                                 audio.src = "";
-                                updateUIState(false);
                             }
                         });
                     });
 
+                    // 6. Volume Control Re-binding
                     if (volumeSlider) {
                         const newSlider = volumeSlider.cloneNode(true) as HTMLInputElement;
                         volumeSlider.parentNode?.replaceChild(newSlider, volumeSlider);
@@ -234,21 +254,21 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         });
                     }
 
+                    // 7. Mute Logic
                     if (muteBtn) {
                         const newMuteBtn = muteBtn.cloneNode(true) as HTMLElement;
                         muteBtn.parentNode?.replaceChild(newMuteBtn, muteBtn);
+                        let prevVol = audio.volume || 0.7;
                         newMuteBtn.addEventListener('click', () => {
                             if (audio.volume > 0) {
-                                previousVolume = audio.volume;
+                                prevVol = audio.volume;
                                 audio.volume = 0;
-                                const vs = document.getElementById('volume-slider') as HTMLInputElement;
-                                if(vs) vs.value = "0";
+                                if(volumeSlider) volumeSlider.value = "0";
                                 updateSliderFill(0);
                             } else {
-                                audio.volume = previousVolume;
-                                const vs = document.getElementById('volume-slider') as HTMLInputElement;
-                                if(vs) vs.value = String(previousVolume);
-                                updateSliderFill(previousVolume);
+                                audio.volume = prevVol;
+                                if(volumeSlider) volumeSlider.value = String(prevVol);
+                                updateSliderFill(prevVol);
                             }
                         });
                     }
@@ -259,152 +279,52 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
+    /* CSS Variables for Dark Theme Consistency */
     :root {
-        --purple: #a855f7; 
-        --purple-dark: #9333ea;
-        --purple-light: #fdf4ff;
-        --dark-bg: #111827;
-        --text-main: #1f2937;
-        --text-muted: #6b7280;
-        --bg-body: #f8fafc;
-        --border-light: #e2e8f0;
-        --header-h: 80px;
-        --player-h: 90px;
+        --brand-purple: #9b51e0;
+        --brand-dark: #13111C;
+        --brand-surface: #1E1B29;
     }
 
-    * { box-sizing: border-box; }
-    body { 
-        margin: 0; 
-        font-family: 'Inter', sans-serif; 
-        background: var(--bg-body); 
-        color: var(--text-main); 
-        padding-bottom: var(--player-h);
-    }
-
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; width: 100%; }
-    .desktop-only { display: flex; }
-
-    /* SKIP LINK */
-    .skip-link {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border-width: 0;
-    }
-    .skip-link:focus {
-        position: fixed;
-        top: 1rem;
-        left: 1rem;
-        z-index: 9999;
-        width: auto;
-        height: auto;
-        padding: 0.75rem 1.5rem;
-        background: var(--dark-bg);
+    /* Base Styling */
+    html, body { 
+        background-color: var(--brand-dark); 
         color: white;
-        border-radius: 0.5rem;
+    }
+
+    /* Reset default link colors shown in screenshot */
+    a {
+        color: inherit;
         text-decoration: none;
-        font-weight: 800;
+    }
+    
+    /* Glassmorphism Components */
+    .glass { 
+        background: rgba(19, 17, 28, 0.75); 
+        backdrop-filter: blur(12px); 
+        -webkit-backdrop-filter: blur(12px); 
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+    }
+    
+    .glass-player { 
+        background: rgba(19, 17, 28, 0.92); 
+        backdrop-filter: blur(20px); 
+        -webkit-backdrop-filter: blur(20px); 
+        border-top: 1px solid rgba(255, 255, 255, 0.1); 
     }
 
-    /* HEADER */
-    .site-header { background: #fff; position: sticky; top: 0; z-index: 1000; height: var(--header-h); display: flex; align-items: center; border-bottom: 1px solid var(--border-light); }
-    .header-inner { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-    .logo a { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-main); }
-    .logo-icon { background: var(--dark-bg); color: var(--purple); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .logo-text h1 { margin: 0; font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px; line-height: 1; text-transform: uppercase;}
-    .logo-text span { color: var(--purple); }
-    .tagline { display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 800; letter-spacing: 1px; margin-top: 2px; }
+    /* Accessibility: Skip Link */
+    .skip-link { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+    .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: var(--brand-dark); color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 800; border: 1px solid var(--brand-purple); }
 
-    .desktop-nav { display: flex; gap: 30px; }
-    .desktop-nav a { text-decoration: none; color: var(--text-main); font-weight: 800; font-size: 0.85rem; transition: color 0.2s; text-transform: uppercase;}
-    .desktop-nav a:hover { color: var(--purple); }
+    /* Custom Range Slider */
+    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #ffffff; cursor: pointer; margin-top: -4.5px; box-shadow: 0 0 10px rgba(155, 81, 224, 0.5); }
+    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 3px; cursor: pointer; background: rgba(255, 255, 255, 0.1); border-radius: 2px; background-image: linear-gradient(var(--brand-purple), var(--brand-purple)); background-repeat: no-repeat; }
 
-    .btn-primary { background: var(--purple); color: #fff; border: none; padding: 10px 24px; border-radius: 50px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
-    .btn-primary:hover { background: var(--purple-dark); transform: scale(1.05); }
-
-    #mobile-menu-btn { display: none; background: none; border: none; font-size: 1.5rem; color: var(--text-main); cursor: pointer; }
-
-    /* MOBILE MENU */
-    .mobile-menu { position: fixed; top: var(--header-h); left: 0; width: 100%; height: calc(100vh - var(--header-h)); background: #fff; padding: 40px 20px; z-index: 999; transition: transform 0.3s ease; }
-    .mobile-menu.hidden { transform: translateX(100%); }
-    .mobile-menu nav { display: flex; flex-direction: column; gap: 20px; align-items: center; }
-    .mobile-menu a { text-decoration: none; color: var(--text-main); font-weight: 900; font-size: 1.5rem; text-transform: uppercase; }
-
-    /* FOOTER (REVERTED TO YOUR ORIGINAL CODE) */
-    .site-footer { background: var(--dark-bg); color: #fff; padding: 3.5rem 0; margin-top: 4rem; }
-    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
-    .footer-logo { font-weight: 900; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; color: var(--purple); }
-    .footer-copy { color: #9ca3af; font-size: 0.85rem; }
-    .footer-socials { display: flex; gap: 15px; }
-    .footer-socials a { color: #fff; background: rgba(255,255,255,0.1); width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; transition: 0.2s; }
-    .footer-socials a:hover { background: var(--purple); }
-
-    /* BOTTOM PLAYER */
-    .bottom-player { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid var(--border-light); height: var(--player-h); z-index: 2000; display: flex; align-items: center; }
-    .player-inner { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-    
-    /* 1. Left aligned info */
-    .player-info { display: flex; align-items: center; gap: 15px; flex: 1; }
-    
-    .player-icon { background: var(--bg-body); color: var(--text-muted); width: 45px; height: 45px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-    .player-icon.is-playing { color: var(--purple); background: var(--purple-light); }
-    .player-icon.is-playing i { animation: wifi-pulse 1.5s infinite linear; }
-    
-    @keyframes wifi-pulse {
-        0% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.1); }
-        100% { opacity: 1; transform: scale(1); }
-    }
-
-    .now-playing-label { font-size: 0.65rem; font-weight: 900; color: var(--purple); letter-spacing: 1px; }
-    .now-playing-title { font-weight: 800; font-size: 0.95rem; color: var(--text-main); }
-
-    /* 2. Centered controls */
-    .player-controls { flex: 1; display: flex; justify-content: center; align-items: center; }
-    
-    .play-circle-btn { display: flex; align-items: center; justify-content: center; background: var(--purple); color: #fff; border: none; width: 55px; height: 55px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(168, 85, 247, 0.4); }
-    .play-circle-btn:hover { transform: scale(1.1); }
-
-    /* 3. Right aligned volume */
-    .player-volume { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
-    
-    /* MUTE BUTTON RESET (Fixed the system background rendering issue) */
-    .mute-btn { 
-        appearance: none !important;
-        -webkit-appearance: none !important;
-        background-color: transparent !important; 
-        background: transparent !important; 
-        border: none !important; 
-        box-shadow: none !important;
-        outline: none !important;
-        padding: 0;
-        margin: 0;
-        color: var(--text-muted); 
-        font-size: 1.2rem; 
-        cursor: pointer; 
-        transition: color 0.2s; 
-        width: 24px; 
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .mute-btn:hover { color: var(--purple); }
-
-    #volume-slider { -webkit-appearance: none; width: 100px; height: 4px; background: #e5e7eb; border-radius: 5px; background-image: linear-gradient(var(--purple), var(--purple)); background-repeat: no-repeat; cursor: pointer; }
-    #volume-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--purple); border: 2px solid #fff; }
-
-    /* RESPONSIVE */
-    @media (max-width: 1024px) {
-        .desktop-nav, .desktop-only { display: none !important; }
-        #mobile-menu-btn { display: block; }
-        .player-info { flex: 1; }
-        .player-controls { flex: 1; justify-content: flex-end; } /* Push play button to the right on mobile */
-        .now-playing-title { font-size: 0.8rem; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .footer-inner { justify-content: center; flex-direction: column; text-align: center; }
-    }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--brand-dark); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--brand-purple); }
 </style>
