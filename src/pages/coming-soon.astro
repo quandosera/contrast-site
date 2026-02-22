@@ -1,0 +1,14 @@
+---
+// src/layouts/Layout.astro
+// Add this to the very top of your frontmatter fence
+
+const isLocked = import.meta.env.SITE_LOCKED === "true";
+const url = new URL(Astro.request.url);
+// Choose a secret parameter name and value
+const hasBypassKey = url.searchParams.get("secret_bypass") === "contrastRadioDev2026";
+
+// If site is locked AND they don't have the bypass key AND they aren't already on the coming soon page
+if (isLocked && !hasBypassKey && url.pathname !== "/coming-soon") {
+    return Astro.redirect("/coming-soon");
+}
+---
