@@ -3,36 +3,29 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection, getEntry } from 'astro:content';
 
-// 1. DATA FETCHING
+// 1. DATA FETCHING (Astro 5 Content Layer)
 const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
-
 const allShows = await getCollection('shows');
 const allDjs = await getCollection('djs');
 const allFlyers = await getCollection('flyers').catch(() => []);
 
-// 2. TIME LOGIC (UK Time)
+// 2. TIME LOGIC (UK Time Synchronization)
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
 const currentDayIndex = dateInUK.getDay(); 
 const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
-
 const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
 
-// 3. RESOLVE RELATIONSHIPS (With Fuzzy Matching for master.yaml)
+// 3. RESOLVE RELATIONSHIPS (Fuzzy Match Logic)
 const allShowsDetailed = rawSlots.map((slot) => {
-    // Standardize Auto DJ check
     const isAutoDj = slot.show === 'Auto DJ' || slot.show === 'auto-dj';
-    
-    // Fuzzy matching: Check ID, Title, or URL-safe slug
     const showEntry = !isAutoDj ? allShows.find(s => 
-        s.id === slot.show || 
-        s.data.title === slot.show ||
-        s.id === slot.show.toLowerCase().replace(/\s+/g, '-')
+        s.id === slot.show || s.data.title === slot.show ||
+        s.id === slot.show.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and')
     ) : null;
     
     const firstHostId = showEntry?.data?.hosts?.[0];
-    
     const djEntry = firstHostId ? allDjs.find(d => {
         const safeId = d.id.replace(/\.[^/.]+$/, "");
         return safeId === firstHostId || d.data?.slug === firstHostId || d.id === firstHostId;
@@ -52,131 +45,129 @@ function timeToMins(timeStr: string, isEndTime: boolean = false) {
     if (!timeStr) return 0;
     const str = String(timeStr).trim();
     let [h, m] = str.split(':').map(Number);
-    // Standardize 00:00 as end of day (1440 mins)
     if (isEndTime && (h === 24 || (h === 0 && m === 0))) return 1440;
     if (h === 24) h = 0;
     return h * 60 + m;
 }
 
-// 4. BUILD CONTINUOUS ROLLING TIMELINE
+// 4. TIMELINE CALCULATION
 let timeline: any[] = [];
-
-// A. Yesterday's Crossover Logic (Catch shows that started yesterday but end today)
 const yesterdayIndex = (currentDayIndex + 6) % 7;
 allShowsDetailed.filter(s => s.day === daysArray[yesterdayIndex]).forEach(slot => {
     const startMins = timeToMins(slot.startTime);
     const endMins = timeToMins(slot.endTime, true);
-    
     if (endMins <= startMins || endMins === 1440) { 
-        timeline.push({
-            ...slot,
-            absoluteStart: -1440 + startMins,
-            absoluteEnd: (endMins === 1440) ? 0 : endMins 
-        });
+        timeline.push({ ...slot, absoluteStart: -1440 + startMins, absoluteEnd: (endMins === 1440) ? 0 : endMins });
     }
 });
 
-// B. Next 7 Days Sequential Timeline
 for (let i = 0; i < 7; i++) {
     const targetDayIndex = (currentDayIndex + i) % 7;
     const targetDayStr = daysArray[targetDayIndex];
-    
     allShowsDetailed.filter(s => s.day === targetDayStr).forEach(slot => {
         const startMins = timeToMins(slot.startTime);
         let endMins = timeToMins(slot.endTime, true);
-        
         let absoluteStart = i * 1440 + startMins;
-        if (endMins <= startMins && endMins !== 1440) {
-            endMins += 1440;
-        }
+        if (endMins <= startMins && endMins !== 1440) endMins += 1440;
         let absoluteEnd = i * 1440 + endMins;
-
-        timeline.push({
-            ...slot,
-            absoluteStart,
-            absoluteEnd
-        });
+        timeline.push({ ...slot, absoluteStart, absoluteEnd });
     });
 }
 
 timeline.sort((a, b) => a.absoluteStart - b.absoluteStart);
-
-// Filter relevant shows (current live show + upcoming)
 const relevantShows = timeline.filter(show => show.absoluteEnd > currentMins);
 
-// 5. LIVE SHOW DETECTION
+// 5. LIVE DETECTION
 const displayedShows = relevantShows.slice(0, 5).map(show => ({
     ...show,
     isLive: currentMins >= show.absoluteStart && currentMins < show.absoluteEnd
 }));
 
 const liveShow = displayedShows.find(show => show.isLive);
-
-// 6. HEADER METADATA
 const currentShowName = liveShow ? liveShow.displayName : "Auto DJ Mix";
 const currentDJName = liveShow ? (liveShow.isAutoDj ? "Contrast Radio" : (liveShow.djData?.name || liveShow.djId || "Guest DJ")) : "Contrast Radio";
-
-// 7. FLYERS
-const activeFlyers = allFlyers
-    .sort((a, b) => b.id.localeCompare(a.id)) 
-    .slice(0, 4);
+const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0, 4);
 ---
 
 <Layout title="Contrast Radio | Up and Coming" currentShow={currentShowName}>
     
-    <section class="relative h-[75vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+    <section class="relative h-[90vh] min-h-[700px] flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1603048588665-791ca8aea617?q=80&w=2070&auto=format&fit=crop" alt="Contrast Turntable" class="w-full h-full object-cover opacity-40">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#13111C] via-[#13111C]/30 to-transparent"></div>
+            <img src="https://images.unsplash.com/photo-1603048588665-791ca8aea617?q=80&w=2070&auto=format&fit=crop" alt="Turntable" class="w-full h-full object-cover opacity-20 scale-110 rotate-[-1deg]" />
+            
+            <div class="absolute inset-0 opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none"></div>
+
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,59,59,0.1)_0%,transparent_60%)]"></div>
+
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/20 to-brand-dark/40"></div>
         </div>
 
         <div class="container mx-auto px-4 relative z-10 text-center">
-            <div class="inline-flex items-center gap-2 bg-[#1E1B29]/80 border border-[#9b51e0]/20 backdrop-blur-sm px-4 py-2 rounded-full mb-8 shadow-2xl">
-                <span class={`w-2.5 h-2.5 rounded-full ${liveShow ? 'bg-red-500 animate-ping' : 'bg-gray-500'}`}></span>
-                <span class="text-[10px] font-black tracking-[0.25em] text-white uppercase">
-                    {liveShow ? `LIVE NOW: ${currentDJName}` : 'AUTO DJ MODE'}
+            
+            <div class="inline-flex items-center gap-3 bg-white/5 border border-white/10 backdrop-blur-2xl px-6 py-2.5 rounded-full mb-12 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                <div class="relative flex items-center justify-center">
+                    <span class={`w-2.5 h-2.5 rounded-full ${liveShow ? 'bg-brand-accent animate-ping' : 'bg-gray-500'}`}></span>
+                    <span class={`absolute w-2.5 h-2.5 rounded-full ${liveShow ? 'bg-brand-accent' : 'bg-gray-500'}`}></span>
+                </div>
+                <span class="text-[11px] font-black tracking-[0.4em] text-white uppercase italic">
+                    {liveShow ? `LIVE: ${currentDJName}` : 'AUTO DJ MODE'}
                 </span>
             </div>
             
-            <h2 class="text-6xl md:text-[5.5rem] font-black tracking-tighter mb-6 uppercase italic leading-[0.9]">
-                BROADCASTING THE <br/>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#b77bed] to-[#9b51e0]">VIBE.</span>
-            </h2>
+            <div class="mb-10">
+                <h2 class="text-7xl md:text-[9.5rem] font-black tracking-tighter uppercase leading-[0.75] italic select-none">
+                    <span class="text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">BROADCASTING</span> <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-brand-accent/60 drop-shadow-[0_0_40px_rgba(255,59,59,0.2)]">THE VIBE.</span>
+                </h2>
+            </div>
             
-            <p class="text-base md:text-xl text-gray-300 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
-                Streaming the finest Reggae, Soul, R&B, and House music 24/7.
-                <br class="hidden md:block"/> Currently playing: <strong class="text-white italic">{currentShowName}</strong>
-            </p>
+            <div class="max-w-3xl mx-auto mb-14">
+                <div class="bg-white/[0.03] border border-white/5 rounded-2xl py-6 px-8 backdrop-blur-md inline-block">
+                    <p class="text-xs md:text-sm text-gray-400 font-medium uppercase tracking-[0.3em] mb-2">
+                        Streaming <span class="text-white font-black italic">Curated Underground</span> Sounds 24/7
+                    </p>
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="h-[1px] w-8 bg-brand-accent/40"></div>
+                        <p class="text-sm md:text-lg text-white font-black uppercase italic tracking-widest leading-none">
+                            On Air: <span class="text-brand-accent">{currentShowName}</span>
+                        </p>
+                        <div class="h-[1px] w-8 bg-brand-accent/40"></div>
+                    </div>
+                </div>
+            </div>
 
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-5">
-                <button class="player-trigger w-full sm:w-64 bg-white text-[#13111C] hover:bg-gray-200 px-8 py-5 rounded-full font-black text-xs tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(255,255,255,0.1)] flex items-center justify-center gap-3 active:scale-95 uppercase">
-                    <i class="fa-solid fa-play text-[10px]"></i> Listen Live
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <button class="player-trigger group w-full sm:w-72 bg-brand-accent hover:bg-[#e02d2d] text-white px-10 py-6 rounded-full font-black text-[11px] tracking-[0.3em] transition-all shadow-[0_15px_50px_rgba(255,59,59,0.35)] flex items-center justify-center gap-4 active:scale-95 uppercase">
+                    <i class="fa-solid fa-play text-xs group-hover:scale-125 transition-transform"></i> TUNE IN NOW
                 </button>
-                <a href="/schedule" class="w-full sm:w-64 bg-[#1E1B29]/60 backdrop-blur-md hover:bg-gray-800 text-white border border-gray-700/50 px-8 py-5 rounded-full font-black text-xs tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-95 uppercase">
-                    View Schedule
+                <a href="/schedule" class="w-full sm:w-72 bg-white/5 backdrop-blur-xl hover:bg-white/10 text-white border border-white/10 px-10 py-6 rounded-full font-black text-[11px] tracking-[0.3em] transition-all flex items-center justify-center gap-3 active:scale-95 uppercase">
+                    Full Schedule
                 </a>
             </div>
         </div>
+
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-20 animate-bounce hidden md:block">
+            <i class="fa-solid fa-chevron-down text-xl"></i>
+        </div>
     </section>
 
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 space-y-24 py-20">
-        
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 space-y-24 py-24">
         <section id="schedule" class="scroll-mt-24">
-            <div class="flex items-center justify-between mb-10">
-                <h2 class="text-2xl font-black flex items-center gap-3 uppercase italic tracking-tighter">
-                    <i class="fa-solid fa-tower-broadcast text-[#9b51e0]"></i> Upcoming Shows
+            <div class="flex items-center justify-between mb-12">
+                <h2 class="text-2xl font-black flex items-center gap-4 uppercase italic tracking-tighter text-white">
+                    <i class="fa-solid fa-tower-broadcast text-brand-accent shadow-[0_0_15px_rgba(255,59,59,0.4)]"></i> Upcoming Shows
                 </h2>
-                <a href="/schedule" class="text-[#b77bed] hover:text-white font-black text-[10px] flex items-center gap-2 transition-colors uppercase tracking-[0.2em]">
-                    FULL SCHEDULE <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                <a href="/schedule" class="text-brand-accent hover:text-white font-black text-[10px] flex items-center gap-2 transition-colors uppercase tracking-[0.3em] border-b border-brand-accent/0 hover:border-brand-accent/100 pb-1">
+                    FULL CALENDAR <i class="fa-solid fa-chevron-right text-[8px]"></i>
                 </a>
             </div>
 
-            <div class="bg-[#1E1B29]/40 rounded-[2.5rem] border border-gray-800/40 overflow-hidden divide-y divide-gray-800/40 shadow-2xl backdrop-blur-sm">
+            <div class="bg-brand-surface rounded-[2rem] border border-gray-800/50 overflow-hidden divide-y divide-gray-800/50 shadow-2xl">
                 {displayedShows.map(slot => (
-                    <div class={`relative flex flex-col md:flex-row md:items-center p-8 sm:p-10 transition-all duration-500 group ${slot.isLive ? 'bg-[#9b51e0]/10' : 'hover:bg-white/[0.02]'}`}>
+                    <div class={`relative flex flex-col sm:flex-row sm:items-center p-8 sm:p-10 transition-all duration-500 group ${slot.isLive ? 'bg-brand-accent/10 border-l-4 border-brand-accent' : 'hover:bg-white/[0.02]'}`}>
                         
                         <div class="flex-shrink-0 w-40 mb-4 md:mb-0 flex flex-col">
-                            <span class={`text-[10px] font-black uppercase mb-1 tracking-[0.2em] ${slot.isLive ? 'text-[#b77bed]' : 'text-gray-500'}`}>
+                            <span class={`text-[10px] font-black uppercase mb-1 tracking-[0.2em] ${slot.isLive ? 'text-brand-accent' : 'text-gray-500'}`}>
                                 {slot.day.split('-')[1]}
                             </span>
                             <span class={`text-xl font-black tracking-tighter ${slot.isLive ? 'text-white' : 'text-gray-300'}`}>
@@ -184,33 +175,33 @@ const activeFlyers = allFlyers
                             </span>
                             {slot.isLive && (
                                 <div class="flex items-center gap-2 mt-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                    <span class="text-[9px] font-black text-red-500 tracking-widest uppercase">ON AIR</span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse"></span>
+                                    <span class="text-[9px] font-black text-brand-accent tracking-widest uppercase">ON AIR</span>
                                 </div>
                             )}
                         </div>
 
                         <div class="flex-grow md:px-12 text-left">
-                            <h3 class="text-2xl font-black text-white mb-2 leading-tight group-hover:text-[#b77bed] transition-colors uppercase italic">
+                            <h3 class="text-2xl font-black text-white mb-2 leading-tight group-hover:text-brand-accent transition-colors uppercase italic">
                                 {slot.displayName}
                             </h3>
-                            <span class={`text-[9px] font-black px-3 py-1 rounded-full inline-block uppercase tracking-[0.2em] border transition-colors ${slot.isLive ? 'bg-[#9b51e0]/20 border-[#9b51e0]/40 text-white' : 'bg-gray-800 border-gray-700 text-gray-500'}`}>
+                            <span class={`text-[9px] font-black px-3 py-1 rounded-full inline-block uppercase tracking-[0.2em] border transition-colors ${slot.isLive ? 'bg-brand-accent/20 border-brand-accent/40 text-brand-accent' : 'bg-gray-800 border-gray-700 text-gray-500'}`}>
                                 {slot.isAutoDj ? "Auto Mix" : (slot.showData?.genre || "Various")}
                             </span>
                         </div>
 
                         <div class="flex items-center justify-end gap-5 mt-6 md:mt-0 md:min-w-[280px]">
                             <div class="flex flex-col text-right">
-                                <span class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Presented by</span>
+                                <span class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1 text-opacity-50">Presented by</span>
                                 <span class={`font-black text-base uppercase italic leading-none transition-colors ${slot.isLive ? 'text-white' : 'text-gray-400'}`}>
                                     {slot.isAutoDj ? "Contrast Radio" : (slot.djData?.name || slot.djId || "Guest DJ")}
                                 </span>
                             </div>
-                            <div class={`w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-sm transition-all duration-500 shadow-2xl ${slot.isLive ? 'ring-2 ring-[#9b51e0] scale-110' : 'bg-gray-800 border border-gray-700 grayscale opacity-40'}`}>
+                            <div class={`w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-sm transition-all duration-500 shadow-2xl ${slot.isLive ? 'ring-2 ring-brand-accent scale-110' : 'bg-gray-800 border border-gray-700 grayscale opacity-40'}`}>
                                 {slot.djData?.avatar && !slot.isAutoDj ? (
                                     <img src={slot.djData.avatar} alt={slot.djData?.name} class="w-full h-full object-cover" />
                                 ) : (
-                                    <i class={`fa-solid ${slot.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${slot.isLive && slot.isAutoDj ? 'fa-spin' : ''}`}></i>
+                                    <i class={`fa-solid ${slot.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${slot.isLive ? 'fa-spin-slow' : ''}`}></i>
                                 )}
                             </div>
                         </div>
@@ -220,55 +211,48 @@ const activeFlyers = allFlyers
         </section>
 
         <section id="events">
-            <div class="flex items-center justify-between mb-10">
-                <h2 class="text-2xl font-black flex items-center gap-3 uppercase italic tracking-tighter">
-                    <i class="fa-solid fa-ticket text-[#9b51e0]"></i> Session Archive
+            <div class="flex items-center justify-between mb-12">
+                <h2 class="text-2xl font-black flex items-center gap-4 uppercase italic tracking-tighter text-white">
+                    <i class="fa-solid fa-ticket text-brand-accent"></i> Events & Flyers
                 </h2>
-                <a href="/gallery" class="text-[#b77bed] hover:text-white font-black text-[10px] flex items-center gap-2 transition-colors uppercase tracking-[0.2em]">
-                    VIEW ALL <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                <a href="/gallery" class="text-brand-accent hover:text-white font-black text-[10px] flex items-center gap-2 transition-colors uppercase tracking-[0.3em]">
+                    VIEW GALLERY <i class="fa-solid fa-arrow-right text-[8px]"></i>
                 </a>
             </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
                 {activeFlyers.map(flyer => (
-                    <button class="flyer-card group relative rounded-[2rem] overflow-hidden aspect-[4/5] bg-gray-800 border border-gray-800/50 text-left transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/10 active:scale-95">
+                    <button class="flyer-card group relative rounded-[2.5rem] overflow-hidden aspect-[4/5] bg-brand-surface border border-gray-800/50 text-left transition-all duration-700 hover:-translate-y-3 hover:shadow-2xl hover:shadow-brand-accent/5 active:scale-95">
                         {flyer.data.image && <img src={flyer.data.image} alt={flyer.data.title} class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />}
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent flex flex-col justify-end p-6">
-                            <span class="text-[#b77bed] text-[8px] font-black uppercase tracking-[0.2em] mb-1">Visual</span>
-                            <h3 class="text-white font-black text-sm leading-tight uppercase italic group-hover:text-[#b77bed] transition-colors">{flyer.data.title}</h3>
+                        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/10 to-transparent flex flex-col justify-end p-8">
+                            <span class="text-brand-accent text-[8px] font-black uppercase tracking-[0.2em] mb-2">Contrast visual</span>
+                            <h3 class="text-white font-black text-lg leading-tight uppercase italic group-hover:text-brand-accent transition-colors">{flyer.data.title}</h3>
                         </div>
                     </button>
                 ))}
-                
-                {activeFlyers.length === 0 && (
-                    <div class="col-span-full py-20 text-center rounded-[2.5rem] border-2 border-dashed border-gray-800/40">
-                         <i class="fa-solid fa-image-portrait text-3xl text-gray-700 mb-4"></i>
-                         <p class="text-gray-500 font-black text-xs tracking-widest uppercase">Archive coming soon</p>
-                    </div>
-                )}
             </div>
         </section>
 
-        <section id="sponsors" class="pt-16 border-t border-gray-800/40">
-            <div class="flex items-center justify-center mb-12">
-                <span class="text-[10px] font-black tracking-[0.4em] text-gray-600 uppercase flex items-center gap-8">
-                    <span class="w-16 h-[1px] bg-gray-800/60"></span> OUR PARTNERS <span class="w-16 h-[1px] bg-gray-800/60"></span>
-                </span>
-            </div>
-            <div class="flex flex-wrap justify-center items-center gap-x-16 gap-y-10 opacity-30 hover:opacity-100 transition-opacity duration-1000 grayscale hover:grayscale-0">
-                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-200 cursor-default transition-transform hover:scale-105"><i class="fa-solid fa-building text-[#9b51e0]"></i> SION SPACES</div>
-                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-200 cursor-default transition-transform hover:scale-105"><i class="fa-solid fa-house text-[#9b51e0]"></i> Hyde & Rowe</div>
-                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-200 cursor-default transition-transform hover:scale-105"><i class="fa-solid fa-martini-glass text-[#9b51e0]"></i> Barry's Bar</div>
-                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-200 cursor-default transition-transform hover:scale-105"><i class="fa-solid fa-car text-[#9b51e0]"></i> Sayez Car Care</div>
+        <section id="sponsors" class="pt-20 border-t border-gray-800/30">
+            <div class="flex flex-wrap justify-center items-center gap-x-20 gap-y-12 opacity-30 hover:opacity-100 transition-all duration-1000 grayscale hover:grayscale-0">
+                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-300 hover:text-brand-accent cursor-default transition-all hover:scale-105"><i class="fa-solid fa-building"></i> SION SPACES</div>
+                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-300 hover:text-brand-accent cursor-default transition-all hover:scale-105"><i class="fa-solid fa-house"></i> Hyde & Rowe</div>
+                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-300 hover:text-brand-accent cursor-default transition-all hover:scale-105"><i class="fa-solid fa-martini-glass"></i> Barry's Bar</div>
+                <div class="flex items-center gap-3 font-black text-xs uppercase tracking-widest text-gray-300 hover:text-brand-accent cursor-default transition-all hover:scale-105"><i class="fa-solid fa-car"></i> Sayez Car Care</div>
             </div>
         </section>
     </div>
 
-    <div id="flyer-modal" class="fixed inset-0 z-[60] bg-black/98 backdrop-blur-2xl hidden flex items-center justify-center p-6 transition-opacity duration-300 opacity-0">
-        <button class="absolute top-8 right-8 text-white hover:text-[#9b51e0] text-5xl w-14 h-14 flex items-center justify-center bg-white/5 rounded-full transition-all hover:scale-110 active:scale-90 z-[70]">&times;</button>
-        <img id="modal-img" src="" alt="Full Flyer" class="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.9)] border border-white/5 scale-95 transition-transform duration-500">
+    <div id="flyer-modal" class="fixed inset-0 z-[60] bg-black/98 backdrop-blur-3xl hidden flex items-center justify-center p-8 transition-opacity duration-300 opacity-0">
+        <button class="absolute top-8 right-8 text-white hover:text-brand-accent text-6xl transition-all hover:rotate-90 active:scale-90">&times;</button>
+        <img id="modal-img" src="" alt="Full Flyer" class="max-w-full max-h-[85vh] object-contain rounded-[2rem] shadow-[0_0_100px_rgba(0,0,0,0.8)] scale-95 transition-transform duration-500">
     </div>
 
 </Layout>
+
+<style>
+    .fa-spin-slow { animation: spin 12s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
 
 <script>
     document.addEventListener('astro:page-load', () => {
@@ -294,10 +278,7 @@ const activeFlyers = allFlyers
             if (modal && modalImg) {
                 modal.classList.replace('opacity-100', 'opacity-0');
                 modalImg.classList.replace('scale-100', 'scale-95');
-                setTimeout(() => { 
-                    modal.classList.add('hidden'); 
-                    document.body.style.overflow = ''; 
-                }, 300);
+                setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 300);
             }
         };
 

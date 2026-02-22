@@ -21,8 +21,8 @@
         
         <div class="absolute inset-0 bg-gradient-to-b from-[#13111C]/40 via-[#0a090f] to-black"></div>
         
-        <div class="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-[#9b51e0]/10 rounded-full blur-[120px] animate-pulse"></div>
-        <div class="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-[#9b51e0]/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 1s;"></div>
+        <div class="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 1s;"></div>
     </div>
 
     <div class="relative z-10 w-full max-w-4xl px-6 py-12 text-center">
@@ -30,11 +30,11 @@
         <div class="mb-16 inline-block">
             <div class="relative flex items-center justify-center bg-[#13111C] px-10 py-5 rounded-2xl border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <h1 class="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none">
-                    CONTRAST<span class="text-[#9b51e0] drop-shadow-[0_0_15px_rgba(155,81,224,0.5)]">RADIO</span>
+                    CONTRAST<span class="text-brand-accent drop-shadow-[0_0_15px_rgba(255,59,59,0.5)]">RADIO</span>
                 </h1>
             </div>
             <div class="mt-6 flex items-center justify-center gap-3">
-                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-brand-accent animate-ping"></span>
                 <span class="text-xs font-black uppercase tracking-[0.5em] text-gray-500">Signal Incoming</span>
             </div>
         </div>
@@ -43,13 +43,13 @@
             COMING <br/> 
             <span class="relative inline-block">
                 <span class="text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">SOON</span>
-                <span class="absolute -inset-1 blur-2xl bg-[#9b51e0]/20 -z-10"></span>
-            </span><span class="text-[#9b51e0]">.</span>
+                <span class="absolute -inset-1 blur-2xl bg-brand-accent/20 -z-10"></span>
+            </span><span class="text-brand-accent">.</span>
         </h2>
         
         <div id="countdown" class="flex justify-center gap-6 md:gap-12">
             {[ 
-                { id: "days", label: "Days", color: "text-[#9b51e0]" },
+                { id: "days", label: "Days", color: "text-brand-accent" },
                 { id: "hours", label: "Hours", color: "text-white" },
                 { id: "minutes", label: "Mins", color: "text-white" },
                 { id: "seconds", label: "Secs", color: "text-white" } 
@@ -67,24 +67,22 @@
 
     <div class="absolute bottom-0 left-0 w-full h-1.5 flex items-end justify-center gap-1.5 px-2 opacity-30">
         {Array.from({ length: 12 }).map((_, i) => (
-            <div class={`bar w-full bg-gradient-to-t from-[#9b51e0] to-white/40`} style={`animation-delay: ${i * 0.15}s`}></div>
+            <div class={`bar w-full bg-gradient-to-t from-brand-accent to-white/40`} style={`animation-delay: ${i * 0.15}s`}></div>
         ))}
     </div>
 
     <script is:inline>
-        /** * FIXED TARGET DATE: October 22, 2026, 11:00 AM
-         * JavaScript months are 0-indexed (Jan=0, Oct=9)
-         */
+        // Target date fixed to October 22, 2026
         const targetDate = new Date(2026, 9, 22, 11, 0, 0).getTime();
 
         function updateCountdown() {
             const now = new Date().getTime();
             const distance = targetDate - now;
 
-            // If countdown is finished
             if (distance < 0) {
-                const units = ["days", "hours", "minutes", "seconds"];
-                units.forEach(id => document.getElementById(id).innerText = "00");
+                ["days", "hours", "minutes", "seconds"].forEach(id => {
+                    document.getElementById(id).innerText = "00";
+                });
                 return;
             }
 
@@ -104,10 +102,8 @@
             safeSet("seconds", s);
         }
 
-        // Run immediately to avoid 00 flash
-        updateCountdown();
-        // Update every second
         setInterval(updateCountdown, 1000);
+        updateCountdown();
     </script>
 </body>
 </html>
@@ -124,6 +120,7 @@
         min-height: 8px;
     }
 
+    /* Prevent mobile horizontal scroll */
     html, body {
         overflow-x: hidden;
         height: 100%;

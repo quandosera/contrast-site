@@ -1,6 +1,7 @@
 ---
 // src/pages/schedule.astro
 import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro'; // Import your standardized component
 import { getCollection, getEntry } from 'astro:content';
 
 // 1. DATA FETCHING
@@ -10,7 +11,7 @@ const rawSlots = scheduleDoc?.data?.allSlots || [];
 const allShows = await getCollection('shows');
 const allDjs = await getCollection('djs');
 
-// 2. TIME LOGIC (UK Time)
+// 2. TIME LOGIC (UK Time Synchronization)
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
 const currentDayIndex = dateInUK.getDay(); 
@@ -30,14 +31,13 @@ function timeToMins(timeStr: string) {
 
 // 3. RESOLVE RELATIONSHIPS & LIVE STATUS
 const scheduleDetailed = rawSlots.map((slot) => {
-    // Matches "Auto DJ" exactly as written in your master.yaml
     const isAutoDj = slot.show === 'Auto DJ' || slot.show === 'auto-dj';
     
-    // IMPROVED LOOKUP: Checks ID or Title to match your master.yaml
+    // Fuzzy matching logic to ensure master.yaml titles match show IDs
     const showEntry = !isAutoDj ? allShows.find(s => 
         s.id === slot.show || 
         s.data.title === slot.show ||
-        s.id === slot.show.toLowerCase().replace(/\s+/g, '-')
+        s.id === slot.show.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and')
     ) : null;
 
     const firstHostId = showEntry?.data?.hosts?.[0];
@@ -71,7 +71,7 @@ const scheduleDetailed = rawSlots.map((slot) => {
     };
 });
 
-// Dynamic header sync for the player
+// Sync current show for the player
 const currentLiveSlot = scheduleDetailed.find(item => item.isLive);
 const currentShowName = currentLiveSlot ? currentLiveSlot.displayName : "Auto DJ Mix";
 
@@ -97,91 +97,87 @@ const groupedSchedule = daysOfWeek.map(day => {
 
 <Layout title="Station Schedule | Contrast Radio" currentShow={currentShowName}>
     
-    <section class="relative pt-32 pb-20 overflow-hidden">
-        <div class="absolute inset-0 z-0">
-            <img 
-                src="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop" 
-                alt="Studio" 
-                class="w-full h-full object-cover opacity-20" 
-            />
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#13111C]/80 to-[#13111C]"></div>
-        </div>
-        <div class="container mx-auto px-4 relative z-10 text-center">
-            <h1 class="text-5xl md:text-7xl font-black tracking-tighter uppercase italic mb-4">
-                STATION <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#b77bed] to-[#9b51e0]">SCHEDULE</span>
-            </h1>
-            <p class="text-gray-400 font-bold tracking-widest uppercase text-sm">Streaming selections 24/7 across the globe</p>
-        </div>
-    </section>
+    <Hero 
+        title="STATION" 
+        accent="SCHEDULE" 
+        subtextText="Curated Transmission" 
+        subtextHighlight="Across the Globe"
+        bgImage="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop"
+    />
 
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-        <div class="max-w-5xl mx-auto space-y-20">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+        <div class="max-w-5xl mx-auto space-y-24">
             
             {groupedSchedule.map(dayGroup => (
-                <section class="space-y-8" id={`day-${dayGroup.id}`}>
-                    <div class="sticky top-16 z-30 py-6 bg-[#13111C]/95 backdrop-blur-md border-b border-gray-800/50 flex items-center justify-between">
-                        <h2 class="text-4xl font-black uppercase italic tracking-tighter">{dayGroup.label}</h2>
+                <section class="space-y-10" id={`day-${dayGroup.id}`}>
+                    <div class="sticky top-16 z-30 py-6 bg-brand-dark/95 backdrop-blur-md border-b border-white/5 flex items-center justify-between">
+                        <h2 class="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-white">{dayGroup.label}</h2>
                         {dayGroup.id === currentDayStr && (
-                            <span class="text-[10px] font-black text-[#9b51e0] bg-[#9b51e0]/10 px-4 py-1.5 rounded-full border border-[#9b51e0]/30 tracking-[0.3em] uppercase">Today</span>
+                            <div class="flex items-center gap-3">
+                                <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span>
+                                <span class="text-[10px] font-black text-brand-accent tracking-[0.3em] uppercase italic">Current Broadcast Day</span>
+                            </div>
                         )}
                     </div>
                     
                     <div class="grid grid-cols-1 gap-6">
                         {dayGroup.shows.length > 0 ? (
                             dayGroup.shows.map(item => (
-                                <div class={`relative flex flex-col md:flex-row md:items-center p-8 rounded-[2rem] border transition-all duration-500 group ${item.isLive ? 'bg-[#9b51e0]/10 border-[#9b51e0]/50 shadow-[0_0_40px_rgba(155,81,224,0.1)]' : 'bg-[#1E1B29]/40 border-gray-800/60 hover:border-gray-700'}`}>
+                                <div class={`relative flex flex-col md:flex-row md:items-center p-8 md:p-10 rounded-[2.5rem] border transition-all duration-700 group ${item.isLive ? 'bg-brand-accent/10 border-brand-accent/40 shadow-[0_0_60px_rgba(255,59,59,0.08)]' : 'bg-brand-surface/40 border-white/5 hover:border-white/10 hover:bg-brand-surface/60'}`}>
                                     
                                     <div class="flex-shrink-0 w-44 mb-6 md:mb-0">
-                                        <div class={`text-xl font-black tracking-tighter ${item.isLive ? 'text-white' : 'text-gray-400'}`}>
+                                        <div class={`text-xl md:text-2xl font-black tracking-tighter ${item.isLive ? 'text-white' : 'text-gray-400'}`}>
                                             {item.slot.startTime} — {item.slot.endTime || "00:00"}
                                         </div>
                                         {item.isLive && (
-                                            <div class="flex items-center gap-2 mt-2">
-                                                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-                                                <span class="text-[10px] font-black text-red-500 tracking-[0.2em] uppercase">On Air</span>
+                                            <div class="flex items-center gap-2 mt-3">
+                                                <span class="w-2 h-2 rounded-full bg-brand-accent"></span>
+                                                <span class="text-[11px] font-black text-brand-accent tracking-[0.2em] uppercase italic">On Air Now</span>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div class="flex-grow md:px-10">
-                                        <div class="flex flex-wrap items-center gap-4 mb-3">
-                                            <h3 class="text-2xl font-black text-white group-hover:text-[#b77bed] transition-colors uppercase italic leading-none">
+                                    <div class="flex-grow md:px-12">
+                                        <div class="flex flex-wrap items-center gap-4 mb-4">
+                                            <h3 class="text-3xl md:text-4xl font-black text-white group-hover:text-brand-accent transition-colors uppercase italic leading-none">
                                                 {item.displayName}
                                             </h3>
-                                            <span class={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-[0.2em] border ${item.isLive ? 'bg-[#9b51e0]/30 border-[#9b51e0]/50 text-white' : 'bg-gray-800 border-gray-700 text-gray-500'}`}>
-                                                {item.isAutoDj ? "Auto Mix" : (item.showData?.genre || "Various")}
+                                            <span class={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-[0.2em] border transition-colors ${item.isLive ? 'bg-brand-accent/20 border-brand-accent/40 text-white' : 'bg-gray-800 border-gray-700 text-gray-500'}`}>
+                                                {item.isAutoDj ? "Auto Mix" : (item.showData?.genre || "Underground")}
                                             </span>
                                         </div>
                                         
                                         {!item.isAutoDj && item.showData?.description && (
-                                            <p class="text-sm text-gray-500 leading-relaxed max-w-2xl line-clamp-2 group-hover:text-gray-400 transition-colors">
+                                            <p class="text-sm md:text-base text-gray-500 leading-relaxed max-w-2xl line-clamp-2 group-hover:text-gray-400 transition-colors font-medium">
                                                 {item.showData.description}
                                             </p>
                                         )}
                                     </div>
 
-                                    <div class="flex items-center gap-5 mt-8 md:mt-0 md:min-w-[240px] justify-end border-t md:border-t-0 border-gray-800/50 pt-6 md:pt-0">
+                                    <div class="flex items-center gap-5 mt-10 md:mt-0 md:min-w-[280px] justify-end border-t md:border-t-0 border-white/5 pt-8 md:pt-0">
                                         <div class="flex flex-col text-right">
                                             <span class="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-1">Presented by</span>
-                                            <span class={`font-black text-base uppercase italic leading-none ${item.isLive ? 'text-white' : 'text-gray-400'}`}>
+                                            <span class={`font-black text-lg uppercase italic leading-none transition-colors ${item.isLive ? 'text-white' : 'text-gray-400'}`}>
                                                 {item.isAutoDj ? "Contrast Radio" : (item.djData?.name || "Guest DJ")}
                                             </span>
                                         </div>
-                                        <div class={`w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-lg shadow-2xl transition-all duration-500 ${item.isLive ? 'ring-2 ring-[#9b51e0] scale-110' : 'bg-gray-800 border border-gray-700 grayscale'}`}>
+                                        <div class={`w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-xl transition-all duration-700 shadow-2xl ${item.isLive ? 'ring-2 ring-brand-accent scale-110' : 'bg-gray-800 border border-gray-700 grayscale opacity-40'}`}>
                                             {item.djData?.avatar && !item.isAutoDj ? (
                                                 <img src={item.djData.avatar} alt={item.djData?.name} class="w-full h-full object-cover" />
                                             ) : (
-                                                <i class={`fa-solid ${item.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${item.isLive && item.isAutoDj ? 'fa-spin' : ''}`}></i>
+                                                <i class={`fa-solid ${item.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${item.isLive && item.isAutoDj ? 'fa-spin-slow' : ''}`}></i>
                                             )}
                                         </div>
                                     </div>
+                                    
+                                    <div class="absolute inset-0 bg-gradient-to-tr from-brand-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2.5rem] pointer-events-none"></div>
                                 </div>
                             ))
                         ) : (
-                            <div class="flex flex-col items-center justify-center py-20 px-6 rounded-3xl bg-[#1E1B29]/30 border-2 border-dashed border-gray-800 text-center">
-                                <i class="fa-solid fa-robot text-4xl text-gray-700 mb-4"></i>
-                                <h3 class="text-white font-black text-xl mb-2 uppercase">Auto DJ Active</h3>
-                                <p class="text-gray-500 text-sm max-w-sm tracking-wide uppercase font-bold">Non-stop curated Contrast selections streaming through the night.</p>
+                            <div class="flex flex-col items-center justify-center py-24 px-10 rounded-[3rem] bg-brand-surface/30 border-2 border-dashed border-white/5 text-center group">
+                                <i class="fa-solid fa-compact-disc text-5xl text-gray-700 mb-6 group-hover:text-brand-accent group-hover:rotate-90 transition-all duration-1000"></i>
+                                <h3 class="text-white font-black text-2xl mb-3 uppercase italic">Contrast Selection Active</h3>
+                                <p class="text-gray-500 text-sm max-w-sm tracking-widest uppercase font-bold">Curated underground sounds streaming non-stop through the session.</p>
                             </div>
                         )}
                     </div>
@@ -193,8 +189,10 @@ const groupedSchedule = daysOfWeek.map(day => {
 </Layout>
 
 <style is:global>
-    /* Ensure sticky day headers stay below the fixed site navigation */
+    /* Sticky header positioning beneath main nav */
     .sticky {
-        top: 64px; /* Matches header height (h-16) */
+        top: 64px; 
     }
+    .fa-spin-slow { animation: spin 10s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>

@@ -1,111 +1,138 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+// 1. DATA FETCHING - For Header Status Synchronization
+const allShows = await getCollection('shows');
+const scheduleDoc = await getEntry('schedule', 'master');
+const rawSlots = scheduleDoc?.data?.allSlots || [];
+
+// 2. TIME LOGIC (For Header Status)
+const ukTimeOptions = { timeZone: 'Europe/London' };
+const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
+const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
+const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
+const currentDayStr = daysArray[dateInUK.getDay()];
+
+function timeToMins(timeStr: string) {
+    if (!timeStr) return 0;
+    let [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+}
+
+const currentSlot = rawSlots.find(slot => {
+    if (slot.day !== currentDayStr) return false;
+    const start = timeToMins(slot.startTime);
+    let end = timeToMins(slot.endTime || "00:00");
+    if (end <= start) end += 1440;
+    return currentMins >= start && currentMins < end;
+});
+
+const currentShowName = currentSlot ? 
+    (currentSlot.show === 'Auto DJ' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
+    : "Auto DJ Mix";
 ---
 
-<Layout title="About Us | Contrast Radio">
+<Layout title="Our Story | Contrast Radio" currentShow={currentShowName}>
     
-    <!-- Hero Section -->
-    <section class="relative pt-32 pb-20 overflow-hidden">
-        <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0" alt="Radio Studio Mixing Desk" class="w-full h-full object-cover opacity-20" />
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#13111C]/80 to-[#13111C]"></div>
-        </div>
-        <div class="container mx-auto px-4 relative z-10 text-center">
-            <h1 class="text-5xl md:text-7xl font-black tracking-tighter uppercase italic mb-4">
-                ABOUT <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#b77bed] to-[#9b51e0]">CONTRAST</span>
-            </h1>
-            <p class="text-gray-400 font-bold tracking-widest uppercase text-sm">Broadcasting the very best underground sounds, 24/7</p>
-        </div>
-    </section>
+    <Hero 
+        title="ABOUT" 
+        accent="CONTRAST" 
+        subtextText="Transmission of Culture" 
+        subtextHighlight="Est. 2026"
+        bgImage="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop"
+    />
 
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-32">
         
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start max-w-6xl mx-auto mb-24">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start max-w-6xl mx-auto mb-40">
             
-            <!-- Story Column -->
-            <div class="space-y-8">
-                <div class="flex items-center gap-3">
-                    <div class="text-[#9b51e0] text-2xl"><i class="fa-solid fa-broadcast-tower"></i></div>
-                    <h2 class="text-3xl font-black uppercase italic tracking-tight text-white">Our Story</h2>
+            <div class="space-y-12">
+                <div class="space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="relative flex items-center justify-center">
+                            <span class="absolute w-3 h-3 bg-brand-accent rounded-full animate-ping opacity-40"></span>
+                            <i class="fa-solid fa-satellite-dish text-brand-accent text-xl relative"></i>
+                        </div>
+                        <h2 class="text-3xl font-black uppercase italic tracking-tight text-white">Our Origins</h2>
+                    </div>
+                    
+                    <p class="text-2xl font-black text-white leading-tight italic border-l-4 border-brand-accent pl-8 py-2 drop-shadow-lg">
+                        Contrast Radio is an independent, community-driven platform dedicated to delivering the finest authentic music globally.
+                    </p>
                 </div>
                 
-                <p class="text-xl font-bold text-white leading-relaxed italic border-l-4 border-[#9b51e0] pl-6 py-2">
-                    Contrast Radio is an independent, community-driven platform dedicated to delivering the finest authentic music to listeners across the globe.
-                </p>
-                
-                <div class="space-y-6 text-gray-400 leading-relaxed">
+                <div class="space-y-8 text-gray-400 leading-relaxed text-lg font-medium">
                     <p>
-                        Born out of a deep passion for underground and culture-defining sounds, we set out to create a space where music truly matters. We are not bound by commercial playlists or corporate algorithms; our selections are hand-picked by DJs who live and breathe the culture.
+                        Born out of a deep passion for culture-defining sounds, we set out to create a space where music truly matters. We are not bound by commercial playlists or corporate algorithms; our selections are hand-picked by residents who live and breathe the culture.
                     </p>
 
                     <p>
-                        From the heavy basslines of classic Reggae and the smooth grooves of neo-Soul and R&B, to the late-night energy of underground House music, Contrast Radio spans the spectrum of rhythm and vibe. We champion the up-and-coming alongside the legendary, providing a crucial platform for DJs, producers, and artists to share their craft.
+                        From the heavy basslines of classic Reggae to the smooth grooves of neo-Soul and the late-night energy of underground House music, Contrast Radio spans the spectrum of rhythm and vibe.
                     </p>
                 </div>
 
-                <!-- Mission Box (Glass Styled) -->
-                <div class="bg-[#1E1B29]/60 backdrop-blur-md border border-gray-800/60 p-8 rounded-3xl shadow-xl">
-                    <h3 class="text-white font-black text-xl mb-4 flex items-center gap-3 uppercase italic">
-                        <i class="fa-solid fa-bullseye text-[#9b51e0]"></i> Our Mission
-                    </h3>
-                    <p class="text-gray-400 leading-relaxed italic">To connect diverse communities through a shared love of authentic music, preserving cultural sounds while pushing the boundaries of what radio can be.</p>
+                <div class="relative group">
+                    <div class="bg-brand-surface/40 backdrop-blur-2xl border border-white/10 p-12 rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden">
+                        <h3 class="text-white font-black text-xl mb-5 flex items-center gap-3 uppercase italic">
+                            <i class="fa-solid fa-bullseye text-brand-accent"></i> Our Mission
+                        </h3>
+                        <p class="text-gray-400 leading-relaxed italic text-lg">To connect diverse communities through a shared love of authentic music, preserving cultural sounds while pushing the boundaries of what radio can be.</p>
+                        
+                        <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-accent/5 blur-3xl -z-10 group-hover:bg-brand-accent/10 transition-all duration-700"></div>
+                    </div>
+                    <div class="absolute -inset-[1px] bg-gradient-to-br from-brand-accent/20 to-transparent rounded-[2.5rem] -z-10 opacity-50 group-hover:opacity-100 transition-opacity"></div>
                 </div>
             </div>
 
-            <!-- Visual Column -->
-            <div class="space-y-8">
+            <div class="space-y-12">
                 <div class="relative group">
-                    <!-- Main Image Card -->
-                    <div class="rounded-3xl overflow-hidden aspect-[4/3] border border-gray-800/60 shadow-2xl">
-                        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=800&q=80" alt="Radio Studio Microphone" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <div class="rounded-[3rem] overflow-hidden aspect-[4/3] border border-white/10 shadow-[0_40px_80px_rgba(0,0,0,0.6)]">
+                        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=800&q=80" alt="Radio Studio" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1" />
                     </div>
-                    <!-- Ambient Glow -->
-                    <div class="absolute -inset-1 bg-gradient-to-r from-[#9b51e0] to-[#b77bed] rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-500"></div>
+                    <div class="absolute -inset-6 bg-brand-accent/10 rounded-[4rem] blur-3xl -z-10 opacity-50 group-hover:opacity-100 transition duration-1000"></div>
                 </div>
                 
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-[#1E1B29]/40 border border-gray-800/60 p-6 rounded-2xl text-center backdrop-blur-sm transition-all hover:border-[#9b51e0]/40">
-                        <span class="block text-4xl font-black text-[#9b51e0] mb-1 italic tracking-tighter">24/7</span>
-                        <span class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Broadcasting</span>
-                    </div>
-                    <div class="bg-[#1E1B29]/40 border border-gray-800/60 p-6 rounded-2xl text-center backdrop-blur-sm transition-all hover:border-[#9b51e0]/40">
-                        <span class="block text-4xl font-black text-[#9b51e0] mb-1 italic tracking-tighter">100%</span>
-                        <span class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Independent</span>
-                    </div>
+                <div class="grid grid-cols-2 gap-6">
+                    {[
+                        { val: "24/7", label: "Transmission" },
+                        { val: "100%", label: "Independent" }
+                    ].map(stat => (
+                        <div class="bg-brand-surface/60 border border-white/5 p-10 rounded-[2rem] text-center backdrop-blur-md transition-all hover:border-brand-accent/30 group relative overflow-hidden">
+                            <span class="block text-5xl font-black text-brand-accent mb-2 italic tracking-tighter group-hover:scale-110 transition-transform drop-shadow-[0_0_15px_rgba(255,59,59,0.4)]">{stat.val}</span>
+                            <span class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.4em]">{stat.label}</span>
+                            <div class="absolute inset-0 bg-gradient-to-tr from-brand-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
         </div>
 
-        <!-- Genres Section -->
-        <section class="max-w-6xl mx-auto pt-20 border-t border-gray-800/40">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-black uppercase italic tracking-tight text-white mb-2">The Sound of <span class="text-[#9b51e0]">Contrast</span></h2>
-                <div class="w-20 h-1 bg-[#9b51e0] mx-auto rounded-full"></div>
+        <section class="max-w-6xl mx-auto pt-32 border-t border-white/5">
+            <div class="text-center mb-24">
+                <span class="text-brand-accent font-black text-xs tracking-[0.5em] uppercase mb-4 block italic">The Frequency DNA</span>
+                <h2 class="text-5xl md:text-6xl font-black uppercase italic tracking-tighter text-white">THE SOUND OF <span class="text-brand-accent">CONTRAST</span></h2>
+                <div class="w-24 h-1.5 bg-brand-accent mx-auto mt-8 rounded-full shadow-[0_0_20px_rgba(255,59,59,0.6)]"></div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Reggae Card -->
-                <div class="bg-[#1E1B29]/30 border border-gray-800/60 p-10 rounded-3xl text-center backdrop-blur-sm transition-all duration-500 hover:border-[#9b51e0]/50 hover:-translate-y-2 group">
-                    <div class="text-4xl text-[#9b51e0] mb-6 group-hover:scale-110 transition-transform duration-500"><i class="fa-solid fa-compact-disc"></i></div>
-                    <h3 class="text-white font-black text-lg mb-4 uppercase italic tracking-wider">Reggae & Dub</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed uppercase font-bold tracking-tighter">Rooted in culture, heavy on the bass. From foundation roots to modern dancehall.</p>
-                </div>
-
-                <!-- Soul Card -->
-                <div class="bg-[#1E1B29]/30 border border-gray-800/60 p-10 rounded-3xl text-center backdrop-blur-sm transition-all duration-500 hover:border-[#9b51e0]/50 hover:-translate-y-2 group">
-                    <div class="text-4xl text-[#9b51e0] mb-6 group-hover:scale-110 transition-transform duration-500"><i class="fa-solid fa-microphone-lines"></i></div>
-                    <h3 class="text-white font-black text-lg mb-4 uppercase italic tracking-wider">Soul & R&B</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed uppercase font-bold tracking-tighter">Smooth, emotive, and timeless. The best of classic grooves and contemporary neo-soul.</p>
-                </div>
-
-                <!-- House Card -->
-                <div class="bg-[#1E1B29]/30 border border-gray-800/60 p-10 rounded-3xl text-center backdrop-blur-sm transition-all duration-500 hover:border-[#9b51e0]/50 hover:-translate-y-2 group">
-                    <div class="text-4xl text-[#9b51e0] mb-6 group-hover:scale-110 transition-transform duration-500"><i class="fa-solid fa-headphones-simple"></i></div>
-                    <h3 class="text-white font-black text-lg mb-4 uppercase italic tracking-wider">House & Dance</h3>
-                    <p class="text-gray-500 text-sm leading-relaxed uppercase font-bold tracking-tighter">Keeping the tempo up with deep, soulful, and underground electronic beats.</p>
-                </div>
+                {[
+                    { icon: "fa-compact-disc", title: "Reggae & Dub", desc: "Rooted in culture, heavy on the bass. From foundation roots to modern dancehall." },
+                    { icon: "fa-microphone-lines", title: "Soul & R&B", desc: "Smooth, emotive, and timeless. The best of classic grooves and contemporary neo-soul." },
+                    { icon: "fa-headphones-simple", title: "House & Dance", desc: "Keeping the tempo up with deep, soulful, and underground electronic beats." }
+                ].map(genre => (
+                    <div class="bg-brand-surface/30 border border-white/5 p-12 rounded-[2.5rem] text-center backdrop-blur-sm transition-all duration-700 hover:border-brand-accent/50 hover:-translate-y-3 group shadow-2xl relative overflow-hidden">
+                        <div class="text-5xl text-brand-accent mb-10 group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_25px_rgba(255,59,59,0.5)]">
+                            <i class={`fa-solid ${genre.icon}`}></i>
+                        </div>
+                        <h3 class="text-white font-black text-xl mb-5 uppercase italic tracking-wider group-hover:text-brand-accent transition-colors">{genre.title}</h3>
+                        <p class="text-gray-500 text-sm leading-relaxed uppercase font-bold tracking-tight">{genre.desc}</p>
+                        
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                ))}
             </div>
         </section>
 

@@ -13,14 +13,14 @@ const {
 } = Astro.props;
 
 /**
- * Dynamic Title Logic
+ * Dynamic Title Logic: Updates tab name based on what's playing
  */
 const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto DJ Mix" 
     ? `${currentShow} | Contrast Radio` 
     : title;
 ---
 <!doctype html>
-<html lang="en-GB" class="scroll-smooth bg-[#13111C]">
+<html lang="en-GB" class="scroll-smooth bg-brand-dark">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -40,7 +40,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
-    <body class="antialiased text-white selection:bg-purple-500/30 pb-20 bg-[#13111C]">
+    <body class="antialiased text-white selection:bg-brand-accent/30 pb-20 bg-brand-dark font-['Inter',sans-serif]">
 
         <a class="skip-link" href="#main-content">Skip to content</a>
 
@@ -48,17 +48,19 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
                 
                 <a href="/" class="flex items-center gap-3 group">
-                    <div class="w-8 h-8 rounded-full bg-[#9b51e0] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-lg shadow-purple-500/20">
+                    <div class="w-8 h-8 rounded-full bg-brand-accent flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-lg shadow-brand-accent/20">
                         <i class="fa-solid fa-podcast text-base"></i>
                     </div>
                     <div class="flex flex-col">
-                        <h1 class="text-lg font-black tracking-tight leading-none uppercase italic">CONTRAST<span class="text-[#9b51e0]">RADIO</span></h1>
+                        <h1 class="text-lg font-black tracking-tight leading-none uppercase italic">
+                            CONTRAST<span class="text-brand-accent">RADIO</span>
+                        </h1>
                         <span class="text-[0.6rem] text-gray-400 font-semibold tracking-[0.2em] uppercase mt-0.5">Up & Coming</span>
                     </div>
                 </a>
 
                 <nav class="hidden md:flex items-center space-x-8">
-                    <a href="/" class="text-[0.7rem] font-black tracking-widest hover:text-[#b77bed] transition-colors uppercase">HOME</a>
+                    <a href="/" class="text-[0.7rem] font-black tracking-widest hover:text-brand-accent transition-colors uppercase">HOME</a>
                     <a href="/about" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">ABOUT</a>
                     <a href="/djs" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">DJ'S</a>
                     <a href="/schedule" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">SCHEDULE</a>
@@ -67,7 +69,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 </nav>
 
                 <div class="flex items-center gap-4">
-                    <button class="hidden md:flex player-trigger bg-white text-[#13111C] w-36 justify-center py-2 rounded-full font-black text-[0.65rem] tracking-widest hover:bg-gray-200 transition-all items-center gap-2 shadow-xl active:scale-95 uppercase">
+                    <button class="hidden md:flex player-trigger bg-white text-brand-dark w-36 justify-center py-2 rounded-full font-black text-[0.65rem] tracking-widest hover:bg-gray-200 transition-all items-center gap-2 shadow-xl active:scale-95 uppercase">
                         <i class="fa-solid fa-play text-[10px]"></i> Listen Live
                     </button>
                     <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Toggle menu" aria-expanded="false">
@@ -77,15 +79,15 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             </div>
         </header>
 
-        <div id="mobile-menu" class="fixed inset-0 bg-[#13111C]/98 backdrop-blur-2xl z-40 hidden flex-col justify-center items-center space-y-8 pt-10">
+        <div id="mobile-menu" class="fixed inset-0 bg-brand-dark/98 backdrop-blur-2xl z-40 hidden flex-col justify-center items-center space-y-8 pt-10">
             <nav class="flex flex-col items-center space-y-8">
-                <a href="/" class="text-3xl font-black text-white hover:text-[#9b51e0]">HOME</a>
+                <a href="/" class="text-3xl font-black text-white hover:text-brand-accent">HOME</a>
                 <a href="/about" class="text-3xl font-black text-gray-400 hover:text-white">ABOUT</a>
                 <a href="/djs" class="text-3xl font-black text-gray-400 hover:text-white">DJ'S</a>
                 <a href="/schedule" class="text-3xl font-black text-gray-400 hover:text-white">SCHEDULE</a>
                 <a href="/gallery" class="text-3xl font-black text-gray-400 hover:text-white">GALLERY</a>
                 <a href="/contact" class="text-3xl font-black text-gray-400 hover:text-white">CONTACT</a>
-                <button class="player-trigger bg-[#9b51e0] text-white w-64 py-4 flex justify-center items-center gap-3 rounded-full font-black text-lg mt-4 shadow-lg shadow-purple-500/30 uppercase tracking-widest">
+                <button class="player-trigger bg-brand-accent text-white w-64 py-4 flex justify-center items-center gap-3 rounded-full font-black text-lg mt-4 shadow-lg shadow-brand-accent/30 uppercase tracking-widest">
                     <i class="fa-solid fa-play text-[14px]"></i> Listen Live
                 </button>
             </nav>
@@ -97,13 +99,13 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
         <footer class="bg-[#0a090f] py-12 border-t border-gray-800/40">
             <div class="container mx-auto px-4 text-center">
-                <div class="flex items-center justify-center gap-2 text-xl font-black mb-6 italic">
-                    <i class="fa-solid fa-podcast text-[#9b51e0] text-lg"></i> CONTRAST RADIO
+                <div class="flex items-center justify-center gap-2 text-xl font-black mb-6 italic uppercase">
+                    <i class="fa-solid fa-podcast text-brand-accent text-lg"></i> Contrast <span class="text-brand-accent">Radio</span>
                 </div>
                 <div class="flex justify-center gap-6 mb-8">
-                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#9b51e0] hover:text-white hover:border-[#9b51e0] transition-all duration-300"><i class="fa-brands fa-facebook-f text-sm"></i></a>
-                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#9b51e0] hover:text-white hover:border-[#9b51e0] transition-all duration-300"><i class="fa-brands fa-twitter text-sm"></i></a>
-                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-[#9b51e0] hover:text-white hover:border-[#9b51e0] transition-all duration-300"><i class="fa-brands fa-instagram text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-all duration-300"><i class="fa-brands fa-facebook-f text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-all duration-300"><i class="fa-brands fa-twitter text-sm"></i></a>
+                    <a href="#" class="w-9 h-9 rounded-full bg-gray-900 border border-gray-800 flex items-center justify-center text-gray-400 hover:bg-brand-accent hover:text-white hover:border-brand-accent transition-all duration-300"><i class="fa-brands fa-instagram text-sm"></i></a>
                 </div>
                 <p class="text-gray-600 text-[9px] leading-relaxed uppercase tracking-[0.3em] font-black">
                     &copy; {new Date().getFullYear()} Contrast Radio. All rights reserved.<br>
@@ -116,22 +118,22 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             <div class="container mx-auto flex items-center justify-between gap-4">
                 
                 <div class="flex items-center gap-3 min-w-0 flex-1 md:flex-none md:w-1/3">
-                    <div class="relative w-11 h-11 flex-shrink-0 bg-[#1E1B29] rounded-lg overflow-hidden flex items-center justify-center border border-gray-700/60 shadow-inner group">
+                    <div class="relative w-11 h-11 flex-shrink-0 bg-brand-surface rounded-lg overflow-hidden flex items-center justify-center border border-gray-700/60 shadow-inner group">
                         <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=100&auto=format&fit=crop" alt="Album Art" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                         <div id="player-status-icon" class="absolute inset-0 bg-black/60 hidden items-center justify-center">
-                            <i class="fa-solid fa-chart-simple text-[#b77bed] text-xs animate-pulse"></i>
+                            <i class="fa-solid fa-chart-simple text-brand-accent text-xs animate-pulse"></i>
                         </div>
                     </div>
                     <div class="flex flex-col min-w-0">
-                        <span class="text-[9px] font-black text-[#9b51e0] tracking-[0.2em] uppercase flex items-center gap-1.5 mb-0.5 whitespace-nowrap">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#9b51e0] animate-pulse flex-shrink-0"></span> Now playing
+                        <span class="text-[9px] font-black text-brand-accent tracking-[0.2em] uppercase flex items-center gap-1.5 mb-0.5 whitespace-nowrap">
+                            <span class="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse flex-shrink-0"></span> Now playing
                         </span>
                         <div id="now-playing" class="text-[12px] font-black text-white truncate tracking-wide uppercase">{currentShow}</div>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-end md:justify-center flex-shrink-0 md:w-1/3">
-                    <button id="master-play-btn" class="w-11 h-11 flex-shrink-0 rounded-full bg-white text-[#13111C] flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]" aria-label="Play Stream">
+                    <button id="master-play-btn" class="w-11 h-11 flex-shrink-0 rounded-full bg-white text-brand-dark flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]" aria-label="Play Stream">
                         <i class="fa-solid fa-play ml-0.5 text-base"></i>
                     </button>
                 </div>
@@ -151,6 +153,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         <div id="show-metadata" data-show={currentShow} hidden></div>
 
         <script>
+            // Scripts run on every page load to re-bind UI to persistent audio
             document.addEventListener('astro:page-load', () => {
                 const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
                 const audio = document.getElementById('stream-audio') as HTMLAudioElement;
@@ -158,7 +161,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 const mobileMenu = document.getElementById('mobile-menu');
                 const playBtns = document.querySelectorAll('#master-play-btn, .player-trigger');
                 
-                // Fetch elements from DOM
                 const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
                 const muteBtn = document.getElementById('mute-btn');
                 const volumeIcon = document.getElementById('volume-icon');
@@ -168,7 +170,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
                 let previousVolume = 0.7;
 
-                // 1. Mobile Menu Toggling
+                // Toggle Mobile Menu
                 menuBtn?.addEventListener('click', () => {
                     const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
                     menuBtn.setAttribute('aria-expanded', String(!expanded));
@@ -178,25 +180,23 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     if (icon) icon.className = !expanded ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
                 });
 
-                // 2. State Sync: Update text when navigating pages
+                // Update text based on current page props
                 if (nowPlayingText && metaShow) {
                     nowPlayingText.innerText = metaShow.getAttribute('data-show') || "Contrast Selection";
                 }
 
                 /**
-                 * 3. PREMIUM SLIDER VISUALS
-                 * Updates the linear-gradient so the left of the thumb is purple 
-                 * and the right is the dark track grey.
+                 * Updates the visual track color of the slider
+                 * Red accent used for filled state.
                  */
                 const updateSliderVisuals = (val: number) => {
-                    // Re-fetch slider to ensure we aren't using a cloned/deleted element
                     const activeSlider = document.getElementById('volume-slider') as HTMLInputElement;
                     if (!activeSlider || !volumeIcon) return;
                     
                     const percent = val * 100;
-                    activeSlider.style.background = `linear-gradient(to right, #9b51e0 0%, #9b51e0 ${percent}%, #374151 ${percent}%, #374151 100%)`;
+                    // Updated to use the Red Brand Hex: #ff3b3b
+                    activeSlider.style.background = `linear-gradient(to right, #ff3b3b 0%, #ff3b3b ${percent}%, #374151 ${percent}%, #374151 100%)`;
                     
-                    // Update Volume Icon based on level
                     volumeIcon.className = 'fa-solid ';
                     if (val === 0) {
                         volumeIcon.classList.add('fa-volume-xmark', 'text-gray-600');
@@ -208,35 +208,29 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 };
 
                 const updateUIState = (isPlaying: boolean) => {
-                    // Sync master play icons
                     document.querySelectorAll('#master-play-btn i').forEach((i: any) => {
                         i.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play ml-0.5';
                     });
                     
-                    // Pulse icon on album art
                     if (isPlaying) {
                         playerStatusIcon?.classList.replace('hidden', 'flex');
                     } else {
                         playerStatusIcon?.classList.replace('flex', 'hidden');
                     }
                     
-                    // Sync "Listen Live" buttons across the whole page
                     document.querySelectorAll('.player-trigger').forEach((btn: any) => {
                         btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause text-[10px]"></i> PAUSE' : '<i class="fa-solid fa-play text-[10px]"></i> LISTEN LIVE';
                     });
                 };
 
                 if (audio) {
-                    // CONTINUITY: Check if music is playing from the previous page
                     if (!audio.paused && audio.src !== "") updateUIState(true);
                     
-                    // Init Slider Level & Track Colors
                     if (volumeSlider) {
                         volumeSlider.value = String(audio.volume);
                         updateSliderVisuals(audio.volume);
                     }
 
-                    // Global initialization (runs once per site visit)
                     if (!window.__playerInitialized) {
                         window.__playerInitialized = true;
                         audio.volume = 0.7;
@@ -244,7 +238,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         audio.addEventListener('pause', () => updateUIState(false));
                     }
 
-                    // Playback Control Re-binding (Clears listeners by cloning)
+                    // Re-bind click listeners on every page load
                     playBtns.forEach(btn => {
                         const newBtn = btn.cloneNode(true);
                         btn.parentNode?.replaceChild(newBtn, btn);
@@ -266,7 +260,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         });
                     });
 
-                    // Volume Input Re-binding
                     if (volumeSlider) {
                         const newSlider = volumeSlider.cloneNode(true) as HTMLInputElement;
                         volumeSlider.parentNode?.replaceChild(newSlider, volumeSlider);
@@ -277,7 +270,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         });
                     }
 
-                    // Mute logic with physical thumb "slide"
                     if (muteBtn) {
                         const newMuteBtn = muteBtn.cloneNode(true) as HTMLElement;
                         muteBtn.parentNode?.replaceChild(newMuteBtn, muteBtn);
@@ -302,9 +294,8 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
-    /* GLOBAL BRAND STYLES */
     :root {
-        --brand-purple: #9b51e0;
+        --brand-accent: #ff3b3b; /* Central Brand Switch */
         --brand-dark: #13111C;
         --brand-surface: #1E1B29;
     }
@@ -312,7 +303,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
     html, body { background-color: var(--brand-dark); color: white; font-family: 'Inter', sans-serif; }
     a { color: inherit; text-decoration: none; }
     
-    /* GLASSMORPISM UTILITIES */
     .glass { 
         background: rgba(19, 17, 28, 0.75); 
         backdrop-filter: blur(12px); 
@@ -327,25 +317,23 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         border-top: 1px solid rgba(255, 255, 255, 0.1); 
     }
 
-    /* ACCESSIBILITY */
     .skip-link { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
-    .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: var(--brand-dark); color: white; border-radius: 0.5rem; border: 1px solid var(--brand-purple); }
+    .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: var(--brand-dark); color: white; border-radius: 0.5rem; border: 1px solid var(--brand-accent); }
 
     /**
-     * PREMIUM SLIDER STYLING
+     * THEMEABLE PREMIUM SLIDER
      */
     .premium-slider {
         -webkit-appearance: none;
         appearance: none;
         width: 100%;
         height: 5px;
-        background: #374151; /* Dark grey track for un-filled area */
+        background: #374151;
         border-radius: 999px;
         cursor: pointer;
         outline: none;
     }
 
-    /* Thumb (The White Dot) */
     .premium-slider::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
@@ -353,19 +341,24 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         width: 14px;
         border-radius: 50%;
         background: #ffffff;
-        box-shadow: 0 0 12px rgba(155, 81, 224, 0.4);
+        box-shadow: 0 0 12px rgba(255, 59, 59, 0.4); /* Glow matches red brand */
         transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* Interaction: Thumb scales and glows more on hover */
     .premium-slider:hover::-webkit-slider-thumb {
         transform: scale(1.25);
-        box-shadow: 0 0 15px rgba(155, 81, 224, 0.6);
+        box-shadow: 0 0 15px rgba(255, 59, 59, 0.6);
+    }
+
+    /* Selection Color */
+    ::selection {
+        background: rgba(255, 59, 59, 0.2);
+        color: white;
     }
 
     /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--brand-dark); }
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--brand-purple); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--brand-accent); }
 </style>
