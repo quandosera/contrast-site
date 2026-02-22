@@ -1,0 +1,102 @@
+allSlots:
+  # MONDAY
+  - day: 1-mon
+    startTime: '00:00'
+    endTime: '12:00'
+    show: auto-dj
+  - day: 1-mon
+    startTime: '12:00'
+    endTime: '14:00'
+    show: rice-and-peas-dj-noddy
+  - day: 1-mon
+    startTime: '14:00'
+    endTime: '00:00'
+    show: auto-dj
+
+  # TUESDAY
+  - day: 2-tue
+    startTime: '00:00'
+    endTime: '09:00'
+    show: auto-dj
+  - day: 2-tue
+    startTime: '09:00'
+    endTime: '11:00'
+    show: rice-and-peas-dj-noddy
+  - day: 2-tue
+    startTime: '11:00'
+    endTime: '00:00'
+    show: auto-dj
+
+  # WEDNESDAY
+  - day: 3-wed
+    startTime: '00:00'
+    endTime: '18:00'
+    show: auto-dj
+  - day: 3-wed
+    startTime: '18:00'
+    endTime: '20:00'
+    show: rice-and-peas-dj-noddy
+  - day: 3-wed
+    startTime: '20:00'
+    endTime: '00:00'
+    show: auto-dj
+
+  # THURSDAY
+  - day: 4-thu
+    startTime: '00:00'
+    endTime: '14:00'
+    show: auto-dj
+  - day: 4-thu
+    startTime: '14:00'
+    endTime: '16:00'
+    show: rice-and-peas-dj-noddy
+  - day: 4-thu
+    startTime: '16:00'
+    endTime: '00:00'
+    show: auto-dj
+
+  # FRIDAY
+  - day: 5-fri
+    startTime: '00:00'
+    endTime: '20:00'
+    show: auto-dj
+  - day: 5-fri
+    startTime: '20:00'
+    endTime: '22:00'
+    show: rice-and-peas-dj-noddy
+  - day: 5-fri
+    startTime: '22:00'
+    endTime: '00:00'
+    show: auto-dj
+
+  # SATURDAY
+  - day: 6-sat
+    startTime: '00:00'
+    endTime: '10:00'
+    show: auto-dj
+  - day: 6-sat
+    startTime: '10:00'
+    endTime: '12:00'
+    show: rice-and-peas-dj-noddy
+  - day: 6-sat
+    startTime: '12:00'
+    endTime: '23:00'
+    show: auto-dj
+  - day: 6-sat
+    startTime: '23:00'
+    endTime: '00:00'
+    show: rice-and-peas-dj-noddy
+
+  # SUNDAY
+  - day: 7-sun
+    startTime: '00:00'
+    endTime: '14:00'
+    show: auto-dj
+  - day: 7-sun
+    startTime: '14:00'
+    endTime: '16:00'
+    show: rice-and-peas-dj-noddy
+  - day: 7-sun
+    startTime: '16:00'
+    endTime: '00:00'
+    show: auto-dj

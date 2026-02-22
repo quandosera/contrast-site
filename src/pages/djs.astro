@@ -1,0 +1,247 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+// 1. DATA FETCHING
+const allDjs = await getCollection('djs');
+const allShows = await getCollection('shows');
+
+// Fetching current show for the Layout header
+const scheduleDoc = await getEntry('schedule', 'master');
+const rawSlots = scheduleDoc?.data?.allSlots || [];
+
+// 2. TIME LOGIC (For Header Status)
+const ukTimeOptions = { timeZone: 'Europe/London' };
+const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
+const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
+const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
+const currentDayStr = daysArray[dateInUK.getDay()];
+
+function timeToMins(timeStr: string) {
+    if (!timeStr) return 0;
+    let [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+}
+
+const currentSlot = rawSlots.find(slot => {
+    if (slot.day !== currentDayStr) return false;
+    const start = timeToMins(slot.startTime);
+    let end = timeToMins(slot.endTime || "00:00");
+    if (end <= start) end += 1440;
+    return currentMins >= start && currentMins < end;
+});
+
+const currentShowName = currentSlot ? 
+    (currentSlot.show === 'auto-dj' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
+    : "Auto DJ Mix";
+
+// 3. ENHANCE DJ DATA
+// We map through DJs and find which shows they belong to
+const djsWithShows = allDjs.map(dj => {
+    const djShows = allShows.filter(show => show.data.hosts?.includes(dj.id));
+    return {
+        ...dj,
+        shows: djShows
+    };
+});
+---
+
+<Layout title="Our DJs | Contrast Radio" currentShow={currentShowName}>
+    
+    <section class="page-hero">
+        <div class="hero-bg">
+            <img src="https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" alt="DJ Decks" />
+            <div class="hero-gradient"></div>
+        </div>
+        <div class="container hero-content">
+            <h1 class="page-title">OUR <span style="color: var(--purple);">RESIDENTS</span></h1>
+            <p class="page-subtitle">The talent behind the sound of Contrast Radio.</p>
+        </div>
+    </section>
+
+    <div class="container main-wrapper">
+        <div class="dj-grid">
+            {djsWithShows.map(dj => (
+                <div class="dj-card">
+                    <div class="dj-image-wrapper">
+                        {dj.data.avatar ? (
+                            <img src={dj.data.avatar} alt={dj.data.name} class="dj-photo" />
+                        ) : (
+                            <div class="dj-placeholder">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                        )}
+                        <div class="dj-overlay">
+                            <div class="dj-socials">
+                                {dj.data.socials?.instagram && (
+                                    <a href={`https://instagram.com/${dj.data.socials.instagram}`} target="_blank" aria-label="Instagram">
+                                        <i class="fa-brands fa-instagram"></i>
+                                    </a>
+                                )}
+                                {dj.data.socials?.soundcloud && (
+                                    <a href={`https://soundcloud.com/${dj.data.socials.soundcloud}`} target="_blank" aria-label="Soundcloud">
+                                        <i class="fa-brands fa-soundcloud"></i>
+                                    </a>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dj-info">
+                        <h3>{dj.data.name}</h3>
+                        {dj.data.genre && <span class="dj-genre">{dj.data.genre}</span>}
+                        
+                        <div class="dj-shows-list">
+                            <h4>SHOWS:</h4>
+                            {dj.shows.length > 0 ? (
+                                dj.shows.map(show => (
+                                    <span class="show-tag">{show.data.title}</span>
+                                ))
+                            ) : (
+                                <span class="show-tag">Guest Appearances</span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+</Layout>
+
+<style>
+    :root {
+        --purple: #a855f7;
+        --purple-light: #f3e8ff;
+        --bg-body: #f8fafc;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-light: #e2e8f0;
+    }
+
+    .page-hero {
+        position: relative;
+        padding: 6rem 20px;
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+    }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.85) 0%, var(--bg-body) 100%);
+    }
+    .page-title { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: #fff; margin: 0; }
+    .page-subtitle { color: #cbd5e1; margin-top: 1rem; font-size: 1.1rem; }
+
+    .main-wrapper { padding-bottom: 5rem; }
+
+    /* DJ GRID */
+    .dj-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2.5rem;
+    }
+
+    .dj-card {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border-light);
+        transition: 0.3s ease;
+    }
+    .dj-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .dj-image-wrapper {
+        position: relative;
+        aspect-ratio: 1/1;
+        overflow: hidden;
+        background: #e2e8f0;
+    }
+    .dj-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: 0.5s ease;
+    }
+    .dj-card:hover .dj-photo { transform: scale(1.1); }
+
+    .dj-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(168, 85, 247, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: 0.3s ease;
+    }
+    .dj-card:hover .dj-overlay { opacity: 1; }
+
+    .dj-socials {
+        display: flex;
+        gap: 1.5rem;
+    }
+    .dj-socials a {
+        color: #fff;
+        font-size: 1.8rem;
+        transition: 0.2s;
+    }
+    .dj-socials a:hover { transform: scale(1.2); color: var(--purple-light); }
+
+    .dj-info { padding: 1.5rem; }
+    .dj-info h3 { 
+        margin: 0; 
+        font-size: 1.5rem; 
+        font-weight: 900; 
+        color: var(--text-main);
+        text-transform: uppercase;
+    }
+    .dj-genre {
+        display: inline-block;
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--purple);
+        background: var(--purple-light);
+        padding: 2px 10px;
+        border-radius: 50px;
+        text-transform: uppercase;
+    }
+
+    .dj-shows-list {
+        margin-top: 1.5rem;
+        border-top: 1px solid var(--border-light);
+        padding-top: 1rem;
+    }
+    .dj-shows-list h4 {
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+        margin-bottom: 0.75rem;
+    }
+    .show-tag {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 4px;
+    }
+
+    .dj-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: #94a3b8;
+    }
+</style>

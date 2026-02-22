@@ -1,0 +1,293 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+// 1. DATA FETCHING
+// Note: Ensure the slug matches your file name in src/content/schedule/
+const scheduleDoc = await getEntry('schedule', 'master');
+const rawSlots = scheduleDoc?.data?.allSlots || [];
+
+const allShows = await getCollection('shows');
+const allDjs = await getCollection('djs');
+
+// 2. TIME LOGIC (UK Time for Live Tracking)
+const ukTimeOptions = { timeZone: 'Europe/London' };
+const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
+const currentDayIndex = dateInUK.getDay(); // 0-6 (Sun-Sat)
+const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
+
+// Mapping for your 1-mon, 2-tue naming convention
+const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
+const currentDayStr = daysArray[currentDayIndex];
+const yesterdayStr = daysArray[(currentDayIndex + 6) % 7];
+
+function timeToMins(timeStr: string) {
+    if (!timeStr) return 0;
+    let [h, m] = timeStr.split(':').map(Number);
+    if (h === 24) h = 0; 
+    return h * 60 + m;
+}
+
+// 3. DEFINE THE WEEK ORDER
+const daysOfWeek = [
+    { id: '1-mon', label: 'Monday' },
+    { id: '2-tue', label: 'Tuesday' },
+    { id: '3-wed', label: 'Wednesday' },
+    { id: '4-thu', label: 'Thursday' },
+    { id: '5-fri', label: 'Friday' },
+    { id: '6-sat', label: 'Saturday' },
+    { id: '7-sun', label: 'Sunday' }
+];
+
+// 4. RESOLVE RELATIONSHIPS & CALCULATE LIVE STATUS
+const scheduleDetailed = rawSlots.map((slot) => {
+    const isAutoDj = slot.show === 'auto-dj';
+    const showEntry = !isAutoDj ? allShows.find(s => s.id === slot.show) : null;
+    
+    // Relationship: Show -> Hosts Array -> First DJ
+    const firstHostId = showEntry?.data?.hosts?.[0];
+    const djEntry = firstHostId ? allDjs.find(d => d.id === firstHostId) : null;
+
+    // Live Logic
+    let isLive = false;
+    const startMins = timeToMins(slot.startTime);
+    const endMins = timeToMins(slot.endTime || "00:00");
+    const crossesMidnight = endMins <= startMins && endMins !== 0;
+
+    if (slot.day === currentDayStr) {
+        let adjustedEndMins = crossesMidnight ? endMins + 1440 : (endMins === 0 ? 1440 : endMins);
+        if (currentMins >= startMins && currentMins < adjustedEndMins) {
+            isLive = true;
+        }
+    } 
+    else if (slot.day === yesterdayStr && crossesMidnight) {
+        if (currentMins < endMins) {
+            isLive = true;
+        }
+    }
+
+    return { 
+        slot, 
+        isLive, 
+        isAutoDj,
+        showData: showEntry?.data, 
+        djData: djEntry?.data 
+    };
+});
+
+// 5. GROUP SHOWS BY DAY
+const groupedSchedule = daysOfWeek.map(day => {
+    const dayShows = scheduleDetailed
+        .filter(item => item.slot.day === day.id)
+        .sort((a, b) => a.slot.startTime.localeCompare(b.slot.startTime));
+    
+    return {
+        ...day,
+        shows: dayShows
+    };
+});
+---
+
+<Layout title="Full Schedule | Contrast Radio">
+    
+    <section class="page-hero">
+        <div class="hero-bg">
+            <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80" alt="Studio Microphone" />
+            <div class="hero-gradient"></div>
+        </div>
+        <div class="container hero-content">
+            <h1 class="page-title">STATION <span style="color: var(--purple);">SCHEDULE</span></h1>
+            <p class="page-subtitle">Check out the full weekly lineup. Streaming 24/7.</p>
+        </div>
+    </section>
+
+    <div class="container main-wrapper">
+        <div class="schedule-timeline">
+            
+            {groupedSchedule.map(dayGroup => (
+                <section class="day-group" id={`day-${dayGroup.id}`}>
+                    <div class="day-header-sticky">
+                        <h2>{dayGroup.label}</h2>
+                    </div>
+                    
+                    <div class="shows-grid">
+                        {dayGroup.shows.length > 0 ? (
+                            dayGroup.shows.map(item => (
+                                <div class={`show-card ${item.isLive ? 'is-live' : ''} ${item.isAutoDj ? 'is-autodj' : ''}`}>
+                                    <div class="time-ribbon">
+                                        {item.slot.startTime} - {item.slot.endTime || "00:00"}
+                                        {item.isLive && <span class="live-badge" style="margin-left: 10px;">LIVE NOW</span>}
+                                    </div>
+                                    <div class="show-details">
+                                        <div class="show-header-info">
+                                            <h3>{item.isAutoDj ? "Contrast Selection" : (item.showData?.title || "TBA")}</h3>
+                                            <span class="show-genre">
+                                                {item.isAutoDj ? "AUTO MIX" : (item.showData?.genre?.toUpperCase() || "VARIOUS")}
+                                            </span>
+                                        </div>
+                                        
+                                        {!item.isAutoDj && item.showData?.description && (
+                                            <p class="show-desc">{item.showData.description}</p>
+                                        )}
+                                        
+                                        <div class="dj-info">
+                                            {item.djData?.avatar ? (
+                                                <img 
+                                                    src={item.djData.avatar} 
+                                                    alt={item.djData.name} 
+                                                    class="dj-avatar-small"
+                                                />
+                                            ) : (
+                                                <div class="dj-avatar-small" style="background: #f1f5f9; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0;">
+                                                    <i class="fa-solid fa-compact-disc {item.isLive ? 'fa-spin' : ''}" style="font-size: 14px; color: #94a3b8;"></i>
+                                                </div>
+                                            )}
+                                            <span>{item.isAutoDj ? "Contrast Radio" : (item.djData?.name || "Guest DJ")}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div class="empty-day-card">
+                                <i class="fa-solid fa-robot"></i>
+                                <h3>Auto DJ Mix</h3>
+                                <span>Playing non-stop Contrast selections 24/7</span>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            ))}
+
+        </div>
+    </div>
+</Layout>
+
+<style>
+    /* === VARIABLES === */
+    :root {
+        --purple: #a855f7;
+        --purple-light: #f3e8ff;
+        --purple-dark: #7e22ce;
+        --bg-body: #f8fafc;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-light: #e2e8f0;
+        --dark-bg: #1e293b;
+    }
+
+    /* === PAGE HERO === */
+    .page-hero {
+        position: relative;
+        padding: 6rem 20px;
+        margin-bottom: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        overflow: hidden;
+    }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+    .hero-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, var(--bg-body) 100%);
+    }
+    .page-title { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; }
+    .page-subtitle { font-size: 1.1rem; color: #cbd5e1; margin-top: 1rem; }
+
+    /* === TIMELINE === */
+    .main-wrapper { padding-bottom: 5rem; max-width: 1200px; margin: 0 auto; }
+    .schedule-timeline { display: flex; flex-direction: column; gap: 4rem; }
+    
+    .day-header-sticky {
+        position: sticky;
+        top: 0;
+        background: rgba(248, 250, 252, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem 0;
+        z-index: 20;
+        border-bottom: 2px solid var(--purple);
+        margin-bottom: 2rem;
+    }
+    .day-header-sticky h2 { margin: 0; font-weight: 900; font-size: 2rem; color: var(--text-main); }
+
+    .shows-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* === CARDS === */
+    .show-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: 0.3s ease;
+    }
+    .show-card:hover { transform: translateY(-5px); border-color: var(--purple); }
+    .show-card.is-live { border-color: var(--purple); box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.2); }
+    .show-card.is-autodj { background: #fafafa; opacity: 0.9; }
+
+    .time-ribbon {
+        background: var(--dark-bg);
+        color: #fff;
+        padding: 0.75rem 1.25rem;
+        font-weight: 800;
+        font-size: 0.85rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .show-card.is-live .time-ribbon { background: var(--purple-dark); }
+
+    .live-badge {
+        background: #ef4444;
+        color: #fff;
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+    }
+
+    .show-details { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
+    .show-header-info h3 { margin: 0; font-size: 1.3rem; font-weight: 900; color: var(--text-main); }
+    .show-genre { font-size: 0.7rem; font-weight: 800; color: var(--purple); margin-top: 4px; display: inline-block; }
+    .show-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin: 1rem 0; }
+
+    .dj-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: auto;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-light);
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+    .dj-avatar-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+
+    .empty-day-card {
+        grid-column: 1 / -1;
+        padding: 4rem;
+        text-align: center;
+        background: var(--purple-light);
+        border: 2px dashed var(--purple);
+        border-radius: 12px;
+        color: var(--purple-dark);
+    }
+</style>

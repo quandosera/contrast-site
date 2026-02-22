@@ -1,11 +1,445 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import { Image } from 'astro:assets';
+import { getCollection, getEntry } from 'astro:content';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// 1. DATA FETCHING
+// We use getEntry('schedule', 'master') to match your working schedule page logic
+const scheduleDoc = await getEntry('schedule', 'master');
+const rawSlots = scheduleDoc?.data?.allSlots || [];
+
+const allShows = await getCollection('shows');
+const allDjs = await getCollection('djs');
+const allFlyers = await getCollection('flyers').catch(() => []);
+
+// 2. TIME LOGIC (UK Time for Live Tracking)
+const ukTimeOptions = { timeZone: 'Europe/London' };
+const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
+const currentDayIndex = dateInUK.getDay(); // 0-6 (Sun-Sat)
+const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
+
+// Mapping for your 1-mon, 7-sun naming convention found in your YAML
+const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
+
+// --- STATION DIAGNOSTICS ---
+console.log("--- STATION DIAGNOSTICS ---");
+console.log("1. Total slots in master file:", rawSlots.length);
+if (rawSlots.length > 0) {
+    console.log("2. First slot day ID:", rawSlots[0].day);
+}
+console.log("3. Current Day Index:", currentDayIndex, "(" + daysArray[currentDayIndex] + ")");
+console.log("4. Current Time (UK):", dateInUK.toLocaleTimeString());
+console.log("---------------------------");
+
+function timeToMins(timeStr: string, isEndTime: boolean = false) {
+    if (!timeStr) return 0;
+    const str = String(timeStr).trim();
+    let [h, m] = str.split(':').map(Number);
+    
+    // Normalize 24:00 or midnight as an end-time to 1440 minutes
+    if (isEndTime && (h === 24 || (h === 0 && m === 0))) return 1440;
+    if (h === 24) h = 0;
+    
+    return h * 60 + m;
+}
+
+// 3. RESOLVE RELATIONSHIPS (Schedule -> Show -> DJ)
+const allShowsDetailed = rawSlots.map((slot) => {
+    const isAutoDj = slot.show === 'auto-dj';
+    const showEntry = !isAutoDj ? allShows.find(s => s.id === slot.show) : null;
+    
+    // Relationship logic: Show -> hosts array -> First DJ in that array
+    const firstHostId = showEntry?.data?.hosts?.[0];
+    const djEntry = firstHostId ? allDjs.find(d => d.id === firstHostId) : null;
+
+    return { 
+        ...slot, 
+        isAutoDj,
+        showData: showEntry?.data,
+        djData: djEntry?.data 
+    };
+});
+
+// 4. BUILD CONTINUOUS ROLLING TIMELINE
+let timeline: any[] = [];
+
+// A. Yesterday's Crossover Logic (Check if a show started yesterday and is still on air)
+const yesterdayIndex = (currentDayIndex + 6) % 7;
+allShowsDetailed.filter(s => s.day === daysArray[yesterdayIndex]).forEach(slot => {
+    const startMins = timeToMins(slot.startTime);
+    const endMins = timeToMins(slot.endTime, true);
+    
+    // If show crosses midnight
+    if (endMins <= startMins || endMins === 1440) { 
+        timeline.push({
+            ...slot,
+            absoluteStart: -1440 + startMins,
+            absoluteEnd: (endMins === 1440) ? 0 : endMins 
+        });
+    }
+});
+
+// B. Today + Next 6 Days Sequential Timeline
+for (let i = 0; i < 7; i++) {
+    const targetDayIndex = (currentDayIndex + i) % 7;
+    const targetDayStr = daysArray[targetDayIndex];
+    
+    allShowsDetailed.filter(s => s.day === targetDayStr).forEach(slot => {
+        const startMins = timeToMins(slot.startTime);
+        let endMins = timeToMins(slot.endTime, true);
+        
+        let absoluteStart = i * 1440 + startMins;
+        
+        if (endMins <= startMins && endMins !== 1440) {
+            endMins += 1440;
+        }
+        let absoluteEnd = i * 1440 + endMins;
+
+        timeline.push({
+            ...slot,
+            absoluteStart,
+            absoluteEnd
+        });
+    });
+}
+
+timeline.sort((a, b) => a.absoluteStart - b.absoluteStart);
+
+// Filter out shows that have already ended
+const relevantShows = timeline.filter(show => show.absoluteEnd > currentMins);
+
+// 5. LIVE SHOW DETECTION & UPCOMING LIST
+const displayedShows = relevantShows.slice(0, 5).map(show => ({
+    ...show,
+    isLive: currentMins >= show.absoluteStart && currentMins < show.absoluteEnd
+}));
+
+const liveShow = displayedShows.find(show => show.isLive);
+
+// 6. FALLBACK VALUES
+const currentShowName = liveShow ? (liveShow.isAutoDj ? "Contrast Selection" : (liveShow.showData?.title || "TBA")) : "Auto DJ Mix";
+const currentDJName = liveShow ? (liveShow.isAutoDj ? "Contrast Radio" : (liveShow.djData?.name || "Guest DJ")) : "Contrast Radio";
+
+// 7. FLYERS
+const activeFlyers = allFlyers
+    .sort((a, b) => b.id.localeCompare(a.id)) 
+    .slice(0, 4);
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="Contrast Radio | Up and Coming" currentShow={currentShowName}>
+    
+    <section class="hero-section">
+        <div class="hero-bg">
+            <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" alt="DJ Mixing" />
+            <div class="hero-gradient"></div>
+        </div>
+        <div class="container hero-content">
+            <div class="live-status-container">
+                {liveShow ? (
+                    <div class="status-badge live">
+                        <span class="pulse"></span> LIVE NOW: {currentDJName}
+                    </div>
+                ) : (
+                    <div class="status-badge offline">
+                        <i class="fa-solid fa-robot"></i> AUTO DJ MODE
+                    </div>
+                )}
+            </div>
+
+            <h2 class="hero-headline">Broadcasting the <span style="color: var(--purple);">Vibe</span>.</h2>
+            <p class="hero-subline">
+                Currently playing: <strong>{currentShowName}</strong> {liveShow && !liveShow.isAutoDj && `with ${currentDJName}`}.
+                <br/>Welcome to the home of Contrast Radio. Streaming the finest Reggae, Soul, R&B, and House music 24/7.
+            </p>
+        </div>
+    </section>
+
+    <div class="container main-wrapper">
+        
+        <section class="top-split-section">
+            
+            <div class="schedule-list-wrapper">
+                <div class="schedule-header-bar">
+                    <i class="fa-solid fa-tower-broadcast"></i> UPCOMING SHOWS
+                </div>
+                {displayedShows.length > 0 ? (
+                    displayedShows.map(slot => (
+                        <div class={`schedule-row ${slot.isLive ? 'is-live' : ''}`}>
+                            <div class="time-col">
+                                <span class="day-label">{slot.day}</span>
+                                {slot.startTime} - {slot.endTime}
+                                {slot.isLive && <span class="live-badge">LIVE NOW</span>}
+                            </div>
+                            <div class="name-col">
+                                <div class="show-title">{slot.isAutoDj ? "Contrast Selection" : (slot.showData?.title || "TBA")}</div>
+                                {slot.showData?.genre && (
+                                    <span class="show-genre">{slot.showData.genre.replace('-', ' ').toUpperCase()}</span>
+                                )}
+                            </div>
+                            <div class="dj-col dj-profile">
+                                {slot.djData?.avatar ? (
+                                    <img 
+                                        src={slot.djData.avatar} 
+                                        alt={slot.djData.name} 
+                                        class="dj-avatar"
+                                    />
+                                ) : (
+                                    <div class="dj-avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+                                )}
+                                <span>{slot.isAutoDj ? "Contrast Radio" : (slot.djData?.name || "Guest DJ")}</span>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div class="schedule-row">
+                        <div class="time-col">24/7</div>
+                        <div class="name-col">Auto DJ Mix</div>
+                        <div class="dj-col">Contrast Radio</div>
+                    </div>
+                )}
+            </div>
+            
+            <div class="video-wrapper">
+                <div class="video-box">
+                    <i class="fa-brands fa-youtube"></i>
+                    <h3>Studio Sessions</h3>
+                    <span>Check back soon for live sessions</span>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="flyers-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-regular fa-image"></i></div>
+                <h2>LATEST FLYERS</h2>
+            </div>
+
+            <div class="flyer-grid">
+                {activeFlyers.map(flyer => (
+                    <button class="flyer-card" aria-label={`View flyer: ${flyer.data.title}`}>
+                        {flyer.data.image ? (
+                            <Image src={flyer.data.image} alt={flyer.data.title} width={600} height={600} class="flyer-img"/>
+                        ) : (
+                            <div class="placeholder-img">No Image</div>
+                        )}
+                        <div class="flyer-overlay">
+                            <h3>{flyer.data.title}</h3>
+                        </div>
+                    </button>
+                ))}
+            </div>
+        </section>
+
+        <section class="sponsors-section">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-handshake"></i></div>
+                <h2>OUR SPONSORS</h2>
+            </div>
+            <div class="sponsor-logos">
+                <div class="sponsor-logo"><img src="https://via.placeholder.com/200x80/f1f5f9/94a3b8?text=SPONSOR+1" alt="Sponsor 1"></div>
+                <div class="sponsor-logo"><img src="https://via.placeholder.com/200x80/f1f5f9/94a3b8?text=SPONSOR+2" alt="Sponsor 2"></div>
+                <div class="sponsor-logo"><img src="https://via.placeholder.com/200x80/f1f5f9/94a3b8?text=SPONSOR+3" alt="Sponsor 3"></div>
+                <div class="sponsor-logo"><img src="https://via.placeholder.com/200x80/f1f5f9/94a3b8?text=SPONSOR+4" alt="Sponsor 4"></div>
+                <div class="sponsor-logo"><img src="https://via.placeholder.com/200x80/f1f5f9/94a3b8?text=SPONSOR+5" alt="Sponsor 5"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <div id="flyer-modal" class="modal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <img id="modal-img" src="" alt="Full Size Flyer">
+        </div>
+    </div>
+
 </Layout>
+
+<script>
+    const flyerCards = document.querySelectorAll('.flyer-card');
+    const modal = document.getElementById('flyer-modal');
+    const modalImg = document.getElementById('modal-img') as HTMLImageElement;
+    const closeModal = document.querySelector('.close-modal');
+
+    flyerCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const img = card.querySelector('.flyer-img') as HTMLImageElement;
+            if(img && modal && modalImg) {
+                modalImg.src = img.src;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; 
+            }
+        });
+    });
+
+    const hideModal = () => {
+        if(modal && modalImg) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            setTimeout(() => { modalImg.src = ""; }, 300);
+        }
+    };
+
+    closeModal?.addEventListener('click', hideModal);
+    modal?.addEventListener('click', (e) => { if(e.target === modal) hideModal(); });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal?.classList.contains('active')) hideModal();
+    });
+</script>
+
+<style>
+    /* === HERO SECTION === */
+    .hero-section {
+        position: relative;
+        padding: 6rem 20px 8rem 20px;
+        margin-bottom: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .hero-bg {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+    .hero-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.8) 70%, var(--bg-body) 100%);
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 800px; }
+    
+    /* === LIVE INDICATOR === */
+    .live-status-container { margin-bottom: 2rem; }
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .status-badge.live {
+        background: rgba(168, 85, 247, 0.2);
+        color: #f0abfc;
+        border-color: var(--purple);
+    }
+    .status-badge.offline {
+        background: rgba(255,255,255,0.05);
+        color: #94a3b8;
+    }
+    .pulse {
+        width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%;
+        box-shadow: 0 0 0 rgba(255, 77, 77, 0.4);
+        animation: pulse-animation 2s infinite;
+    }
+    @keyframes pulse-animation {
+        0% { box-shadow: 0 0 0 0px rgba(255, 77, 77, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 77, 77, 0); }
+        100% { box-shadow: 0 0 0 0px rgba(255, 77, 77, 0); }
+    }
+
+    .hero-headline { font-size: clamp(3rem, 6vw, 5rem); font-weight: 900; letter-spacing: -2px; color: #fff; line-height: 1.1; text-transform: uppercase; margin: 0; }
+    .hero-subline { font-size: 1.15rem; color: #e2e8f0; margin: 1.5rem auto 0; line-height: 1.6; }
+
+    /* === MAIN WRAPPER === */
+    .main-wrapper { padding-bottom: 4rem; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+    .section-icon { color: var(--purple); font-size: 1.8rem; }
+    .section-header h2 { margin: 0; font-weight: 900; font-size: 1.8rem; letter-spacing: -1px; text-transform: uppercase; color: var(--text-main); }
+
+    /* === SCHEDULE LIST === */
+    .top-split-section { display: flex; flex-direction: column; gap: 2rem; margin-bottom: 4rem; }
+    .schedule-list-wrapper { 
+        flex: 2; 
+        background: #fff; 
+        border-radius: 12px; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+        border: 1px solid var(--border-light);
+        overflow: hidden; 
+    }
+    .schedule-header-bar {
+        padding: 1rem 1.5rem;
+        background: #fafafa;
+        border-bottom: 1px solid var(--border-light);
+        font-weight: 800;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+    .schedule-row { display: flex; padding: 1.5rem; border-bottom: 1px solid var(--border-light); align-items: center; gap: 15px; }
+    .schedule-row.is-live { background: #fdf4ff; border-left: 4px solid var(--purple); }
+    .schedule-row:last-child { border-bottom: none; }
+    
+    .time-col { flex: 1; font-weight: 700; color: var(--text-muted); font-size: 0.9rem; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+    .day-label { font-size: 0.7rem; font-weight: 900; color: var(--purple); text-transform: uppercase; background: var(--purple-light); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(168, 85, 247, 0.2); margin-bottom: 2px;}
+    .live-badge { background: var(--purple); color: #fff; font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; font-weight: 900; }
+    
+    .name-col { flex: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+    .show-title { font-weight: 900; font-size: 1.1rem; color: var(--text-main); }
+    .show-genre { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0; }
+
+    .dj-col { flex: 1.5; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; }
+    
+    .dj-profile { display: flex; align-items: center; gap: 12px; }
+    .dj-avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--purple); object-fit: cover; box-shadow: 0 4px 10px rgba(168, 85, 247, 0.2); }
+    .dj-avatar-placeholder { width: 50px; height: 50px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 1px solid #e2e8f0; }
+
+    /* === VIDEO === */
+    .video-wrapper { flex: 1; display: none; }
+    .video-box { 
+        background: var(--dark-bg); color: #fff; border-radius: 12px; aspect-ratio: 16/9; 
+        display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+        padding: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+    .video-box i { font-size: 3rem; color: #ef4444; margin-bottom: 15px; }
+    .video-box h3 { margin: 0; font-weight: 900; font-size: 1.4rem; color: #fff; }
+    .video-box span { font-size: 0.75rem; color: #9ca3af; margin-top: 5px; }
+
+    /* === FLYERS GRID === */
+    .flyer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; }
+    .flyer-card { 
+        position: relative; width: 100%; padding-top: 100%; border-radius: 12px; overflow: hidden; 
+        background: #eee; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+        border: none; display: block;
+    }
+    .flyer-card:hover { transform: translateY(-5px); }
+    .flyer-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    .flyer-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 1.5rem; text-align: left; pointer-events: none;}
+    .flyer-overlay h3 { color: #fff; margin: 0; font-size: 1rem; font-weight: 800; }
+    .placeholder-img { position: absolute; top:0; left:0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 600; }
+
+    /* === MODAL === */
+    .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 3000; display: none; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; backdrop-filter: blur(5px); }
+    .modal.active { display: flex; opacity: 1; }
+    .modal-content { position: relative; max-width: 90%; max-height: 90vh; }
+    .modal-content img { max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); }
+    .close-modal { position: absolute; top: -50px; right: 0; color: #fff; font-size: 3rem; cursor: pointer; background: none; border: none; }
+
+    /* === SPONSORS === */
+    .sponsors-section { margin-top: 5rem; padding-top: 4rem; border-top: 1px solid var(--border-light); }
+    .sponsor-logos { display: flex; gap: 2rem; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 2rem; }
+    .sponsor-logo { flex: 1 1 150px; display: flex; justify-content: center; }
+    .sponsor-logo img { height: 50px; filter: grayscale(1); opacity: 0.5; transition: 0.3s; }
+    .sponsor-logo img:hover { filter: grayscale(0); opacity: 1; }
+
+    /* === RESPONSIVE === */
+    @media (min-width: 1024px) {
+        .top-split-section { flex-direction: row; }
+        .video-wrapper { display: block; }
+    }
+    @media (max-width: 768px) {
+        .schedule-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .flyer-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
