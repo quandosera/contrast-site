@@ -10,6 +10,7 @@ const {
     djName = "Contrast DJ" 
 } = Astro.props;
 
+// This string is rendered three times in the HTML below to create the seamless loop
 const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 ---
 
@@ -23,12 +24,18 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                     <i class="fa-solid fa-chart-simple text-brand-accent text-lg animate-pulse"></i>
                 </div>
             </div>
-            <div class="flex flex-col min-w-0">
+            
+            <div class="flex flex-col min-w-0 w-full overflow-hidden">
                 <span class="text-[10px] md:text-xs font-black text-brand-accent tracking-[0.3em] uppercase flex items-center gap-2 mb-1">
                     <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span> NOW PLAYING
                 </span>
-                <div id="now-playing" class="text-sm md:text-lg font-black text-white truncate italic uppercase">
-                    {displayInfo}
+                
+                <div class="player-marquee-container relative flex items-center overflow-hidden h-6">
+                    <div class="player-marquee-inner flex whitespace-nowrap italic font-black text-white text-sm md:text-lg uppercase">
+                        <span class="px-6">{displayInfo}</span>
+                        <span class="px-6">{displayInfo}</span>
+                        <span class="px-6">{displayInfo}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -64,7 +71,6 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         const statusIcon = document.getElementById('player-status-icon');
         const masterBtn = document.getElementById('master-play-btn');
 
-        // 1. Update Player Bar
         if (isPlaying) {
             vinyl?.classList.remove('pause-spin');
             statusIcon?.classList.replace('hidden', 'flex');
@@ -77,7 +83,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-play ml-1 text-xl md:text-2xl';
         }
 
-        // 2. Update Every Trigger (Header, Hero, Mobile)
+        // Sync external triggers across the page
         document.querySelectorAll('.player-trigger, .nav-player-trigger').forEach((btn: any) => {
             const icon = btn.querySelector('i');
             const textSpan = btn.querySelector('.btn-text');
@@ -86,17 +92,9 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             if (isPlaying) {
                 if (icon) icon.className = isNav ? 'fa-solid fa-pause btn-icon' : 'fa-solid fa-stop mr-2';
                 if (textSpan) textSpan.textContent = isNav ? 'PAUSE' : 'STOP';
-                if (isNav) {
-                    btn.classList.add('bg-white', 'text-brand-dark');
-                    btn.classList.remove('bg-brand-accent', 'text-white');
-                }
             } else {
                 if (icon) icon.className = isNav ? 'fa-solid fa-play btn-icon' : 'fa-solid fa-play mr-2';
                 if (textSpan) textSpan.textContent = isNav ? 'LISTEN' : 'TUNE IN NOW';
-                if (isNav) {
-                    btn.classList.remove('bg-white', 'text-brand-dark');
-                    btn.classList.add('bg-brand-accent', 'text-white');
-                }
             }
         });
     }
@@ -127,7 +125,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             window.__eventListenersBound = true;
         }
 
-        // Re-attach Volume Logic
+        // Volume Logic
         const slider = document.getElementById('volume-slider') as HTMLInputElement;
         const volIcon = document.getElementById('volume-icon');
         const muteBtn = document.getElementById('mute-btn');
@@ -162,7 +160,6 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                 };
             }
         }
-
         syncAllButtons();
     }
 
@@ -175,6 +172,30 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     .pause-spin { animation-play-state: paused !important; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
+    /* SEAMLESS INFINITE MARQUEE ENGINE */
+    .player-marquee-container {
+        /* Soft fade on edges to prevent harsh visual cuts */
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    }
+
+    .player-marquee-inner {
+        display: flex;
+        width: max-content;
+        /* 15s speed: slow enough to read, fast enough to feel alive */
+        animation: marquee-infinite 15s linear infinite;
+        will-change: transform;
+    }
+
+    /* Mathematical loop: Translate exactly -33.333% because 
+       there are 3 instances of the text rendered. 
+    */
+    @keyframes marquee-infinite {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-33.333%); }
+    }
+
+    /* PREMIUM VOLUME SLIDER */
     .premium-slider {
         -webkit-appearance: none; appearance: none;
         width: 100%; height: 6px; border-radius: 999px;

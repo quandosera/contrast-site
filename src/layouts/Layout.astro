@@ -6,11 +6,13 @@ import Player from '../components/Player.astro';
 interface Props {
     title?: string;
     currentShow?: string;
+    showFooter?: boolean;
 }
 
 const { 
-    title = "Contrast Radio | Up and Coming",
-    currentShow = "Contrast Selection" 
+    title = "Contrast Radio | The Next Movement",
+    currentShow = "Contrast Selection",
+    showFooter = true 
 } = Astro.props;
 
 const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto DJ Mix" 
@@ -34,7 +36,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
-    <body class="antialiased text-white selection:bg-brand-accent/30 pb-28 bg-brand-dark font-['Inter',sans-serif]">
+    <body class="antialiased text-white selection:bg-brand-accent/30 bg-brand-dark font-['Inter',sans-serif]">
 
         <a class="skip-link" href="#main-content">Skip to content</a>
 
@@ -42,24 +44,24 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             <div class="container mx-auto px-6 sm:px-8 lg:px-12 flex items-center justify-between h-full max-w-screen-2xl relative z-10">
                 
                 <a href="/" class="flex items-center gap-5 group">
-                    <div class="w-12 h-12 rounded-full bg-brand-accent flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-[0_0_30px_theme('colors.brand.accent/40')]">
-                        <i class="fa-solid fa-podcast text-xl"></i>
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-brand-accent flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-[0_0_30px_theme('colors.brand.accent/40')]">
+                        <i class="fa-solid fa-podcast text-lg md:text-xl"></i>
                     </div>
                     <div class="flex flex-col justify-center">
-                        <h1 class="text-2xl md:text-3xl font-black tracking-tighter leading-none uppercase italic">
+                        <h1 class="text-xl md:text-2xl font-black tracking-tighter leading-none uppercase italic">
                             CONTRAST<span class="text-brand-accent">RADIO</span>
                         </h1>
-                        <span class="text-[0.7rem] text-gray-400 font-bold tracking-[0.4em] uppercase mt-1.5 opacity-80">The Next Movement</span>
+                        <span class="text-[0.6rem] md:text-[0.7rem] text-gray-400 font-bold tracking-[0.4em] uppercase mt-1.5 opacity-80">The Next Movement</span>
                     </div>
                 </a>
 
                 <nav class="hidden lg:flex items-center space-x-10">
-                    <a href="/" class="text-[0.75rem] font-black tracking-widest hover:text-brand-accent transition-colors uppercase">HOME</a>
-                    <a href="/about" class="text-[0.75rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">ABOUT</a>
-                    <a href="/djs" class="text-[0.75rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">DJ'S</a>
-                    <a href="/schedule" class="text-[0.75rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">SCHEDULE</a>
-                    <a href="/gallery" class="text-[0.75rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">GALLERY</a>
-                    <a href="/contact" class="text-[0.75rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">CONTACT</a>
+                    <a href="/" class="text-[0.7rem] font-black tracking-widest hover:text-brand-accent transition-colors uppercase">HOME</a>
+                    <a href="/about" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">ABOUT</a>
+                    <a href="/djs" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">DJ'S</a>
+                    <a href="/schedule" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">SCHEDULE</a>
+                    <a href="/gallery" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">GALLERY</a>
+                    <a href="/contact" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">CONTACT</a>
                     
                     <button id="nav-listen-btn" class="nav-player-trigger flex items-center justify-center gap-3 bg-brand-accent hover:bg-[#e02d2d] text-white text-[11px] font-black tracking-[0.2em] w-36 py-3 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl shadow-brand-accent/20 uppercase italic">
                         <i class="fa-solid fa-play text-[10px] btn-icon"></i>
@@ -69,7 +71,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
                 <div class="lg:hidden flex items-center gap-4">
                     <button id="mobile-menu-btn" class="text-gray-300 hover:text-white p-3" aria-label="Toggle menu" aria-expanded="false">
-                        <i class="fa-solid fa-bars text-3xl"></i>
+                        <i class="fa-solid fa-bars text-2xl"></i>
                     </button>
                 </div>
             </div>
@@ -79,14 +81,14 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
         <div id="mobile-menu" class="fixed inset-0 bg-brand-dark/98 backdrop-blur-3xl z-40 hidden flex-col justify-center items-center pt-10">
             <nav class="flex flex-col items-center space-y-5">
-                <a href="/" class="text-4xl font-black text-white italic uppercase tracking-tighter hover:text-brand-accent transition-colors">HOME</a>
-                <a href="/about" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">ABOUT</a>
-                <a href="/djs" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">DJ'S</a>
-                <a href="/schedule" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">SCHEDULE</a>
-                <a href="/gallery" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">GALLERY</a>
-                <a href="/contact" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">CONTACT</a>
+                <a href="/" class="text-3xl font-black text-white italic uppercase tracking-tighter hover:text-brand-accent transition-colors">HOME</a>
+                <a href="/about" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">ABOUT</a>
+                <a href="/djs" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">DJ'S</a>
+                <a href="/schedule" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">SCHEDULE</a>
+                <a href="/gallery" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">GALLERY</a>
+                <a href="/contact" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">CONTACT</a>
                 
-                <button class="nav-player-trigger mt-8 flex items-center justify-center gap-4 bg-brand-accent text-white text-xl font-black tracking-widest w-64 py-5 rounded-full shadow-2xl uppercase italic hover:scale-105 active:scale-95 transition-all">
+                <button class="nav-player-trigger mt-8 flex items-center justify-center gap-4 bg-brand-accent text-white text-lg font-black tracking-widest w-56 py-4 rounded-full shadow-2xl uppercase italic hover:scale-105 active:scale-95 transition-all">
                     <i class="fa-solid fa-play btn-icon"></i>
                     <span class="btn-text">LISTEN</span>
                 </button>
@@ -97,31 +99,55 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             <slot />
         </main>
 
-        <footer class="bg-brand-surface py-24 border-t border-white/5 relative z-10">
-            <div class="container mx-auto px-4 text-center">
-                <p class="text-gray-600 text-[10px] uppercase tracking-[0.3em] font-black">
-                    &copy; {new Date().getFullYear()} Contrast Radio.
-                </p>
-            </div>
-        </footer>
+        {showFooter && (
+            <footer class="bg-[#050505] pt-12 pb-24 border-t border-white/5 relative z-10">
+                <div class="container mx-auto px-6 text-center">
+                    
+                    <div class="mb-8">
+                        <h4 class="text-[8px] font-black uppercase tracking-[0.4em] text-gray-600 mb-6 italic opacity-60">
+                            Station Partners
+                        </h4>
+                        
+                        <div class="flex flex-wrap justify-center items-center gap-x-8 gap-y-6 md:gap-x-12 opacity-30 grayscale hover:opacity-100 transition-all duration-700">
+                            <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
+                                <i class="fa-solid fa-building text-brand-accent/60"></i> Sion Spaces
+                            </div>
+                            <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
+                                <i class="fa-solid fa-house text-brand-accent/60"></i> Hyde & Rowe
+                            </div>
+                            <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
+                                <i class="fa-solid fa-martini-glass text-brand-accent/60"></i> Barry's Bar
+                            </div>
+                            <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
+                                <i class="fa-solid fa-car text-brand-accent/60"></i> Sayez Car Care
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-white/[0.03] max-w-xs mx-auto">
+                        <p class="text-gray-700 text-[8px] uppercase tracking-[0.5em] font-black opacity-40">
+                            &copy; {new Date().getFullYear()} Contrast Radio
+                        </p>
+                    </div>
+                </div>
+            </footer>
+        )}
 
         <Player currentShow={currentShow} />
 
         <script>
             function initHeader() {
-                const header = document.getElementById('main-header');
                 const headerBg = document.getElementById('header-bg');
                 const menuBtn = document.getElementById('mobile-menu-btn');
                 const mobileMenu = document.getElementById('mobile-menu');
 
-                // Scroll Logic
                 const handleScroll = () => {
                     if (window.scrollY > 40) {
-                        headerBg?.classList.replace('bg-brand-dark/0', 'bg-brand-dark/80');
+                        headerBg?.classList.replace('bg-brand-dark/0', 'bg-brand-dark/90');
                         headerBg?.classList.replace('backdrop-blur-0', 'backdrop-blur-2xl');
                         headerBg?.classList.replace('border-white/0', 'border-white/10');
                     } else {
-                        headerBg?.classList.replace('bg-brand-dark/80', 'bg-brand-dark/0');
+                        headerBg?.classList.replace('bg-brand-dark/90', 'bg-brand-dark/0');
                         headerBg?.classList.replace('backdrop-blur-2xl', 'backdrop-blur-0');
                         headerBg?.classList.replace('border-white/10', 'border-white/0');
                     }
@@ -130,19 +156,17 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 window.addEventListener('scroll', handleScroll);
                 handleScroll();
 
-                // Mobile Menu Toggling
                 menuBtn?.addEventListener('click', () => {
                     const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
                     menuBtn.setAttribute('aria-expanded', String(!expanded));
                     mobileMenu?.classList.toggle('hidden');
                     mobileMenu?.classList.toggle('flex');
-                    document.body.classList.toggle('overflow-hidden'); // UX: Prevent scrolling when menu open
+                    document.body.classList.toggle('overflow-hidden'); 
                     
                     const icon = menuBtn.querySelector('i');
-                    if (icon) icon.className = !expanded ? 'fa-solid fa-xmark text-3xl' : 'fa-solid fa-bars text-3xl';
+                    if (icon) icon.className = !expanded ? 'fa-solid fa-xmark text-3xl' : 'fa-solid fa-bars text-2xl';
                 });
 
-                // Close mobile menu on link click (important for SPAs)
                 const mobileLinks = mobileMenu?.querySelectorAll('a');
                 mobileLinks?.forEach(link => {
                     link.addEventListener('click', () => {
@@ -151,7 +175,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         document.body.classList.remove('overflow-hidden');
                         menuBtn?.setAttribute('aria-expanded', 'false');
                         const icon = menuBtn?.querySelector('i');
-                        if (icon) icon.className = 'fa-solid fa-bars text-3xl';
+                        if (icon) icon.className = 'fa-solid fa-bars text-2xl';
                     });
                 });
             }
@@ -162,6 +186,28 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
+    /* MARQUEE TEXT FIX: 
+       Apply '.player-marquee' to the text container in Player.astro 
+       to prevent truncation seen in image_30d03d.png 
+    */
+    .player-marquee {
+        white-space: nowrap;
+        overflow: hidden;
+        display: block;
+        mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+    }
+    
+    .player-marquee:hover span {
+        display: inline-block;
+        animation: marquee 10s linear infinite;
+        padding-left: 100%;
+    }
+
+    @keyframes marquee {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(-100%, 0); }
+    }
+
     .skip-link { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
     .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: theme('colors.brand.dark'); color: white; border-radius: 0.5rem; border: 1px solid theme('colors.brand.accent'); }
 
