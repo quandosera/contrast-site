@@ -66,8 +66,8 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
                 <!-- Header Actions -->
                 <div class="flex items-center gap-4">
-                    <button class="hidden md:flex player-trigger bg-white text-[#13111C] px-5 py-2 rounded-full font-black text-[0.65rem] tracking-widest hover:bg-gray-200 transition-all items-center gap-2 shadow-xl active:scale-95 uppercase">
-                        <i class="fa-solid fa-play text-[8px]"></i> Listen Live
+                    <button class="hidden md:flex player-trigger bg-white text-[#13111C] w-36 justify-center py-2 rounded-full font-black text-[0.65rem] tracking-widest hover:bg-gray-200 transition-all items-center gap-2 shadow-xl active:scale-95 uppercase">
+                        <i class="fa-solid fa-play text-[10px]"></i> Listen Live
                     </button>
                     <button id="mobile-menu-btn" class="md:hidden text-gray-300 hover:text-white p-2" aria-label="Toggle menu" aria-expanded="false">
                         <i class="fa-solid fa-bars text-xl"></i>
@@ -85,7 +85,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 <a href="/schedule" class="text-3xl font-black text-gray-400 hover:text-white">SCHEDULE</a>
                 <a href="/gallery" class="text-3xl font-black text-gray-400 hover:text-white">GALLERY</a>
                 <a href="/contact" class="text-3xl font-black text-gray-400 hover:text-white">CONTACT</a>
-                <button class="player-trigger bg-[#9b51e0] text-white px-10 py-4 rounded-full font-black text-lg mt-4 shadow-lg shadow-purple-500/30 uppercase tracking-widest">Listen Live</button>
+                <button class="player-trigger bg-[#9b51e0] text-white w-64 py-4 flex justify-center items-center gap-3 rounded-full font-black text-lg mt-4 shadow-lg shadow-purple-500/30 uppercase tracking-widest"><i class="fa-solid fa-play text-[14px]"></i> Listen Live</button>
             </nav>
         </div>
 
@@ -116,24 +116,24 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         <div class="fixed bottom-0 left-0 w-full glass-player z-50 px-4 py-2.5 shadow-[0_-5px_25px_rgba(0,0,0,0.7)]" transition:persist>
             <div class="container mx-auto flex items-center justify-between gap-4">
                 <!-- Info Section -->
-                <div class="flex items-center gap-3.5 w-1/3">
+                <div class="flex items-center gap-3 min-w-0 flex-1 md:flex-none md:w-1/3">
                     <div class="relative w-11 h-11 flex-shrink-0 bg-[#1E1B29] rounded-lg overflow-hidden flex items-center justify-center border border-gray-700/60 shadow-inner group">
                         <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=100&auto=format&fit=crop" alt="Album Art" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                         <div id="player-status-icon" class="absolute inset-0 bg-black/60 hidden items-center justify-center">
                             <i class="fa-solid fa-chart-simple text-[#b77bed] text-xs animate-pulse"></i>
                         </div>
                     </div>
-                    <div class="hidden sm:flex flex-col overflow-hidden">
-                        <span class="text-[9px] font-black text-[#9b51e0] tracking-[0.2em] uppercase flex items-center gap-1.5 mb-0.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#9b51e0] animate-pulse"></span> Now playing
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-[9px] font-black text-[#9b51e0] tracking-[0.2em] uppercase flex items-center gap-1.5 mb-0.5 whitespace-nowrap">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#9b51e0] animate-pulse flex-shrink-0"></span> Now playing
                         </span>
-                        <div id="now-playing" class="text-[12px] font-black text-white truncate w-full tracking-wide uppercase">{currentShow}</div>
+                        <div id="now-playing" class="text-[12px] font-black text-white truncate tracking-wide uppercase">{currentShow}</div>
                     </div>
                 </div>
 
                 <!-- Control Section -->
-                <div class="flex items-center justify-center w-1/3">
-                    <button id="master-play-btn" class="w-11 h-11 rounded-full bg-white text-[#13111C] flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]" aria-label="Play Stream">
+                <div class="flex items-center justify-end md:justify-center flex-shrink-0 md:w-1/3">
+                    <button id="master-play-btn" class="w-11 h-11 flex-shrink-0 rounded-full bg-white text-[#13111C] flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]" aria-label="Play Stream">
                         <i class="fa-solid fa-play ml-0.5 text-base"></i>
                     </button>
                 </div>
@@ -155,7 +155,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         <!-- Hidden Metadata to bridge data between pages -->
         <div id="show-metadata" data-show={currentShow} hidden></div>
 
-        <!-- COMPREHENSIVE SCRIPTS: Preserved from your original logic -->
+        <!-- COMPREHENSIVE SCRIPTS -->
         <script>
             document.addEventListener('astro:page-load', () => {
                 const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
@@ -205,7 +205,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     
                     // Sync all triggers on the page (Live badges, hero buttons)
                     document.querySelectorAll('.player-trigger').forEach((btn: any) => {
-                        btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i> PAUSE' : '<i class="fa-solid fa-play text-[10px]"></i> LISTEN LIVE';
+                        btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause text-[10px]"></i> PAUSE' : '<i class="fa-solid fa-play text-[10px]"></i> LISTEN LIVE';
                     });
                 };
 
@@ -235,10 +235,17 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                                 try {
                                     audio.src = STREAM_URL;
                                     await audio.play();
-                                } catch (err) { console.error('Playback failed', err); }
+                                    // FORCE UI UPDATE ON PLAY
+                                    updateUIState(true);
+                                } catch (err) { 
+                                    console.error('Playback failed', err);
+                                    updateUIState(false);
+                                }
                             } else {
                                 audio.pause();
                                 audio.src = "";
+                                // FORCE UI UPDATE ON PAUSE
+                                updateUIState(false);
                             }
                         });
                     });
