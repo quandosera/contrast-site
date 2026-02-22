@@ -1,13 +1,16 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
+/**
+ * 1. DJs Collection
+ * Modern Loader for Astro 5.
+ */
 const djs = defineCollection({
-  type: 'content', // Keystatic uses Markdoc for this
+  loader: glob({ pattern: "**/*{.md,.mdoc}", base: "./src/content/djs" }),
   schema: z.object({
     slug: z.string().optional(),
     name: z.string().optional(), 
-    // NEW: Public Profile Active toggle (Defaults to true)
     active: z.boolean().default(true),
-    // NEW: Rank field for sorting (defaults to 99 for unranked DJs)
     rank: z.number().optional().default(99), 
     avatar: z.string().optional(),
     genre: z.string().optional(),
@@ -18,8 +21,11 @@ const djs = defineCollection({
   }),
 });
 
+/**
+ * 2. Shows Collection
+ */
 const shows = defineCollection({
-  type: 'data', 
+  loader: glob({ pattern: "**/*.yaml", base: "./src/content/shows" }),
   schema: z.object({
     slug: z.string().optional(),
     title: z.string(),
@@ -30,8 +36,11 @@ const shows = defineCollection({
   }),
 });
 
+/**
+ * 3. Schedule Collection
+ */
 const schedule = defineCollection({
-  type: 'data', // Keystatic uses YAML for this
+  loader: glob({ pattern: "**/*.yaml", base: "./src/content/schedule" }),
   schema: z.object({
     allSlots: z.array(z.object({
       day: z.string(),
@@ -42,8 +51,11 @@ const schedule = defineCollection({
   }),
 });
 
+/**
+ * 4. Flyers Collection
+ */
 const flyers = defineCollection({
-  type: 'data', // Keystatic uses YAML for this
+  loader: glob({ pattern: "**/*.yaml", base: "./src/content/flyers" }),
   schema: z.object({
     title: z.string().optional().default("Untitled Flyer"),
     image: z.string(),
@@ -51,16 +63,23 @@ const flyers = defineCollection({
   }),
 });
 
-// Added to prevent crashes if an episode is created in Keystatic
-const episodes = defineCollection({
-  type: 'content', // Keystatic uses Markdoc for this
+/**
+ * 5. DJ Order Collection
+ * Explicitly defined to stop "Auto-generating collections" warnings.
+ */
+const djOrder = defineCollection({
+  loader: glob({ pattern: "**/*{.md,.mdoc}", base: "./src/content/dj-order" }),
   schema: z.object({
-    title: z.string().optional(),
-    parentShow: z.string().optional(), // Links to show IDs
-    airDate: z.coerce.date().optional(), // Coerce ensures strings like "2026-08-24" parse safely
-    audioUrl: z.string().optional(),
-  })
+    name: z.string().optional(),
+    rank: z.number().optional().default(99),
+  }),
 });
 
-// Final exports - djSortOrder removed as it is now redundant
-export const collections = { djs, shows, schedule, flyers, episodes };
+// Final exports - 'episodes' removed.
+export const collections = { 
+  djs, 
+  shows, 
+  schedule, 
+  flyers,
+  'dj-order': djOrder 
+};

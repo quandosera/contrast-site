@@ -1,28 +1,6 @@
 ---
 // src/layouts/Layout.astro
-
-// 1. Imports go at the top
 import { ClientRouter } from 'astro:transitions';
-
-// =========================================
-// THE "COMING SOON" GATEKEEPER LOGIC
-// =========================================
-// NOTE: This requires SSR to be enabled in astro.config.mjs to work live on Vercel.
-const isLocked = import.meta.env.SITE_LOCKED === "true";
-const url = new URL(Astro.request.url);
-// The secret URL to bypass: yoursite.com/?secret_bypass=contrastRadioDev2026
-const hasBypassKey = url.searchParams.get("secret_bypass") === "contrastRadioDev2026";
-
-// Check for /coming-soon OR /coming-soon/ (with trailing slash) to prevent infinite loops
-const isComingSoonPage = url.pathname === "/coming-soon" || url.pathname === "/coming-soon/";
-
-if (isLocked && !hasBypassKey && !isComingSoonPage) {
-    return Astro.redirect("/coming-soon");
-}
-// =========================================
-// END GATEKEEPER LOGIC
-// =========================================
-
 
 interface Props {
     title?: string;
@@ -324,9 +302,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
-    /* GLOBAL BRAND STYLES
-       Preserving all variables and foundational dark-theme rules.
-    */
+    /* GLOBAL BRAND STYLES */
     :root {
         --brand-purple: #9b51e0;
         --brand-dark: #13111C;
@@ -357,7 +333,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
     /**
      * PREMIUM SLIDER STYLING
-     * Uses appearance-none to hide default browser look.
      */
     .premium-slider {
         -webkit-appearance: none;

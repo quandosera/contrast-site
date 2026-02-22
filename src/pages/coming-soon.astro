@@ -1,14 +1,101 @@
 ---
-// src/layouts/Layout.astro
-// Add this to the very top of your frontmatter fence
-
-const isLocked = import.meta.env.SITE_LOCKED === "true";
-const url = new URL(Astro.request.url);
-// Choose a secret parameter name and value
-const hasBypassKey = url.searchParams.get("secret_bypass") === "contrastRadioDev2026";
-
-// If site is locked AND they don't have the bypass key AND they aren't already on the coming soon page
-if (isLocked && !hasBypassKey && url.pathname !== "/coming-soon") {
-    return Astro.redirect("/coming-soon");
-}
+// src/pages/coming-soon.astro
 ---
+<!doctype html>
+<html lang="en-GB" class="h-full bg-[#0a090f]">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coming Soon | Contrast Radio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="h-full flex items-center justify-center text-white overflow-hidden relative antialiased font-['Inter',sans-serif]">
+    
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1920&auto=format&fit=crop" alt="Radio Studio" class="w-full h-full object-cover opacity-20 scale-110 blur-[2px]" />
+        <div class="absolute inset-0 bg-gradient-to-br from-[#13111C] via-[#13111C]/90 to-black"></div>
+        <div class="absolute top-1/4 -left-20 w-96 h-96 bg-[#9b51e0]/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-[#9b51e0]/10 rounded-full blur-[120px]"></div>
+    </div>
+
+    <div class="relative z-10 w-full max-w-2xl px-6 py-12 text-center">
+        <div class="mb-12 inline-block">
+            <div class="relative flex items-center justify-center bg-[#13111C] px-8 py-4 rounded-2xl border border-white/5 shadow-2xl">
+                <h1 class="text-3xl md:text-5xl font-black italic tracking-tighter uppercase leading-none">
+                    CONTRAST<span class="text-[#9b51e0]">RADIO</span>
+                </h1>
+            </div>
+            <div class="mt-4 flex items-center justify-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span class="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Signal Incoming</span>
+            </div>
+        </div>
+        
+        <h2 class="text-5xl md:text-8xl font-black uppercase tracking-tighter mb-12 leading-[0.9]">
+            COMING <br/> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500 text-6xl md:text-8xl">SOON.</span>
+        </h2>
+        
+        <div id="countdown" class="flex justify-center gap-4 md:gap-8">
+            <div class="flex flex-col items-center">
+                <span id="days" class="text-3xl md:text-5xl font-black text-[#9b51e0]">00</span>
+                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Days</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span id="hours" class="text-3xl md:text-5xl font-black text-white">00</span>
+                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Hours</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span id="minutes" class="text-3xl md:text-5xl font-black text-white">00</span>
+                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Mins</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span id="seconds" class="text-3xl md:text-5xl font-black text-white">00</span>
+                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Secs</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="absolute bottom-0 left-0 w-full h-1 flex items-end justify-center gap-1 px-2 opacity-20">
+        <div class="bar w-full h-2 bg-purple-500/30"></div>
+        <div class="bar w-full h-5 bg-purple-500/30"></div>
+        <div class="bar w-full h-8 bg-purple-500/30"></div>
+        <div class="bar w-full h-3 bg-purple-500/30"></div>
+    </div>
+
+    <script is:inline>
+        // Set target date for 8 months from today
+        const targetDate = new Date();
+        targetDate.setMonth(targetDate.getMonth() + 8);
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = d.toString().padStart(2, '0');
+            document.getElementById("hours").innerText = h.toString().padStart(2, '0');
+            document.getElementById("minutes").innerText = m.toString().padStart(2, '0');
+            document.getElementById("seconds").innerText = s.toString().padStart(2, '0');
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>
+
+<style>
+    /* Pulse bar animation styles */
+    @keyframes bar-grow { 0%, 100% { height: 10px; } 50% { height: 40px; } }
+    .bar { animation: bar-grow 1.5s ease-in-out infinite; border-radius: 2px 2px 0 0; }
+    .bar:nth-child(2) { animation-delay: 0.2s; }
+    .bar:nth-child(3) { animation-delay: 0.4s; }
+    .bar:nth-child(4) { animation-delay: 0.1s; }
+</style>
