@@ -1,4 +1,5 @@
 ---
+// src/layouts/Layout.astro
 import { ClientRouter } from 'astro:transitions';
 import Player from '../components/Player.astro';
 
@@ -25,7 +26,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
         <ClientRouter />
 
-        <meta name="description" content="Contrast Radio — Up & Coming. Independent community radio." />
+        <meta name="description" content="Contrast Radio — The Next Movement. Independent community radio." />
         <link rel="icon" href="/favicon.ico" />
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +49,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         <h1 class="text-2xl md:text-3xl font-black tracking-tighter leading-none uppercase italic">
                             CONTRAST<span class="text-brand-accent">RADIO</span>
                         </h1>
-                        <span class="text-[0.7rem] text-gray-400 font-bold tracking-[0.4em] uppercase mt-1.5 opacity-80">Up & Coming</span>
+                        <span class="text-[0.7rem] text-gray-400 font-bold tracking-[0.4em] uppercase mt-1.5 opacity-80">The Next Movement</span>
                     </div>
                 </a>
 
@@ -67,7 +68,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 </nav>
 
                 <div class="lg:hidden flex items-center gap-4">
-                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white p-3" aria-label="Toggle menu">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white p-3" aria-label="Toggle menu" aria-expanded="false">
                         <i class="fa-solid fa-bars text-3xl"></i>
                     </button>
                 </div>
@@ -76,14 +77,16 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             <div id="header-bg" class="absolute inset-0 bg-brand-dark/0 backdrop-blur-0 transition-all duration-500 pointer-events-none border-b border-white/0"></div>
         </header>
 
-        <div id="mobile-menu" class="fixed inset-0 bg-brand-dark/98 backdrop-blur-3xl z-40 hidden flex-col justify-center items-center space-y-8 pt-10">
-            <nav class="flex flex-col items-center space-y-6">
-                <a href="/" class="text-4xl font-black text-white italic uppercase">HOME</a>
-                <a href="/about" class="text-4xl font-black text-gray-400 italic uppercase">ABOUT</a>
-                <a href="/djs" class="text-4xl font-black text-gray-400 italic uppercase">DJ'S</a>
-                <a href="/schedule" class="text-4xl font-black text-gray-400 italic uppercase">SCHEDULE</a>
+        <div id="mobile-menu" class="fixed inset-0 bg-brand-dark/98 backdrop-blur-3xl z-40 hidden flex-col justify-center items-center pt-10">
+            <nav class="flex flex-col items-center space-y-5">
+                <a href="/" class="text-4xl font-black text-white italic uppercase tracking-tighter hover:text-brand-accent transition-colors">HOME</a>
+                <a href="/about" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">ABOUT</a>
+                <a href="/djs" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">DJ'S</a>
+                <a href="/schedule" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">SCHEDULE</a>
+                <a href="/gallery" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">GALLERY</a>
+                <a href="/contact" class="text-4xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">CONTACT</a>
                 
-                <button class="nav-player-trigger mt-6 flex items-center justify-center gap-4 bg-brand-accent text-white text-xl font-black tracking-widest w-64 py-5 rounded-full shadow-2xl uppercase italic">
+                <button class="nav-player-trigger mt-8 flex items-center justify-center gap-4 bg-brand-accent text-white text-xl font-black tracking-widest w-64 py-5 rounded-full shadow-2xl uppercase italic hover:scale-105 active:scale-95 transition-all">
                     <i class="fa-solid fa-play btn-icon"></i>
                     <span class="btn-text">LISTEN</span>
                 </button>
@@ -111,7 +114,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 const menuBtn = document.getElementById('mobile-menu-btn');
                 const mobileMenu = document.getElementById('mobile-menu');
 
-                // Scroll Logic for Smooth UI Transition
+                // Scroll Logic
                 const handleScroll = () => {
                     if (window.scrollY > 40) {
                         headerBg?.classList.replace('bg-brand-dark/0', 'bg-brand-dark/80');
@@ -125,20 +128,34 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 };
 
                 window.addEventListener('scroll', handleScroll);
-                handleScroll(); // Initial check
+                handleScroll();
 
-                // Mobile Menu Logic
+                // Mobile Menu Toggling
                 menuBtn?.addEventListener('click', () => {
                     const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
                     menuBtn.setAttribute('aria-expanded', String(!expanded));
                     mobileMenu?.classList.toggle('hidden');
                     mobileMenu?.classList.toggle('flex');
+                    document.body.classList.toggle('overflow-hidden'); // UX: Prevent scrolling when menu open
+                    
                     const icon = menuBtn.querySelector('i');
-                    if (icon) icon.className = !expanded ? 'fa-solid fa-xmark text-3xl' : 'fa-solid fa-bars text-2xl';
+                    if (icon) icon.className = !expanded ? 'fa-solid fa-xmark text-3xl' : 'fa-solid fa-bars text-3xl';
+                });
+
+                // Close mobile menu on link click (important for SPAs)
+                const mobileLinks = mobileMenu?.querySelectorAll('a');
+                mobileLinks?.forEach(link => {
+                    link.addEventListener('click', () => {
+                        mobileMenu?.classList.add('hidden');
+                        mobileMenu?.classList.remove('flex');
+                        document.body.classList.remove('overflow-hidden');
+                        menuBtn?.setAttribute('aria-expanded', 'false');
+                        const icon = menuBtn?.querySelector('i');
+                        if (icon) icon.className = 'fa-solid fa-bars text-3xl';
+                    });
                 });
             }
 
-            // Run on initial load and after Astro transitions
             document.addEventListener('astro:page-load', initHeader);
         </script>
     </body>
@@ -148,6 +165,5 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
     .skip-link { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
     .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: theme('colors.brand.dark'); color: white; border-radius: 0.5rem; border: 1px solid theme('colors.brand.accent'); }
 
-    /* Fix for smooth image rendering during scale transitions */
     img { backface-visibility: hidden; transform-style: preserve-3d; }
 </style>
