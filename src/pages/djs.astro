@@ -2,11 +2,11 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection, getEntry } from 'astro:content';
 
-// 1. DATA FETCHING - Preserving your original Keystatic collections
+// 1. DATA FETCHING
 const allDjs = await getCollection('djs');
 const allShows = await getCollection('shows');
 
-// Fetching current show for the Layout header status
+// Fetch current show data for the header status
 const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
 
@@ -32,22 +32,34 @@ const currentSlot = rawSlots.find(slot => {
 });
 
 const currentShowName = currentSlot ? 
-    (currentSlot.show === 'auto-dj' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
+    (currentSlot.show === 'Auto DJ' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
     : "Auto DJ Mix";
 
-// 3. ENHANCE DJ DATA - Preserving your mapping of hosts to shows
-const djsWithShows = allDjs.map(dj => {
-    const djShows = allShows.filter(show => show.data.hosts?.includes(dj.id));
-    return {
-        ...dj,
-        shows: djShows
-    };
-});
+// 3. FILTERING & SORTING LOGIC
+const sortedDjs = allDjs
+    // Only show DJs where 'active' is true (or not explicitly set to false)
+    .filter(dj => dj.data.active !== false)
+    // Sort primarily by 'rank' number, then alphabetically by name for ties
+    .sort((a, b) => {
+        const rankA = a.data.rank ?? 99; // Fallback to 99 if rank is missing
+        const rankB = b.data.rank ?? 99;
+        
+        if (rankA !== rankB) return rankA - rankB;
+        
+        const nameA = a.data.name || a.id;
+        const nameB = b.data.name || b.id;
+        return nameA.localeCompare(nameB);
+    });
+
+// 4. PREPARE CONTENT
+const processedDjs = await Promise.all(sortedDjs.map(async (dj) => {
+    const { Content } = await dj.render();
+    return { ...dj, Content };
+}));
 ---
 
 <Layout title="Our Residents | Contrast Radio" currentShow={currentShowName}>
     
-    <!-- Hero Section -->
     <section class="relative pt-32 pb-20 overflow-hidden">
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" alt="DJ Decks" class="w-full h-full object-cover opacity-20" />
@@ -62,23 +74,19 @@ const djsWithShows = allDjs.map(dj => {
     </section>
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-        
-        <!-- DJ Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {djsWithShows.map(dj => (
+            {processedDjs.map(dj => (
                 <div class="group relative flex flex-col bg-[#1E1B29]/40 border border-gray-800/60 rounded-[2rem] overflow-hidden transition-all duration-500 hover:border-[#9b51e0]/40 hover:shadow-2xl hover:shadow-purple-500/10 hover:-translate-y-2">
                     
-                    <!-- Image Wrapper with Hover Socials -->
                     <div class="relative aspect-square overflow-hidden bg-gray-900">
                         {dj.data.avatar ? (
-                            <img src={dj.data.avatar} alt={dj.data.name} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <img src={dj.data.avatar} alt={dj.data.name || dj.id} class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         ) : (
                             <div class="w-full h-full flex items-center justify-center text-gray-700">
                                 <i class="fa-solid fa-user text-6xl opacity-20"></i>
                             </div>
                         )}
                         
-                        <!-- Social Overlay (Glass Effect) -->
                         <div class="absolute inset-0 bg-[#9b51e0]/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                             <div class="flex gap-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                                 {dj.data.socials?.instagram && (
@@ -95,31 +103,20 @@ const djsWithShows = allDjs.map(dj => {
                         </div>
                     </div>
                     
-                    <!-- DJ Meta -->
                     <div class="p-8 flex-grow flex flex-col">
-                        <div class="mb-6">
-                            <h3 class="text-2xl font-black text-white uppercase italic leading-tight group-hover:text-[#b77bed] transition-colors">{dj.data.name}</h3>
+                        <div class="mb-4">
+                            <h3 class="text-2xl font-black text-white uppercase italic leading-tight group-hover:text-[#b77bed] transition-colors">
+                                {dj.data.name || dj.id.replace(/\.[^/.]+$/, "")}
+                            </h3>
                             {dj.data.genre && (
-                                <span class="text-[9px] font-black text-[#9b51e0] bg-[#9b51e0]/10 px-2.5 py-1 rounded-full border border-[#9b51e0]/20 inline-block uppercase tracking-[0.2em] mt-3">
+                                <span class="text-[9px] font-black text-[#9b51e0] bg-[#9b51e0]/10 px-2.5 py-1 rounded-full border border-[#9b51e0]/20 inline-block uppercase tracking-[0.2em] mt-2">
                                     {dj.data.genre}
                                 </span>
                             )}
                         </div>
-                        
-                        <!-- Shows List (Preserved Logic) -->
-                        <div class="mt-auto pt-6 border-t border-gray-800/60">
-                            <span class="block text-[8px] font-black text-gray-500 uppercase tracking-widest mb-3">Resident Programs</span>
-                            <div class="flex flex-wrap gap-2">
-                                {dj.shows.length > 0 ? (
-                                    dj.shows.map(show => (
-                                        <span class="text-[10px] font-bold text-gray-300 bg-gray-800/50 px-3 py-1 rounded-lg border border-gray-700/50 group-hover:border-gray-600 transition-colors">
-                                            {show.data.title}
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span class="text-[10px] font-bold text-gray-500 italic uppercase">Guest Appearances</span>
-                                )}
-                            </div>
+
+                        <div class="text-sm text-gray-400 leading-relaxed line-clamp-2 mt-2 group-hover:text-gray-300 transition-colors">
+                            <dj.Content />
                         </div>
                     </div>
                 </div>

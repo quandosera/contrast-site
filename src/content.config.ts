@@ -1,11 +1,15 @@
-// src/content/config.ts
 import { defineCollection, z } from 'astro:content';
 
 const djs = defineCollection({
-  type: 'content',
+  type: 'content', // Keystatic uses Markdoc for this
   schema: z.object({
-    name: z.string(),
-    avatar: z.string(),
+    slug: z.string().optional(),
+    name: z.string().optional(), 
+    // NEW: Public Profile Active toggle (Defaults to true)
+    active: z.boolean().default(true),
+    // NEW: Rank field for sorting (defaults to 99 for unranked DJs)
+    rank: z.number().optional().default(99), 
+    avatar: z.string().optional(),
     genre: z.string().optional(),
     socials: z.object({
       instagram: z.string().optional(),
@@ -15,18 +19,19 @@ const djs = defineCollection({
 });
 
 const shows = defineCollection({
-  type: 'data',
+  type: 'data', 
   schema: z.object({
+    slug: z.string().optional(),
     title: z.string(),
     active: z.boolean().default(true),
-    hosts: z.array(z.string()).optional(), // This links to DJ IDs
+    hosts: z.array(z.string()).optional(), 
     genre: z.string().optional(),
     description: z.string().optional(),
   }),
 });
 
 const schedule = defineCollection({
-  type: 'data',
+  type: 'data', // Keystatic uses YAML for this
   schema: z.object({
     allSlots: z.array(z.object({
       day: z.string(),
@@ -38,13 +43,24 @@ const schedule = defineCollection({
 });
 
 const flyers = defineCollection({
-  type: 'data',
+  type: 'data', // Keystatic uses YAML for this
   schema: z.object({
-    // ✨ THE FIX: Added .optional() or .default() so missing titles don't crash the site
     title: z.string().optional().default("Untitled Flyer"),
     image: z.string(),
     featured: z.boolean().default(false),
   }),
 });
 
-export const collections = { djs, shows, schedule, flyers };
+// Added to prevent crashes if an episode is created in Keystatic
+const episodes = defineCollection({
+  type: 'content', // Keystatic uses Markdoc for this
+  schema: z.object({
+    title: z.string().optional(),
+    parentShow: z.string().optional(), // Links to show IDs
+    airDate: z.coerce.date().optional(), // Coerce ensures strings like "2026-08-24" parse safely
+    audioUrl: z.string().optional(),
+  })
+});
+
+// Final exports - djSortOrder removed as it is now redundant
+export const collections = { djs, shows, schedule, flyers, episodes };

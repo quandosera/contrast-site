@@ -1,5 +1,7 @@
-internalName: Auto DJ
-title: Auto DJ Mix
+slug: auto-dj
+title: "Auto DJ Mix"
+active: true
+hosts:
+  - auto-dj
 genre: reggae
-dj: auto-dj
 description: Automated playlist when no live show is broadcasting.

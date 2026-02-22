@@ -44,7 +44,12 @@ const scheduleDetailed = rawSlots.map((slot) => {
     const showEntry = !isAutoDj ? allShows.find(s => s.id === slot.show) : null;
     
     const firstHostId = showEntry?.data?.hosts?.[0];
-    const djEntry = firstHostId ? allDjs.find(d => d.id === firstHostId) : null;
+    
+    // Strip file extensions from the Astro ID so it matches Keystatic's raw ID perfectly
+    const djEntry = firstHostId ? allDjs.find(d => {
+        const safeId = d.id.replace(/\.[^/.]+$/, ""); // Removes .md, .mdoc, etc.
+        return safeId === firstHostId || d.slug === firstHostId || d.id === firstHostId;
+    }) : null;
 
     let isLive = false;
     const startMins = timeToMins(slot.startTime);
@@ -68,7 +73,9 @@ const scheduleDetailed = rawSlots.map((slot) => {
         isLive, 
         isAutoDj,
         showData: showEntry?.data, 
-        djData: djEntry?.data 
+        djData: djEntry?.data,
+        // Strip the extension for the display text, or fallback to the Keystatic ID
+        djId: djEntry?.id?.replace(/\.[^/.]+$/, "") || firstHostId 
     };
 });
 
@@ -87,7 +94,6 @@ const groupedSchedule = daysOfWeek.map(day => {
 
 <Layout title="Station Schedule | Contrast Radio">
     
-    <!-- Hero Section -->
     <section class="relative pt-32 pb-20 overflow-hidden">
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80" alt="Studio Microphone" class="w-full h-full object-cover opacity-20" />
@@ -106,7 +112,6 @@ const groupedSchedule = daysOfWeek.map(day => {
             
             {groupedSchedule.map(dayGroup => (
                 <section class="space-y-6" id={`day-${dayGroup.id}`}>
-                    <!-- Day Header -->
                     <div class="sticky top-16 z-30 py-4 bg-[#13111C]/90 backdrop-blur-md border-b border-gray-800/50 flex items-center justify-between">
                         <h2 class="text-3xl font-black uppercase italic tracking-tight">{dayGroup.label}</h2>
                         {dayGroup.id === currentDayStr && (
@@ -119,7 +124,6 @@ const groupedSchedule = daysOfWeek.map(day => {
                             dayGroup.shows.map(item => (
                                 <div class={`relative flex flex-col md:flex-row md:items-center p-6 rounded-2xl border transition-all duration-300 group ${item.isLive ? 'bg-[#9b51e0]/10 border-[#9b51e0]/40 shadow-xl shadow-purple-500/5' : 'bg-[#1E1B29]/50 border-gray-800/60 hover:border-gray-700 hover:bg-[#1E1B29]'}`}>
                                     
-                                    <!-- Time Column -->
                                     <div class="flex-shrink-0 w-40 mb-4 md:mb-0">
                                         <div class={`text-lg font-black tracking-tighter ${item.isLive ? 'text-white' : 'text-gray-300'}`}>
                                             {item.slot.startTime} — {item.slot.endTime || "00:00"}
@@ -132,7 +136,6 @@ const groupedSchedule = daysOfWeek.map(day => {
                                         )}
                                     </div>
 
-                                    <!-- Show Details -->
                                     <div class="flex-grow md:px-8">
                                         <div class="flex flex-wrap items-center gap-3 mb-2">
                                             <h3 class="text-xl font-black text-white group-hover:text-[#b77bed] transition-colors uppercase leading-tight">
@@ -148,17 +151,16 @@ const groupedSchedule = daysOfWeek.map(day => {
                                         )}
                                     </div>
 
-                                    <!-- Host Profile (Right) -->
                                     <div class="flex items-center gap-4 mt-6 md:mt-0 md:min-w-[200px] justify-end border-t md:border-t-0 border-gray-800/50 pt-4 md:pt-0">
                                         <div class="flex flex-col text-right">
                                             <span class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Presented by</span>
                                             <span class={`font-bold text-sm leading-none ${item.isLive ? 'text-white' : 'text-gray-400'}`}>
-                                                {item.isAutoDj ? "Contrast Radio" : (item.djData?.name || "Guest DJ")}
+                                                {item.isAutoDj ? "Contrast Radio" : (item.djData?.name || item.djId || "Guest DJ")}
                                             </span>
                                         </div>
                                         <div class={`w-10 h-10 rounded-full flex items-center justify-center text-sm shadow-inner transition-all duration-500 ${item.isLive ? 'bg-[#9b51e0]/30 text-[#b77bed] ring-2 ring-[#9b51e0]/40' : 'bg-gray-800 text-gray-500 border border-gray-700'}`}>
                                             {item.djData?.avatar && !item.isAutoDj ? (
-                                                <img src={item.djData.avatar} alt={item.djData.name} class="w-full h-full object-cover rounded-full" />
+                                                <img src={item.djData.avatar} alt={item.djData?.name || item.djId || "Guest DJ"} class="w-full h-full object-cover rounded-full" />
                                             ) : (
                                                 <i class={`fa-solid ${item.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${item.isLive && item.isAutoDj ? 'fa-spin' : ''}`}></i>
                                             )}

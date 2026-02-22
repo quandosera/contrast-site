@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection, getEntry } from 'astro:content';
 
-// 1. DATA FETCHING - Preserving your original logic exactly
+// 1. DATA FETCHING
 const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
 
@@ -10,7 +10,7 @@ const allShows = await getCollection('shows');
 const allDjs = await getCollection('djs');
 const allFlyers = await getCollection('flyers').catch(() => []);
 
-// 2. TIME LOGIC (UK Time for Live Tracking) - Preserving your precise calculations
+// 2. TIME LOGIC (UK Time)
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
 const currentDayIndex = dateInUK.getDay(); 
@@ -18,19 +18,25 @@ const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
 
 const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
 
-// 3. RESOLVE RELATIONSHIPS (Schedule -> Show -> DJ)
+// 3. RESOLVE RELATIONSHIPS (Corrected for new filenames and DJ Fallbacks)
 const allShowsDetailed = rawSlots.map((slot) => {
-    const isAutoDj = slot.show === 'auto-dj';
+    const isAutoDj = slot.show === 'Auto DJ'; // Updated to match your new filename
     const showEntry = !isAutoDj ? allShows.find(s => s.id === slot.show) : null;
     
     const firstHostId = showEntry?.data?.hosts?.[0];
-    const djEntry = firstHostId ? allDjs.find(d => d.id === firstHostId) : null;
+    
+    // DJ Lookup fix: Stripping extensions and checking slug/id
+    const djEntry = firstHostId ? allDjs.find(d => {
+        const safeId = d.id.replace(/\.[^/.]+$/, "");
+        return safeId === firstHostId || d.data?.slug === firstHostId || d.id === firstHostId;
+    }) : null;
 
     return { 
         ...slot, 
         isAutoDj,
         showData: showEntry?.data,
-        djData: djEntry?.data 
+        djData: djEntry?.data,
+        djId: djEntry?.id?.replace(/\.[^/.]+$/, "") || firstHostId // Fallback ID
     };
 });
 
@@ -46,7 +52,7 @@ function timeToMins(timeStr: string, isEndTime: boolean = false) {
 // 4. BUILD CONTINUOUS ROLLING TIMELINE
 let timeline: any[] = [];
 
-// A. Yesterday's Crossover Logic - Restored from your original code
+// A. Yesterday's Crossover Logic
 const yesterdayIndex = (currentDayIndex + 6) % 7;
 allShowsDetailed.filter(s => s.day === daysArray[yesterdayIndex]).forEach(slot => {
     const startMins = timeToMins(slot.startTime);
@@ -88,7 +94,7 @@ for (let i = 0; i < 7; i++) {
 timeline.sort((a, b) => a.absoluteStart - b.absoluteStart);
 const relevantShows = timeline.filter(show => show.absoluteEnd > currentMins);
 
-// 5. LIVE SHOW DETECTION & UPCOMING LIST (Restoring the 5-show count you liked)
+// 5. LIVE SHOW DETECTION & UPCOMING LIST
 const displayedShows = relevantShows.slice(0, 5).map(show => ({
     ...show,
     isLive: currentMins >= show.absoluteStart && currentMins < show.absoluteEnd
@@ -96,9 +102,9 @@ const displayedShows = relevantShows.slice(0, 5).map(show => ({
 
 const liveShow = displayedShows.find(show => show.isLive);
 
-// 6. FALLBACK VALUES
+// 6. FALLBACK VALUES (Updated to use djId)
 const currentShowName = liveShow ? (liveShow.isAutoDj ? "Contrast Selection" : (liveShow.showData?.title || "TBA")) : "Auto DJ Mix";
-const currentDJName = liveShow ? (liveShow.isAutoDj ? "Contrast Radio" : (liveShow.djData?.name || "Guest DJ")) : "Contrast Radio";
+const currentDJName = liveShow ? (liveShow.isAutoDj ? "Contrast Radio" : (liveShow.djData?.name || liveShow.djId || "Guest DJ")) : "Contrast Radio";
 
 // 7. FLYERS
 const activeFlyers = allFlyers
@@ -108,7 +114,6 @@ const activeFlyers = allFlyers
 
 <Layout title="Contrast Radio | Up and Coming" currentShow={currentShowName}>
     
-    <!-- Hero Section: Premium Turntable Background -->
     <section class="relative h-[70vh] min-h-[450px] flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1603048588665-791ca8aea617?q=80&w=2070&auto=format&fit=crop" alt="Contrast Turntable" class="w-full h-full object-cover opacity-40">
@@ -116,7 +121,6 @@ const activeFlyers = allFlyers
         </div>
 
         <div class="container mx-auto px-4 relative z-10 text-center">
-            <!-- Live Badge -->
             <div class="inline-flex items-center gap-2 bg-[#1E1B29]/80 border border-[#9b51e0]/20 backdrop-blur-sm px-4 py-1.5 rounded-full mb-6">
                 <span class={`w-2 h-2 rounded-full ${liveShow ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></span>
                 <span class="text-[10px] font-bold tracking-[0.2em] text-red-50 uppercase">
@@ -137,7 +141,7 @@ const activeFlyers = allFlyers
                 <button class="player-trigger w-full sm:w-auto bg-[#9b51e0] hover:bg-purple-600 text-white px-8 py-4 rounded-full font-bold text-xs tracking-widest transition-all shadow-xl shadow-purple-500/20 flex items-center justify-center gap-3 group active:scale-95">
                     <i class="fa-solid fa-play group-hover:scale-110 transition-transform"></i> TUNE IN NOW
                 </button>
-                <a href="#schedule" class="w-full sm:w-auto bg-[#1E1B29] hover:bg-gray-800 text-white border border-gray-700 px-8 py-4 rounded-full font-bold text-xs tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95">
+                <a href="/schedule" class="w-full sm:w-auto bg-[#1E1B29] hover:bg-gray-800 text-white border border-gray-700 px-8 py-4 rounded-full font-bold text-xs tracking-widest transition-all flex items-center justify-center gap-2 active:scale-95">
                     VIEW SCHEDULE
                 </a>
             </div>
@@ -145,8 +149,6 @@ const activeFlyers = allFlyers
     </section>
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 space-y-20 py-12">
-        
-        <!-- Updated Schedule Section: Spacious 3-Column Layout -->
         <section id="schedule" class="scroll-mt-24">
             <div class="flex items-center justify-between mb-8">
                 <h2 class="text-xl font-black flex items-center gap-2 uppercase tracking-tight">
@@ -160,7 +162,6 @@ const activeFlyers = allFlyers
             <div class="bg-[#1E1B29] rounded-2xl border border-gray-800/50 overflow-hidden divide-y divide-gray-800/50 shadow-2xl">
                 {displayedShows.map(slot => (
                     <div class={`relative flex flex-col sm:flex-row sm:items-center p-6 sm:p-7 transition-all group ${slot.isLive ? 'bg-[#9b51e0]/10 border-l-4 border-[#9b51e0]' : 'hover:bg-gray-800/30'}`}>
-                        <!-- Column 1: Time -->
                         <div class="flex-shrink-0 w-32 mb-2 sm:mb-0 flex flex-col">
                             <span class={`text-[10px] font-black uppercase mb-0.5 tracking-widest ${slot.isLive ? 'text-[#b77bed]' : 'text-gray-500'}`}>
                                 {slot.day.split('-')[1]}
@@ -171,7 +172,6 @@ const activeFlyers = allFlyers
                             {slot.isLive && <span class="bg-red-500 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider mt-1.5 w-fit shadow-lg shadow-red-500/20 animate-pulse">ON AIR</span>}
                         </div>
 
-                        <!-- Column 2: Show Info (Middle) -->
                         <div class="flex-grow sm:px-12 text-left">
                             <h3 class="text-xl font-black text-white mb-2 leading-tight group-hover:text-[#b77bed] transition-colors">
                                 {slot.isAutoDj ? "Contrast Selection" : (slot.showData?.title || "TBA")}
@@ -181,15 +181,18 @@ const activeFlyers = allFlyers
                             </span>
                         </div>
 
-                        <!-- Column 3: DJ Info (Pushed Far Right) -->
                         <div class="flex items-center justify-end gap-4 mt-5 sm:mt-0 sm:min-w-[260px]">
-                            <div class={`w-11 h-11 rounded-full flex items-center justify-center text-sm ring-2 ring-offset-2 ring-offset-[#1E1B29] transition-all duration-300 shadow-inner ${slot.isLive ? 'bg-[#9b51e0]/30 text-[#b77bed] ring-[#9b51e0]/50' : 'bg-gray-800 text-gray-400 border border-gray-700 ring-transparent'}`}>
-                                <i class={`fa-solid ${slot.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${slot.isLive && slot.isAutoDj ? 'fa-spin' : ''}`}></i>
+                            <div class={`w-11 h-11 rounded-full flex items-center justify-center text-sm ring-2 ring-offset-2 ring-offset-[#1E1B29] transition-all duration-300 shadow-inner overflow-hidden ${slot.isLive ? 'bg-[#9b51e0]/30 text-[#b77bed] ring-[#9b51e0]/50' : 'bg-gray-800 text-gray-400 border border-gray-700 ring-transparent'}`}>
+                                {slot.djData?.avatar && !slot.isAutoDj ? (
+                                    <img src={slot.djData.avatar} alt={slot.djData?.name || slot.djId} class="w-full h-full object-cover" />
+                                ) : (
+                                    <i class={`fa-solid ${slot.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${slot.isLive && slot.isAutoDj ? 'fa-spin' : ''}`}></i>
+                                )}
                             </div>
                             <div class="flex flex-col text-right">
                                 <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">HOST</span>
                                 <span class={`font-bold text-sm leading-none ${slot.isLive ? 'text-white' : 'text-gray-400'}`}>
-                                    {slot.isAutoDj ? "Contrast Radio" : (slot.djData?.name || "Guest DJ")}
+                                    {slot.isAutoDj ? "Contrast Radio" : (slot.djData?.name || slot.djId || "Guest DJ")}
                                 </span>
                             </div>
                         </div>
@@ -198,7 +201,6 @@ const activeFlyers = allFlyers
             </div>
         </section>
 
-        <!-- Events Section -->
         <section id="events">
             <h2 class="text-xl font-black flex items-center gap-2 mb-8 uppercase tracking-tight">
                 <i class="fa-solid fa-ticket text-[#9b51e0]"></i> Latest Events
@@ -212,7 +214,6 @@ const activeFlyers = allFlyers
                         </div>
                     </button>
                 ))}
-                <!-- Host CTA -->
                 <div class="hidden md:flex rounded-xl bg-[#1E1B29] border border-dashed border-gray-700 flex flex-col items-center justify-center text-center p-6 hover:border-[#9b51e0]/50 transition-all group cursor-pointer hover:bg-[#1E1B29]/40">
                     <i class="fa-solid fa-circle-plus text-3xl text-gray-600 mb-4 group-hover:text-[#9b51e0] group-hover:scale-110 transition-all"></i>
                     <h3 class="text-white font-black text-xs mb-1 uppercase tracking-wider">Host an Event?</h3>
@@ -221,7 +222,6 @@ const activeFlyers = allFlyers
             </div>
         </section>
 
-        <!-- Sponsors Section -->
         <section id="sponsors" class="pt-12 border-t border-gray-800/40">
             <div class="flex items-center justify-center mb-10">
                 <span class="text-[10px] font-black tracking-[0.3em] text-gray-600 uppercase flex items-center gap-6">
@@ -237,7 +237,6 @@ const activeFlyers = allFlyers
         </section>
     </div>
 
-    <!-- Flyer Modal -->
     <div id="flyer-modal" class="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md hidden flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
         <button class="absolute top-6 right-6 text-white hover:text-[#9b51e0] text-4xl w-12 h-12 flex items-center justify-center bg-black/40 rounded-full transition-all hover:scale-110 active:scale-95 shadow-lg">&times;</button>
         <img id="modal-img" src="" alt="Full Flyer" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.8)] scale-95 transition-transform duration-300">

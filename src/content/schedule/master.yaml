@@ -3,100 +3,104 @@ allSlots:
   - day: 1-mon
     startTime: '00:00'
     endTime: '12:00'
-    show: auto-dj
+    show: Auto DJ
   - day: 1-mon
     startTime: '12:00'
     endTime: '14:00'
-    show: rice-and-peas-dj-noddy
+    show: Rice & Peas
   - day: 1-mon
     startTime: '14:00'
     endTime: '00:00'
-    show: auto-dj
+    show: Auto DJ
 
   # TUESDAY
   - day: 2-tue
     startTime: '00:00'
     endTime: '09:00'
-    show: auto-dj
+    show: Auto DJ
   - day: 2-tue
     startTime: '09:00'
     endTime: '11:00'
-    show: rice-and-peas-dj-noddy
+    show: Rice & Peas
   - day: 2-tue
     startTime: '11:00'
     endTime: '00:00'
-    show: auto-dj
+    show: Auto DJ
 
   # WEDNESDAY
   - day: 3-wed
     startTime: '00:00'
     endTime: '18:00'
-    show: auto-dj
+    show: Auto DJ
   - day: 3-wed
     startTime: '18:00'
     endTime: '20:00'
-    show: rice-and-peas-dj-noddy
+    show: Rice & Peas
   - day: 3-wed
     startTime: '20:00'
     endTime: '00:00'
-    show: auto-dj
+    show: Auto DJ
 
   # THURSDAY
   - day: 4-thu
     startTime: '00:00'
     endTime: '14:00'
-    show: auto-dj
+    show: Auto DJ
   - day: 4-thu
     startTime: '14:00'
     endTime: '16:00'
-    show: rice-and-peas-dj-noddy
+    show: Rice & Peas
   - day: 4-thu
     startTime: '16:00'
     endTime: '00:00'
-    show: auto-dj
+    show: Auto DJ
 
   # FRIDAY
   - day: 5-fri
     startTime: '00:00'
     endTime: '20:00'
-    show: auto-dj
+    show: Auto DJ
   - day: 5-fri
     startTime: '20:00'
     endTime: '22:00'
-    show: rice-and-peas-dj-noddy
+    show: Test Show
   - day: 5-fri
     startTime: '22:00'
     endTime: '00:00'
-    show: auto-dj
+    show: Auto DJ
 
   # SATURDAY
   - day: 6-sat
     startTime: '00:00'
     endTime: '10:00'
-    show: auto-dj
+    show: Auto DJ
   - day: 6-sat
     startTime: '10:00'
     endTime: '12:00'
-    show: rice-and-peas-dj-noddy
+    show: Rice & Peas
   - day: 6-sat
     startTime: '12:00'
-    endTime: '23:00'
-    show: auto-dj
+    endTime: '20:00'
+    show: Auto DJ
   - day: 6-sat
-    startTime: '23:00'
+    startTime: '20:00'
+    endTime: '22:00'
+    show: Test Show
+  - day: 6-sat
+    startTime: '22:00'
     endTime: '00:00'
-    show: rice-and-peas-dj-noddy
+    show: Auto DJ
 
   # SUNDAY
   - day: 7-sun
     startTime: '00:00'
     endTime: '14:00'
-    show: auto-dj
+    show: Auto DJ
   - day: 7-sun
     startTime: '14:00'
     endTime: '16:00'
-    show: rice-and-peas-dj-noddy
+    show: Rice & Peas
   - day: 7-sun
     startTime: '16:00'
     endTime: '00:00'
-    show: auto-dj
+    show: Auto DJ

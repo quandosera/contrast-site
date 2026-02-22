@@ -11,7 +11,6 @@ const DAYS_OF_WEEK = [
 ];
 
 export default config({
-  // SWITCH STORAGE MODE BASED ON ENVIRONMENT
   storage: process.env.NODE_ENV === 'development' 
     ? { kind: 'local' } 
     : { 
@@ -23,11 +22,28 @@ export default config({
     // 1. THE TALENT: DJs & Residents
     djs: collection({
       label: 'DJs & Hosts',
-      slugField: 'name',
+      slugField: 'slug', 
       path: 'src/content/djs/*',
       format: { contentField: 'bio' },
       schema: {
-        name: fields.text({ label: 'Stage Name', validation: { isRequired: true } }),
+        slug: fields.text({ 
+            label: 'Filename / URL Slug (e.g., dj-famous)', 
+            validation: { isRequired: true } 
+        }),
+        name: fields.text({ 
+            label: 'Stage Name (e.g., DJ Famous)', 
+            validation: { isRequired: true } 
+        }),
+        // TOGGLE: Hide/Show DJ from the public page
+        active: fields.checkbox({ 
+            label: 'Public Profile Active', 
+            defaultValue: true 
+        }),
+        // SORTING: Rank for manual ordering
+        rank: fields.integer({ 
+            label: 'Sort Rank (1 = Top of list, 99 = Bottom)', 
+            defaultValue: 99 
+        }),
         avatar: fields.image({
           label: 'Profile Photo',
           directory: 'public/uploads/djs',
@@ -46,11 +62,18 @@ export default config({
     // 2. THE PROGRAMS: The Show Series
     shows: collection({
       label: 'Shows',
-      slugField: 'title',
+      slugField: 'slug', 
       path: 'src/content/shows/*',
       format: 'yaml',
       schema: {
-        title: fields.text({ label: 'Show Title', validation: { isRequired: true } }),
+        slug: fields.text({ 
+            label: 'URL Slug (e.g. test-show)', 
+            validation: { isRequired: true } 
+        }),
+        title: fields.text({ 
+            label: 'Show Title', 
+            validation: { isRequired: true } 
+        }),
         active: fields.checkbox({ label: 'Currently On Air', defaultValue: true }),
         hosts: fields.array(
           fields.relationship({ label: 'Host', collection: 'djs' }),
@@ -83,14 +106,14 @@ export default config({
       path: 'src/content/flyers/*',
       format: 'yaml',
       schema: {
-        title: fields.text({ label: 'Event Title', validation: { isRequired: true } }),
+        title: fields.text({ label: 'Event Title', defaultValue: 'Untitled Flyer', validation: { isRequired: true } }),
         image: fields.image({
           label: 'Flyer Image',
           directory: 'public/uploads/flyers',
           publicPath: '/uploads/flyers',
           validation: { isRequired: true },
         }),
-        featured: fields.checkbox({ label: 'Feature on Homepage' }),
+        featured: fields.checkbox({ label: 'Feature on Homepage', defaultValue: false }),
       },
     }),
   },
@@ -105,11 +128,32 @@ export default config({
         allSlots: fields.array(
           fields.object({
             day: fields.select({ label: 'Day', options: DAYS_OF_WEEK, defaultValue: '1-mon' }),
-            startTime: fields.text({ label: 'Start Time (HH:MM)', defaultValue: '12:00' }),
-            endTime: fields.text({ label: 'End Time (HH:MM)', defaultValue: '14:00' }),
+            startTime: fields.text({ 
+                label: 'Start Time (HH:MM)', 
+                defaultValue: '12:00',
+                validation: { 
+                    length: { min: 5, max: 5 },
+                    pattern: {
+                        regex: /^([01]\d|2[0-3]):([0-5]\d)$/,
+                        message: 'Time must be in 24-hour HH:MM format (e.g. 14:30)'
+                    }
+                }
+            }),
+            endTime: fields.text({ 
+                label: 'End Time (HH:MM)', 
+                defaultValue: '14:00',
+                validation: { 
+                    length: { min: 5, max: 5 },
+                    pattern: {
+                        regex: /^([01]\d|2[0-3]|24):([0-5]\d)$/,
+                        message: 'Time must be in 24-hour HH:MM format. Use 24:00 for midnight.'
+                    }
+                }
+            }),
             show: fields.relationship({ 
                 label: 'Show', 
                 collection: 'shows',
+                validation: { isRequired: true } 
             }),
           }),
           {
