@@ -1,0 +1,235 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="About Us | Contrast Radio">
+    
+    <section class="page-hero">
+        <div class="hero-bg">
+            <img src="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0" alt="Radio Studio Mixing Desk" />
+            <div class="hero-gradient"></div>
+        </div>
+        <div class="container hero-content">
+            <h1 class="page-title">ABOUT <span style="color: var(--purple);">CONTRAST</span></h1>
+            <p class="page-subtitle">Broadcasting the very best underground sounds, 24/7.</p>
+        </div>
+    </section>
+
+    <div class="container main-wrapper">
+        
+        <div class="about-grid">
+            
+            <div class="about-text-column">
+                <div class="section-header">
+                    <div class="section-icon"><i class="fa-solid fa-broadcast-tower"></i></div>
+                    <h2>OUR STORY</h2>
+                </div>
+                
+                <p class="lead-text">
+                    Contrast Radio is an independent, community-driven platform dedicated to delivering the finest authentic music to listeners across the globe.
+                </p>
+                
+                <p>
+                    Born out of a deep passion for underground and culture-defining sounds, we set out to create a space where music truly matters. We are not bound by commercial playlists or corporate algorithms; our selections are hand-picked by DJs who live and breathe the culture.
+                </p>
+
+                <p>
+                    From the heavy basslines of classic Reggae and the smooth grooves of neo-Soul and R&B, to the late-night energy of underground House music, Contrast Radio spans the spectrum of rhythm and vibe. We champion the up-and-coming alongside the legendary, providing a crucial platform for DJs, producers, and artists to share their craft.
+                </p>
+
+                <div class="mission-box">
+                    <h3><i class="fa-solid fa-bullseye"></i> Our Mission</h3>
+                    <p>To connect diverse communities through a shared love of authentic music, preserving cultural sounds while pushing the boundaries of what radio can be.</p>
+                </div>
+            </div>
+
+            <div class="about-image-column">
+                <div class="image-card">
+                    <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=800&q=80" alt="Radio Studio Microphone" class="main-img" />
+                    <div class="image-accent"></div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Broadcasting</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Independent</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <section class="genres-section">
+            <div class="section-header centered">
+                <h2>THE SOUND OF <span style="color: var(--purple);">CONTRAST</span></h2>
+            </div>
+            
+            <div class="genre-cards">
+                <div class="genre-card">
+                    <i class="fa-solid fa-compact-disc"></i>
+                    <h3>REGGAE & DUB</h3>
+                    <p>Rooted in culture, heavy on the bass. From foundation roots to modern dancehall.</p>
+                </div>
+                <div class="genre-card">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                    <h3>SOUL & R&B</h3>
+                    <p>Smooth, emotive, and timeless. The best of classic grooves and contemporary neo-soul.</p>
+                </div>
+                <div class="genre-card">
+                    <i class="fa-solid fa-headphones-simple"></i>
+                    <h3>HOUSE & DANCE</h3>
+                    <p>Keeping the tempo up with deep, soulful, and underground electronic beats.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</Layout>
+
+<style>
+    /* === VARIABLES & BASE === */
+    :root {
+        --purple: #a855f7;
+        --purple-light: #f3e8ff;
+        --purple-dark: #7e22ce;
+        --bg-body: #f8fafc;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-light: #e2e8f0;
+        --dark-bg: #1e293b;
+    }
+
+    /* === PAGE HERO === */
+    .page-hero {
+        position: relative;
+        padding: 6rem 20px;
+        margin-bottom: 4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        overflow: hidden;
+    }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
+    .hero-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.9) 70%, var(--bg-body) 100%);
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 800px; }
+    .page-title { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; letter-spacing: -1px; }
+    .page-subtitle { font-size: 1.1rem; color: #cbd5e1; margin-top: 1rem; }
+
+    /* === MAIN CONTENT === */
+    .main-wrapper { max-width: 1200px; margin: 0 auto; padding-bottom: 5rem; }
+    
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
+    .section-header.centered { justify-content: center; margin-bottom: 3rem; text-align: center; }
+    .section-icon { color: var(--purple); font-size: 1.8rem; }
+    .section-header h2 { margin: 0; font-weight: 900; font-size: 2rem; text-transform: uppercase; color: var(--text-main); }
+
+    .about-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: start;
+        margin-bottom: 6rem;
+    }
+
+    /* Text Column */
+    .about-text-column p {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+    }
+    .about-text-column .lead-text {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.5;
+        margin-bottom: 2rem;
+    }
+
+    .mission-box {
+        background: #fff;
+        border-left: 4px solid var(--purple);
+        padding: 2rem;
+        border-radius: 0 12px 12px 0;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        margin-top: 3rem;
+    }
+    .mission-box h3 { margin: 0 0 10px 0; font-weight: 900; font-size: 1.3rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+    .mission-box h3 i { color: var(--purple); }
+    .mission-box p { margin: 0; font-size: 1rem; color: var(--text-muted); }
+
+    /* Image Column */
+    .image-card {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+    .image-card .main-img { width: 100%; height: auto; display: block; aspect-ratio: 4/3; object-fit: cover; }
+    .image-accent {
+        position: absolute;
+        bottom: 0; left: 0; width: 100%; height: 6px;
+        background: linear-gradient(90deg, var(--purple), #f0abfc);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    .stat-box {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid var(--border-light);
+    }
+    .stat-number { display: block; font-size: 2.5rem; font-weight: 900; color: var(--purple); line-height: 1; }
+    .stat-label { display: block; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-top: 8px; letter-spacing: 1px; }
+
+    /* === GENRES SECTION === */
+    .genres-section {
+        padding-top: 4rem;
+        border-top: 1px solid var(--border-light);
+    }
+    .genre-cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+    .genre-card {
+        background: #fff;
+        padding: 3rem 2rem;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid var(--border-light);
+        transition: 0.3s;
+    }
+    .genre-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--purple);
+        box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.1);
+    }
+    .genre-card i {
+        font-size: 2.5rem;
+        color: var(--purple);
+        margin-bottom: 1.5rem;
+    }
+    .genre-card h3 { margin: 0 0 1rem 0; font-weight: 900;

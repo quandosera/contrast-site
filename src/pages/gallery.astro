@@ -1,0 +1,286 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Fetch all flyers from Keystatic and sort them (newest first based on ID/filename)
+const allFlyers = await getCollection('flyers');
+const sortedFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id));
+---
+
+<Layout title="Event Flyers | Contrast Radio">
+    
+    <section class="page-hero">
+        <div class="hero-bg">
+            <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1920&q=80" alt="Concert Crowd and Lights" />
+            <div class="hero-gradient"></div>
+        </div>
+        <div class="container hero-content">
+            <h1 class="page-title">EVENT <span style="color: var(--purple);">FLYERS</span></h1>
+            <p class="page-subtitle">Visuals from our past and upcoming Contrast Radio sessions.</p>
+        </div>
+    </section>
+
+    <div class="container main-wrapper">
+        
+        <div class="section-header centered">
+            <div class="section-icon"><i class="fa-solid fa-images"></i></div>
+            <h2>THE ARCHIVE</h2>
+        </div>
+        
+        <p class="intro-text">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Check out our collection of event flyers from club nights, guest residencies, and special broadcasts.
+        </p>
+
+        <div class="flyer-grid">
+            {sortedFlyers.length > 0 ? (
+                sortedFlyers.map(flyer => (
+                    <button class="flyer-card" aria-label={`View full flyer for ${flyer.data.title}`}>
+                        {flyer.data.image ? (
+                            <img src={flyer.data.image} alt={flyer.data.title} class="flyer-img" loading="lazy" />
+                        ) : (
+                            <div class="placeholder-img">No Image Provided</div>
+                        )}
+                        <div class="flyer-overlay">
+                            <h3>{flyer.data.title}</h3>
+                        </div>
+                    </button>
+                ))
+            ) : (
+                <div class="empty-state">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <p>No flyers uploaded yet. Head to the admin panel to add some!</p>
+                </div>
+            )}
+        </div>
+
+    </div>
+
+    <div id="flyer-modal" class="modal" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <button class="close-modal" aria-label="Close modal">&times;</button>
+            <img id="modal-img" src="" alt="Full Size Flyer">
+        </div>
+    </div>
+
+</Layout>
+
+<script>
+    // Bind to astro:page-load so the modal works perfectly with the persistent audio player
+    document.addEventListener('astro:page-load', () => {
+        const flyerCards = document.querySelectorAll('.flyer-card');
+        const modal = document.getElementById('flyer-modal');
+        const modalImg = document.getElementById('modal-img') as HTMLImageElement;
+        const closeModal = document.querySelector('.close-modal');
+
+        // Only run this logic if we are actually on the Flyers page
+        if (!modal || !modalImg) return;
+
+        flyerCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const img = card.querySelector('.flyer-img') as HTMLImageElement;
+                if (img) {
+                    modalImg.src = img.src;
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // Stop background scrolling
+                }
+            });
+        });
+
+        const hideModal = () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            setTimeout(() => { modalImg.src = ""; }, 300); // Clear src after animation
+        };
+
+        closeModal?.addEventListener('click', hideModal);
+        
+        // Close when clicking outside the image
+        modal.addEventListener('click', (e) => { 
+            if (e.target === modal) hideModal(); 
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) hideModal();
+        });
+    });
+</script>
+
+<style>
+    /* === VARIABLES === */
+    :root {
+        --purple: #a855f7;
+        --bg-body: #f8fafc;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border-light: #e2e8f0;
+    }
+
+    /* === PAGE HERO === */
+    .page-hero {
+        position: relative;
+        padding: 6rem 20px;
+        margin-bottom: 4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        overflow: hidden;
+    }
+    .hero-bg img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+    .hero-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.9) 70%, var(--bg-body) 100%);
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 800px; }
+    .page-title { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: #fff; margin: 0; text-transform: uppercase; letter-spacing: -1px; }
+    .page-subtitle { font-size: 1.1rem; color: #cbd5e1; margin-top: 1rem; }
+
+    /* === MAIN CONTENT === */
+    .main-wrapper { max-width: 1200px; margin: 0 auto; padding-bottom: 5rem; }
+    
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+    .section-header.centered { justify-content: center; margin-bottom: 2rem; }
+    .section-icon { color: var(--purple); font-size: 1.8rem; }
+    .section-header h2 { margin: 0; font-weight: 900; font-size: 2rem; text-transform: uppercase; color: var(--text-main); }
+
+    .intro-text {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 4rem auto;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: var(--text-muted);
+    }
+
+    /* === GRID LAYOUT === */
+    .flyer-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+    .flyer-card {
+        position: relative;
+        background: #e2e8f0;
+        border: none;
+        padding: 0;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        aspect-ratio: 1 / 1;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: block;
+        width: 100%;
+    }
+    .flyer-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(168, 85, 247, 0.2);
+    }
+    .flyer-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .placeholder-img {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94a3b8;
+        font-weight: 800;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+    .flyer-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: flex;
+        align-items: flex-end;
+        padding: 1.5rem;
+        text-align: left;
+    }
+    .flyer-card:hover .flyer-overlay {
+        opacity: 1;
+    }
+    .flyer-overlay h3 {
+        color: #fff;
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 800;
+        line-height: 1.3;
+    }
+
+    .empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #fff;
+        border-radius: 12px;
+        border: 2px dashed var(--border-light);
+        color: var(--text-muted);
+    }
+    .empty-state i { font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem; }
+
+    /* === MODAL === */
+    .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.95);
+        z-index: 3000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(8px);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .modal.active {
+        display: flex;
+        opacity: 1;
+    }
+    .modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90vh;
+    }
+    .modal-content img {
+        max-width: 100%;
+        max-height: 85vh;
+        border-radius: 8px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .close-modal {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        color: #fff;
+        font-size: 2.5rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+    .close-modal:hover { color: var(--purple); }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+        .flyer-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .flyer-overlay { opacity: 1; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); }
+        .flyer-overlay h3 { font-size: 1rem; }
+    }
+</style>

@@ -1,4 +1,6 @@
 ---
+import { ClientRouter } from 'astro:transitions';
+
 interface Props {
     title?: string;
     currentShow?: string;
@@ -19,6 +21,8 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{pageTitle}</title>
+
+        <ClientRouter />
 
         <meta name="description" content="Contrast Radio — Up & Coming. Independent community radio with rotating shows and live streams." />
         <meta property="og:title" content={pageTitle} />
@@ -51,6 +55,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 <nav class="desktop-nav">
                     <a href="/">HOME</a>
                     <a href="/about">ABOUT</a>
+                    <a href="/djs">DJ'S</a>
                     <a href="/schedule">SCHEDULE</a>
                     <a href="/gallery">GALLERY</a>
                     <a href="/contact">CONTACT</a>
@@ -69,6 +74,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             <nav>
                 <a href="/">HOME</a>
                 <a href="/about">ABOUT</a>
+                <a href="/djs">DJ'S</a>
                 <a href="/schedule">SCHEDULE</a>
                 <a href="/gallery">GALLERY</a>
                 <a href="/contact">CONTACT</a>
@@ -96,7 +102,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             </div>
         </footer>
 
-        <div class="bottom-player">
+        <div class="bottom-player" transition:persist>
             <div class="container player-inner">
                 <div class="player-info">
                     <div class="player-icon" id="player-status-icon"><i class="fa-solid fa-wifi"></i></div>
@@ -120,31 +126,39 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 </div>
             </div>
 
-            <audio id="stream-audio" crossorigin="anonymous"></audio>
+            <audio id="stream-audio" crossorigin="anonymous" transition:persist></audio>
         </div>
 
-        <script>
-            const menuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-            
-            menuBtn?.addEventListener('click', () => {
-                const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
-                menuBtn.setAttribute('aria-expanded', String(!expanded));
-                mobileMenu?.classList.toggle('hidden');
-                const icon = menuBtn.querySelector('i');
-                if (icon) {
-                    icon.className = !expanded ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
-                }
-            });
+        <div id="show-metadata" data-show={currentShow} hidden></div>
 
-            if (!window.__playerInitialized) {
-                window.__playerInitialized = true;
+        <script>
+            document.addEventListener('astro:page-load', () => {
+                const menuBtn = document.getElementById('mobile-menu-btn');
+                const mobileMenu = document.getElementById('mobile-menu');
+                
+                menuBtn?.addEventListener('click', () => {
+                    const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
+                    menuBtn.setAttribute('aria-expanded', String(!expanded));
+                    mobileMenu?.classList.toggle('hidden');
+                    const icon = menuBtn.querySelector('i');
+                    if (icon) {
+                        icon.className = !expanded ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+                    }
+                });
+
                 const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
                 const audio = document.getElementById('stream-audio') as HTMLAudioElement;
                 const playBtns = document.querySelectorAll('#master-play-btn, .player-trigger');
                 const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
                 const muteBtn = document.getElementById('mute-btn');
                 const playerStatusIcon = document.getElementById('player-status-icon');
+                
+                // Update the "Now Playing" text when navigating to a new page
+                const nowPlayingText = document.getElementById('now-playing');
+                const metaShow = document.getElementById('show-metadata');
+                if (nowPlayingText && metaShow) {
+                    nowPlayingText.innerText = metaShow.getAttribute('data-show') || "Contrast Selection";
+                }
 
                 let previousVolume = 0.7;
 
@@ -168,11 +182,32 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 };
 
                 if (audio) {
-                    audio.volume = 0.7;
-                    updateSliderFill(0.7);
+                    // Make sure UI matches actual audio state when navigating pages
+                    if (!audio.paused && audio.src !== "") {
+                        updateUIState(true);
+                    }
+                    if (volumeSlider) {
+                        volumeSlider.value = String(audio.volume);
+                        updateSliderFill(audio.volume);
+                    }
 
+                    // Avoid duplicate audio event listeners
+                    if (!window.__playerInitialized) {
+                        window.__playerInitialized = true;
+                        audio.volume = 0.7;
+                        updateSliderFill(0.7);
+
+                        audio.addEventListener('play', () => updateUIState(true));
+                        audio.addEventListener('pause', () => updateUIState(false));
+                    }
+
+                    // Attach click events safely for the new page DOM
                     playBtns.forEach(btn => {
-                        btn.addEventListener('click', async () => {
+                        // Remove old listeners to prevent double-firing
+                        const newBtn = btn.cloneNode(true);
+                        btn.parentNode?.replaceChild(newBtn, btn);
+
+                        newBtn.addEventListener('click', async () => {
                             if (audio.paused || audio.src === "") {
                                 try {
                                     audio.src = STREAM_URL;
@@ -189,29 +224,36 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         });
                     });
 
-                    audio.addEventListener('play', () => updateUIState(true));
-                    audio.addEventListener('pause', () => updateUIState(false));
+                    if (volumeSlider) {
+                        const newSlider = volumeSlider.cloneNode(true) as HTMLInputElement;
+                        volumeSlider.parentNode?.replaceChild(newSlider, volumeSlider);
+                        newSlider.addEventListener('input', (e) => {
+                            const v = parseFloat((e.target as HTMLInputElement).value);
+                            audio.volume = v;
+                            updateSliderFill(v);
+                        });
+                    }
 
-                    volumeSlider?.addEventListener('input', (e) => {
-                        const v = parseFloat((e.target as HTMLInputElement).value);
-                        audio.volume = v;
-                        updateSliderFill(v);
-                    });
-
-                    muteBtn?.addEventListener('click', () => {
-                        if (audio.volume > 0) {
-                            previousVolume = audio.volume;
-                            audio.volume = 0;
-                            if(volumeSlider) volumeSlider.value = "0";
-                            updateSliderFill(0);
-                        } else {
-                            audio.volume = previousVolume;
-                            if(volumeSlider) volumeSlider.value = String(previousVolume);
-                            updateSliderFill(previousVolume);
-                        }
-                    });
+                    if (muteBtn) {
+                        const newMuteBtn = muteBtn.cloneNode(true) as HTMLElement;
+                        muteBtn.parentNode?.replaceChild(newMuteBtn, muteBtn);
+                        newMuteBtn.addEventListener('click', () => {
+                            if (audio.volume > 0) {
+                                previousVolume = audio.volume;
+                                audio.volume = 0;
+                                const vs = document.getElementById('volume-slider') as HTMLInputElement;
+                                if(vs) vs.value = "0";
+                                updateSliderFill(0);
+                            } else {
+                                audio.volume = previousVolume;
+                                const vs = document.getElementById('volume-slider') as HTMLInputElement;
+                                if(vs) vs.value = String(previousVolume);
+                                updateSliderFill(previousVolume);
+                            }
+                        });
+                    }
                 }
-            }
+            });
         </script>
     </body>
 </html>
