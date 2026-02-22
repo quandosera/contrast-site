@@ -1,0 +1,87 @@
+---
+// IMPORTANT: These imports fix the "ReferenceError"
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+// 1. DATA FETCHING (For Header & Player Sync)
+const allShows = await getCollection('shows');
+const scheduleDoc = await getEntry('schedule', 'master');
+const rawSlots = scheduleDoc?.data?.allSlots || [];
+
+// 2. TIME LOGIC (Syncs the "On Air" status in the header)
+const ukTimeOptions = { timeZone: 'Europe/London' };
+const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
+const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
+const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
+const currentDayStr = daysArray[dateInUK.getDay()];
+
+function timeToMins(timeStr: string) {
+    if (!timeStr) return 0;
+    let [h, m] = timeStr.split(':').map(Number);
+    if (h === 24) h = 0;
+    return h * 60 + m;
+}
+
+const currentSlot = rawSlots.find(slot => {
+    if (slot.day !== currentDayStr) return false;
+    const start = timeToMins(slot.startTime);
+    let end = timeToMins(slot.endTime || "00:00");
+    if (end <= start && end !== 0) end += 1440;
+    return currentMins >= start && currentMins < end;
+});
+
+const currentShowName = currentSlot ? 
+    (currentSlot.show === 'Auto DJ' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
+    : "Auto DJ Mix";
+---
+
+<Layout title="Live Chat | Contrast Radio" currentShow={currentShowName}>
+    
+    <Hero 
+        title="COMMUNITY" 
+        accent="CHAT" 
+        subtextText="EVERYONE SPEAKS TO EVERYONE" 
+        subtextHighlight="LIVE"
+    />
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-32 -mt-20 relative z-20">
+        <div class="max-w-5xl mx-auto">
+            
+            <div class="bg-[#0b0b0b] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.8)] h-[70vh] flex flex-col relative">
+                
+                <div class="flex-grow w-full h-full minnit-wrapper bg-[#0b0b0b]">
+                    <script src="https://minnit.chat/js/embed.js?c=1758971289" defer></script>
+                    <span 
+                        style="display: none;" 
+                        class="minnit-chat-sembed" 
+                        data-chatname="https://organizations.minnit.chat/204338930274759/c/Main?embed" 
+                        data-style="width:100%; height:100%; min-height:100%; background:transparent;" 
+                        data-version="1.55">
+                        Chat
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-brand-accent/20 to-transparent mt-12"></div>
+            
+            <p class="mt-6 text-center text-gray-600 text-[10px] uppercase tracking-[0.4em] italic opacity-50">
+                Contrast Radio Community Frequency // Moderated Environment
+            </p>
+        </div>
+    </div>
+</Layout>
+
+<style is:global>
+    /* HIDE EXTERNAL BRANDING */
+    .powered-by-minnit { 
+        display: none !important; 
+    }
+    
+    /* PREVENT WHITE FLASH ON LOAD */
+    .minnit-wrapper iframe {
+        background-color: #0b0b0b !important;
+        border: none !important;
+    }
+</style>

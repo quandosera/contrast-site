@@ -53,12 +53,15 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     </div>
                 </a>
 
-                <nav class="hidden lg:flex items-center space-x-10">
+                <nav class="hidden lg:flex items-center space-x-8 xl:space-x-10">
                     <a href="/" class="text-[0.7rem] font-black tracking-widest hover:text-brand-accent transition-colors uppercase">HOME</a>
                     <a href="/about" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">ABOUT</a>
                     <a href="/djs" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">DJ'S</a>
                     <a href="/schedule" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">SCHEDULE</a>
                     <a href="/gallery" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">GALLERY</a>
+                    
+                    <a href="/chat" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-all uppercase hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">CHAT</a>
+                    
                     <a href="/contact" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">CONTACT</a>
                     
                     <button id="nav-listen-btn" class="nav-player-trigger flex items-center justify-center gap-3 bg-brand-accent hover:bg-[#e02d2d] text-white text-[11px] font-black tracking-[0.2em] w-36 py-3 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-xl shadow-brand-accent/20 uppercase italic">
@@ -83,6 +86,9 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 <a href="/about" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">ABOUT</a>
                 <a href="/djs" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">DJ'S</a>
                 <a href="/schedule" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">SCHEDULE</a>
+                
+                <a href="/chat" class="text-3xl font-black text-brand-accent italic uppercase tracking-tighter animate-pulse">LIVE CHAT</a>
+                
                 <a href="/gallery" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">GALLERY</a>
                 <a href="/contact" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">CONTACT</a>
             </nav>
@@ -145,7 +151,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
-    /* FIX: Hides the "Skip to Content" text unless focused by a keyboard */
+    /* Accessibility: Visual Hide Utility */
     .sr-only-focusable {
         position: absolute;
         width: 1px;
@@ -165,7 +171,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         width: auto;
         height: auto;
         padding: 0.75rem 1.5rem;
-        background: #ff3b3b; /* Matches your brand-accent */
+        background: #ff3b3b;
         color: white;
         border-radius: 999px;
         font-weight: 800;
@@ -175,7 +181,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         clip: auto;
     }
 
-    /* PLAYER MARQUEE SYSTEM */
+    /* Player Marquee Masking */
     .player-marquee-container {
         mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
