@@ -11,9 +11,16 @@ const DAYS_OF_WEEK = [
 ];
 
 export default config({
-  storage: { kind: 'local' },
+  // SWITCH STORAGE MODE BASED ON ENVIRONMENT
+  storage: process.env.NODE_ENV === 'development' 
+    ? { kind: 'local' } 
+    : { 
+        kind: 'github', 
+        repo: 'quandosera/contrast-site' 
+      },
 
   collections: {
+    // 1. THE TALENT: DJs & Residents
     djs: collection({
       label: 'DJs & Hosts',
       slugField: 'name',
@@ -36,6 +43,7 @@ export default config({
       },
     }),
 
+    // 2. THE PROGRAMS: The Show Series
     shows: collection({
       label: 'Shows',
       slugField: 'title',
@@ -53,6 +61,7 @@ export default config({
       },
     }),
 
+    // 3. THE ARCHIVE: Recorded Episodes
     episodes: collection({
       label: 'Show Archive',
       slugField: 'title',
@@ -67,6 +76,7 @@ export default config({
       },
     }),
 
+    // 4. THE VISUALS: Promotions
     flyers: collection({
       label: 'Flyers',
       slugField: 'title',
@@ -86,9 +96,10 @@ export default config({
   },
 
   singletons: {
+    // 5. THE TIMETABLE
     schedule: singleton({
       label: 'Master Timetable',
-      path: 'src/content/schedule/master', // This will save to master.yaml
+      path: 'src/content/schedule/master',
       format: 'yaml',
       schema: {
         allSlots: fields.array(
@@ -99,12 +110,10 @@ export default config({
             show: fields.relationship({ 
                 label: 'Show', 
                 collection: 'shows',
-                // Optional: set validation isRequired: true if you don't want empty slots
             }),
           }),
           {
             label: 'Global Time Slots',
-            // Improved itemLabel to handle empty shows gracefully
             itemLabel: (props) => {
                 const day = props.fields.day.value?.split('-')[1]?.toUpperCase() || '???';
                 const time = props.fields.startTime.value || '00:00';
