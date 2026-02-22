@@ -6,13 +6,11 @@ import Player from '../components/Player.astro';
 interface Props {
     title?: string;
     currentShow?: string;
-    showFooter?: boolean;
 }
 
 const { 
     title = "Contrast Radio | The Next Movement",
-    currentShow = "Contrast Selection",
-    showFooter = true 
+    currentShow = "Contrast Selection" 
 } = Astro.props;
 
 const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto DJ Mix" 
@@ -95,43 +93,9 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             </nav>
         </div>
 
-        <main id="main-content" class="min-h-screen pt-0">
+        <main id="main-content" class="min-h-screen pt-0 pb-32">
             <slot />
         </main>
-
-        {showFooter && (
-            <footer class="bg-[#050505] pt-8 pb-24 border-t border-white/5 relative z-10">
-                <div class="container mx-auto px-4 text-center">
-                    
-                    <div class="mb-6 overflow-hidden">
-                        <h4 class="text-[8px] font-black uppercase tracking-[0.4em] text-gray-700 mb-4 italic opacity-60">
-                            Station Partners
-                        </h4>
-                        
-                        <div class="flex items-center justify-start md:justify-center overflow-x-auto no-scrollbar gap-x-8 px-4 opacity-30 grayscale hover:opacity-100 transition-all duration-700">
-                            <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
-                                <i class="fa-solid fa-building text-brand-accent/60"></i> Sion Spaces
-                            </div>
-                            <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
-                                <i class="fa-solid fa-house text-brand-accent/60"></i> Hyde & Rowe
-                            </div>
-                            <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
-                                <i class="fa-solid fa-martini-glass text-brand-accent/60"></i> Barry's Bar
-                            </div>
-                            <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
-                                <i class="fa-solid fa-car text-brand-accent/60"></i> Sayez Car Care
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pt-4 border-t border-white/[0.02] max-w-[150px] mx-auto">
-                        <p class="text-gray-800 text-[7px] uppercase tracking-[0.5em] font-black opacity-40">
-                            &copy; {new Date().getFullYear()} Contrast Radio
-                        </p>
-                    </div>
-                </div>
-            </footer>
-        )}
 
         <Player currentShow={currentShow} />
 
@@ -186,7 +150,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
-    /* PLAYER MARQUEE SYSTEM: Prevents text truncation from image_30d03d.png */
+    /* PLAYER MARQUEE SYSTEM */
     .player-marquee-container {
         mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
@@ -203,10 +167,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         0% { transform: translateX(0); }
         100% { transform: translateX(-33.333%); }
     }
-
-    /* FOOTER UTILITIES */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
     .skip-link { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
     .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: theme('colors.brand.dark'); color: white; border-radius: 0.5rem; border: 1px solid theme('colors.brand.accent'); }

@@ -10,49 +10,51 @@ const {
     djName = "Contrast DJ" 
 } = Astro.props;
 
-// Formatting for the seamless marquee
 const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 ---
 
 <div class="fixed bottom-0 left-0 w-full bg-brand-surface/95 backdrop-blur-3xl z-50 px-4 py-3 md:py-5 border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.8)]" transition:persist>
-    <div class="container mx-auto flex items-center justify-between gap-3 md:gap-6 max-w-7xl">
+    <div class="container mx-auto grid grid-cols-3 items-center max-w-7xl">
         
-        <div class="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
-            <div class="relative w-12 h-12 md:w-16 md:h-16 flex-shrink-0 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center border border-white/10">
-                <i id="player-vinyl" class="fa-solid fa-compact-disc text-3xl md:text-5xl text-zinc-800 animate-spin-slow pause-spin"></i>
+        <div class="flex items-center gap-3 md:gap-4 min-w-0">
+            <div class="relative w-11 h-11 md:w-16 md:h-16 flex-shrink-0 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
+                <i id="player-vinyl" class="fa-solid fa-compact-disc text-2xl md:text-5xl text-zinc-800 animate-spin-slow pause-spin"></i>
                 <div id="player-status-icon" class="absolute inset-0 bg-black/40 hidden items-center justify-center">
                     <i class="fa-solid fa-chart-simple text-brand-accent text-lg animate-pulse"></i>
                 </div>
             </div>
             
             <div class="flex flex-col min-w-0 overflow-hidden">
-                <span class="text-[9px] md:text-xs font-black text-brand-accent tracking-[0.3em] uppercase flex items-center gap-2 mb-0.5 md:mb-1">
+                <span class="text-[8px] md:text-xs font-black text-brand-accent tracking-[0.3em] uppercase flex items-center gap-1.5 mb-0.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-brand-accent animate-ping"></span> NOW PLAYING
                 </span>
                 
-                <div class="marquee-window relative w-full overflow-hidden h-5 md:h-7">
-                    <div class="marquee-content flex whitespace-nowrap italic font-black text-white text-xs md:text-lg uppercase">
-                        <span class="pr-12">{displayInfo}</span>
-                        <span class="pr-12">{displayInfo}</span>
+                <div class="player-marquee-container relative w-full overflow-hidden h-4 md:h-7">
+                    <div class="player-marquee-inner flex whitespace-nowrap italic font-black text-white text-[10px] md:text-lg uppercase">
+                        <span class="pr-8">{displayInfo}</span>
+                        <span class="pr-8">{displayInfo}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="flex-shrink-0">
-            <button id="master-play-btn" class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-brand-accent text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg">
+        <div class="flex justify-center">
+            <button id="master-play-btn" class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-brand-accent text-white flex items-center justify-center hover:scale-110 transition-all border-2 border-brand-accent/50 shadow-lg">
                 <i class="fa-solid fa-play ml-1 text-lg md:text-2xl"></i>
             </button>
         </div>
 
-        <div class="hidden md:flex items-center justify-end gap-4 w-1/3">
-            <button id="mute-btn" class="text-gray-400 hover:text-white transition-colors w-6">
-                <i id="volume-icon" class="fa-solid fa-volume-high text-lg"></i>
-            </button>
-            <div class="w-32 flex items-center">
-                <input id="volume-slider" class="premium-slider" type="range" min="0" max="1" step="0.01" value="0.8">
+        <div class="flex justify-end">
+            <div class="hidden md:flex items-center gap-4">
+                <button id="mute-btn" class="text-gray-400 hover:text-white transition-colors">
+                    <i id="volume-icon" class="fa-solid fa-volume-high text-lg"></i>
+                </button>
+                <div class="w-24 lg:w-32 flex items-center">
+                    <input id="volume-slider" class="premium-slider" type="range" min="0" max="1" step="0.01" value="0.8">
+                </div>
             </div>
         </div>
+
     </div>
     <audio id="stream-audio" crossorigin="anonymous" transition:persist></audio>
 </div>
@@ -83,14 +85,12 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         document.querySelectorAll('.player-trigger, .nav-player-trigger').forEach((btn: any) => {
             const icon = btn.querySelector('i');
             const textSpan = btn.querySelector('.btn-text');
-            const isNav = btn.classList.contains('nav-player-trigger');
-
             if (isPlaying) {
-                if (icon) icon.className = isNav ? 'fa-solid fa-pause btn-icon' : 'fa-solid fa-stop mr-2';
-                if (textSpan) textSpan.textContent = isNav ? 'PAUSE' : 'STOP';
+                if (icon) icon.className = btn.classList.contains('nav-player-trigger') ? 'fa-solid fa-pause btn-icon' : 'fa-solid fa-stop mr-2';
+                if (textSpan) textSpan.textContent = btn.classList.contains('nav-player-trigger') ? 'PAUSE' : 'STOP';
             } else {
-                if (icon) icon.className = isNav ? 'fa-solid fa-play btn-icon' : 'fa-solid fa-play mr-2';
-                if (textSpan) textSpan.textContent = isNav ? 'LISTEN' : 'TUNE IN NOW';
+                if (icon) icon.className = btn.classList.contains('nav-player-trigger') ? 'fa-solid fa-play btn-icon' : 'fa-solid fa-play mr-2';
+                if (textSpan) textSpan.textContent = btn.classList.contains('nav-player-trigger') ? 'LISTEN' : 'TUNE IN NOW';
             }
         });
     }
@@ -104,11 +104,9 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                 const target = (e.target as HTMLElement).closest('#master-play-btn, .player-trigger, .nav-player-trigger');
                 if (!target) return;
 
-                const isPlaying = !audio.paused && audio.src.includes('listen.mp3');
-
-                if (!isPlaying) {
+                if (audio.paused || !audio.src.includes('listen.mp3')) {
                     audio.src = STREAM_URL;
-                    try { await audio.play(); } catch (err) { console.error("Stream error:", err); }
+                    try { await audio.play(); } catch (err) { console.error("Error playing stream:", err); }
                 } else {
                     audio.pause();
                     audio.src = ""; 
@@ -129,14 +127,19 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             const updateVisuals = (v: number) => {
                 const p = v * 100;
                 slider.style.background = `linear-gradient(to right, theme('colors.brand.accent') 0%, theme('colors.brand.accent') ${p}%, rgba(255,255,255,0.1) ${p}%, rgba(255,255,255,0.1) 100%)`;
-                if (volIcon) volIcon.className = v === 0 ? 'fa-solid fa-volume-xmark' : v < 0.5 ? 'fa-solid fa-volume-low' : 'fa-solid fa-volume-high';
+                if (volIcon) volIcon.className = v === 0 ? 'fa-solid fa-volume-xmark text-brand-accent' : v < 0.5 ? 'fa-solid fa-volume-low text-gray-300' : 'fa-solid fa-volume-high text-white';
             };
+
+            slider.value = audio.volume.toString();
+            updateVisuals(audio.volume);
+
             slider.oninput = (e) => {
                 const v = parseFloat((e.target as HTMLInputElement).value);
                 audio.volume = v;
                 updateVisuals(v);
                 if (v > 0) previousVolume = v;
             };
+
             if (muteBtn) {
                 muteBtn.onclick = () => {
                     audio.volume = audio.volume > 0 ? 0 : previousVolume;
@@ -147,32 +150,14 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         }
         syncAllButtons();
     }
+
     document.addEventListener('astro:page-load', initPlayer);
 </script>
 
 <style is:global>
-    .animate-spin-slow { animation: spin 5s linear infinite; }
+    .animate-spin-slow { animation: spin 4s linear infinite; }
     .pause-spin { animation-play-state: paused !important; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-    /* MOBILE-FIRST SEAMLESS MARQUEE */
-    .marquee-window {
-        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-    }
-
-    .marquee-content {
-        display: flex;
-        width: max-content;
-        animation: marquee-scroll 10s linear infinite;
-        will-change: transform;
-    }
-
-    /* Mathematical Loop for 2 instances of text */
-    @keyframes marquee-scroll {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-    }
 
     .premium-slider {
         -webkit-appearance: none; appearance: none;
@@ -182,5 +167,6 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     .premium-slider::-webkit-slider-thumb {
         -webkit-appearance: none; height: 14px; width: 14px;
         border-radius: 50%; background: #ffffff; cursor: pointer;
+        box-shadow: 0 0 10px theme('colors.brand.accent/50');
     }
 </style>

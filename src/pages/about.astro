@@ -8,7 +8,7 @@ const allShows = await getCollection('shows');
 const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
 
-// 2. TIME LOGIC (For Header Status)
+// 2. TIME LOGIC (For Header Status synchronization)
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
 const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
@@ -18,6 +18,7 @@ const currentDayStr = daysArray[dateInUK.getDay()];
 function timeToMins(timeStr: string) {
     if (!timeStr) return 0;
     let [h, m] = timeStr.split(':').map(Number);
+    if (h === 24) h = 0;
     return h * 60 + m;
 }
 
@@ -25,7 +26,7 @@ const currentSlot = rawSlots.find(slot => {
     if (slot.day !== currentDayStr) return false;
     const start = timeToMins(slot.startTime);
     let end = timeToMins(slot.endTime || "00:00");
-    if (end <= start) end += 1440;
+    if (end <= start && end !== 0) end += 1440;
     return currentMins >= start && currentMins < end;
 });
 
