@@ -10,22 +10,12 @@ const allShows = await getCollection('shows');
 const allDjs = await getCollection('djs');
 const allFlyers = await getCollection('flyers').catch(() => []);
 
-// 2. TIME LOGIC (UK Time Synchronization & Midnight Wrap Fix)
+// 2. TIME LOGIC (UK Time Synchronization)
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
 const currentDayIndex = dateInUK.getDay(); 
 const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
 const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
-
-function timeToMins(timeStr: string, isEndTime: boolean = false) {
-    if (!timeStr) return 0;
-    const str = String(timeStr).trim();
-    let [h, m] = str.split(':').map(Number);
-    // Correctly handle 24-hour wrap
-    if (h === 24) h = 0;
-    if (isEndTime && h === 0 && m === 0) return 1440;
-    return h * 60 + m;
-}
 
 // 3. RESOLVE RELATIONSHIPS
 const allShowsDetailed = rawSlots.map((slot) => {
@@ -50,6 +40,15 @@ const allShowsDetailed = rawSlots.map((slot) => {
         displayName: isAutoDj ? "Contrast Selection" : (showEntry?.data.title || slot.show)
     };
 });
+
+function timeToMins(timeStr: string, isEndTime: boolean = false) {
+    if (!timeStr) return 0;
+    const str = String(timeStr).trim();
+    let [h, m] = str.split(':').map(Number);
+    if (h === 24) h = 0;
+    if (isEndTime && h === 0 && m === 0) return 1440;
+    return h * 60 + m;
+}
 
 // 4. TIMELINE CALCULATION
 let timeline: any[] = [];
@@ -113,8 +112,8 @@ const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0,
             </div>
             
             <div class="mb-10 w-full">
-                <h2 class="flex flex-col items-center text-5xl sm:text-7xl md:text-[8rem] lg:text-[9.5rem] font-black tracking-tighter uppercase leading-[0.85] italic select-none">
-                    <span class="text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.6)]">BROADCASTING</span>
+                <h2 class="flex flex-col items-center text-5xl sm:text-7xl md:text-[8rem] lg:text-[9.5rem] font-black tracking-tighter uppercase leading-[0.85] italic select-none text-white">
+                    <span>BROADCASTING</span>
                     <span class="text-transparent bg-clip-text bg-gradient-to-br from-white via-white/80 to-brand-accent drop-shadow-[0_0_10px_theme('colors.brand.accent/10')] px-8 -mx-8 py-2">
                         THE VIBE
                     </span>
@@ -145,10 +144,6 @@ const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0,
                 </a>
             </div>
         </div>
-
-        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-20 animate-bounce hidden md:block text-brand-accent">
-            <i class="fa-solid fa-chevron-down text-xl"></i>
-        </div>
     </section>
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 space-y-24 py-24">
@@ -166,7 +161,7 @@ const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0,
             <div class="bg-brand-surface/40 backdrop-blur-xl rounded-[2rem] border border-white/5 overflow-hidden divide-y divide-white/[0.02] shadow-2xl">
                 {displayedShows.map(slot => (
                     <div class={`relative flex flex-col sm:flex-row sm:items-center p-8 sm:p-10 transition-all duration-500 group border-l-4 ${slot.isLive ? 'bg-gradient-to-r from-brand-accent/[0.05] to-transparent border-brand-accent' : 'hover:bg-white/[0.02] border-transparent'}`}>
-                        <div class="flex-shrink-0 w-40 mb-4 md:mb-0 flex flex-col">
+                        <div class="flex-shrink-0 w-40 mb-4 md:mb-0 flex flex-col text-left">
                             <span class={`text-[10px] font-black uppercase mb-1 tracking-[0.2em] ${slot.isLive ? 'text-brand-accent' : 'text-gray-500'}`}>
                                 {slot.day.split('-')[1]}
                             </span>
@@ -226,16 +221,26 @@ const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0,
             </div>
         </section>
 
-        <section id="sponsors" class="pt-24 pb-12 border-t border-white/5 relative overflow-hidden">
-            <div class="text-center mb-10">
-                <span class="text-[10px] font-black tracking-[0.4em] text-gray-500 uppercase italic opacity-60">Station Partners</span>
-            </div>
-            
-            <div class="flex items-center justify-start md:justify-center overflow-x-auto no-scrollbar gap-x-12 md:gap-x-20 px-6 opacity-40 hover:opacity-100 transition-all duration-700 grayscale hover:grayscale-0">
-                <div class="flex items-center gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white whitespace-nowrap"><i class="fa-solid fa-building text-brand-accent/60"></i> SION SPACES</div>
-                <div class="flex items-center gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white whitespace-nowrap"><i class="fa-solid fa-house text-brand-accent/60"></i> Hyde & Rowe</div>
-                <div class="flex items-center gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white whitespace-nowrap"><i class="fa-solid fa-martini-glass text-brand-accent/60"></i> Barry's Bar</div>
-                <div class="flex items-center gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white whitespace-nowrap"><i class="fa-solid fa-car text-brand-accent/60"></i> Sayez Car Care</div>
+        <section id="sponsors" class="pt-24 pb-12 border-t border-white/5 relative">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <span class="text-[10px] font-black tracking-[0.4em] text-gray-500 uppercase italic opacity-60">Station Partners</span>
+                </div>
+                
+                <div class="grid grid-cols-2 md:flex md:flex-wrap justify-center items-center gap-8 md:gap-20 opacity-40 hover:opacity-100 transition-all duration-700 grayscale hover:grayscale-0">
+                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105">
+                        <i class="fa-solid fa-building text-brand-accent/60"></i> SION SPACES
+                    </div>
+                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105">
+                        <i class="fa-solid fa-house text-brand-accent/60"></i> HYDE & ROWE
+                    </div>
+                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105">
+                        <i class="fa-solid fa-martini-glass text-brand-accent/60"></i> BARRY'S BAR
+                    </div>
+                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105">
+                        <i class="fa-solid fa-car text-brand-accent/60"></i> SAYEZ CAR CARE
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -250,10 +255,6 @@ const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0,
 <style>
     .fa-spin-slow { animation: spin 12s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    
-    /* Utility to hide scrollbar but keep swiping */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
 <script>
