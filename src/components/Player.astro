@@ -10,6 +10,7 @@ const {
     djName = "Contrast DJ" 
 } = Astro.props;
 
+// Combining them for the scrolling marquee
 const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 ---
 
@@ -32,7 +33,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                 
                 <div class="player-marquee-container relative w-full overflow-hidden h-5 md:h-7">
                     <div class="player-marquee-inner flex whitespace-nowrap italic font-black text-white text-xs md:text-lg uppercase">
-                        <span class="pr-10">{displayInfo}</span>
+                        <span class="pr-10 marquee-text-source">{displayInfo}</span>
                         <span class="pr-10">{displayInfo}</span>
                     </div>
                 </div>
@@ -56,12 +57,71 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 
     </div>
     <div class="h-[env(safe-area-inset-bottom)] w-full"></div>
+    
     <audio id="stream-audio" crossorigin="anonymous" transition:persist></audio>
 </div>
 
 <script>
     const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
+    // IMPORTANT: Ensure your image is moved to public/images/contrast.png
+    const STATION_LOGO_PATH = '/images/contrast.png';
     let previousVolume = 0.8;
+
+    // --- NEW FUNCTION: MEDIA SESSION API ---
+    function updateMediaSession() {
+        if ('mediaSession' in navigator) {
+            // Grabs whatever is currently showing in the marquee
+            const marqueeText = document.querySelector('.marquee-text-source')?.textContent || "CONTRAST RADIO";
+            
+            // Default fallback values
+            let artistStr = "Contrast Radio";
+            let titleStr = "Live Broadcast";
+
+            // Tries to split "DJ NAME - SHOW NAME"
+            if (marqueeText.includes(' - ')) {
+                const parts = marqueeText.split(' - ');
+                artistStr = parts[0] || "Contrast DJ";
+                titleStr = parts[1] || "Contrast Selection";
+            } else {
+                 // If format is different, just show the whole text as title
+                titleStr = marqueeText;
+            }
+
+            // Update the phone's Now Playing info
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: titleStr,
+                artist: artistStr,
+                album: "Contrast Radio - The Next Movement",
+                artwork: [
+                    // We use the same high-res image for all sizes; modern OSs handle scaling.
+                    { src: STATION_LOGO_PATH, sizes: '96x96',   type: 'image/png' },
+                    { src: STATION_LOGO_PATH, sizes: '128x128', type: 'image/png' },
+                    { src: STATION_LOGO_PATH, sizes: '192x192', type: 'image/png' },
+                    { src: STATION_LOGO_PATH, sizes: '256x256', type: 'image/png' },
+                    { src: STATION_LOGO_PATH, sizes: '512x512', type: 'image/png' },
+                ]
+            });
+
+            // Ensure lock screen buttons work
+            const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+            if (audio) {
+                    navigator.mediaSession.setActionHandler('play', () => {
+                    if (!audio.src.includes('listen.mp3')) audio.src = STREAM_URL;
+                    audio.play().catch(e => console.error("Lock screen play error", e));
+                });
+                navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+                navigator.mediaSession.setActionHandler('stop', () => {
+                    audio.pause();
+                    audio.src = ""; // Clear buffer on stop
+                });
+                    // Disable seek buttons for live radio
+                navigator.mediaSession.setActionHandler('seekbackward', null);
+                navigator.mediaSession.setActionHandler('seekforward', null);
+            }
+        }
+    }
+    // ---------------------------------------
+
 
     function syncAllButtons() {
         const audio = document.getElementById('stream-audio') as HTMLAudioElement;
@@ -76,6 +136,10 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             vinyl?.classList.remove('pause-spin');
             statusIcon?.classList.replace('hidden', 'flex');
             if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-stop text-xl md:text-2xl';
+            
+            // FIRE THE UPDATE WHEN PLAYING STARTS
+            updateMediaSession();
+
         } else {
             vinyl?.classList.add('pause-spin');
             statusIcon?.classList.replace('flex', 'hidden');
@@ -104,21 +168,27 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                 const target = (e.target as HTMLElement).closest('#master-play-btn, .player-trigger, .nav-player-trigger');
                 if (!target) return;
 
+                // Check if we need to start or stop
                 if (audio.paused || !audio.src.includes('listen.mp3')) {
+                    // STARTING
                     audio.src = STREAM_URL;
                     try { await audio.play(); } catch (err) { console.error("Stream error:", err); }
                 } else {
+                    // STOPPING
                     audio.pause();
+                    // Important for live radio: clear source to stop buffering
                     audio.src = ""; 
                 }
                 syncAllButtons();
             });
 
+            // Keep UI synced if audio stops for other reasons (buffering, external pause)
             audio.addEventListener('play', syncAllButtons);
             audio.addEventListener('pause', syncAllButtons);
             window.__eventListenersBound = true;
         }
 
+        // --- Volume Slider Logic (Unchanged) ---
         const slider = document.getElementById('volume-slider') as HTMLInputElement;
         const volIcon = document.getElementById('volume-icon');
         const muteBtn = document.getElementById('mute-btn');
@@ -137,6 +207,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                 }
             };
 
+            // Initialize slider position based on current audio volume
             slider.value = audio.volume.toString();
             updateVisuals(audio.volume);
 
@@ -149,15 +220,20 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 
             if (muteBtn) {
                 muteBtn.onclick = () => {
+                    // Toggle between 0 and the last known volume
                     audio.volume = audio.volume > 0 ? 0 : previousVolume;
                     slider.value = audio.volume.toString();
                     updateVisuals(audio.volume);
                 };
             }
         }
+        // ------------------------------------
+
+        // Final sync on load to ensure correct state
         syncAllButtons();
     }
 
+    // Using astro:page-load ensures this runs on initial load AND subsequent navigations
     document.addEventListener('astro:page-load', initPlayer);
 </script>
 
@@ -174,16 +250,19 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         cursor: pointer;
     }
     
+    /* CHROME/SAFARI THUMB */
     .premium-slider::-webkit-slider-thumb {
         -webkit-appearance: none; height: 16px; width: 16px;
         border-radius: 50%; background: #ffffff; cursor: pointer;
-        box-shadow: 0 0 10px rgba(255, 59, 59, 0.5);
+        box-shadow: 0 0 10px rgba(255, 59, 59, 0.5); /* Red glow */
         border: none;
+        margin-top: -6px; /* Centers thumb on the track */
     }
 
+    /* FIREFOX THUMB */
     .premium-slider::-moz-range-thumb {
         height: 16px; width: 16px; border-radius: 50%;
         background: #ffffff; cursor: pointer; border: none;
-        box-shadow: 0 0 10px rgba(255, 59, 59, 0.5);
+        box-shadow: 0 0 10px rgba(255, 59, 59, 0.5); /* Red glow */
     }
 </style>
