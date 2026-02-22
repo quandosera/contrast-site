@@ -1,5 +1,5 @@
 ---
-// src/pages/coming-soon.astro
+// Final refined version: No social icons, No full-stops, Smooth EQ.
 ---
 <!doctype html>
 <html lang="en-GB" class="h-full bg-brand-dark">
@@ -15,7 +15,7 @@
 <body class="h-full flex flex-col items-center justify-center text-white overflow-hidden relative antialiased font-['Inter',sans-serif]">
     
     <div class="absolute inset-0 z-0">
-        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1920&auto=format&fit=crop" alt="Radio Studio" class="w-full h-full object-cover opacity-10 scale-110 pointer-events-none select-none" />
+        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop" alt="" class="w-full h-full object-cover opacity-10 scale-110 pointer-events-none select-none grayscale" />
         
         <div class="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-brand-accent/15 rounded-full blur-[120px] animate-pulse pointer-events-none"></div>
         <div class="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[120px] animate-pulse pointer-events-none" style="animation-delay: 1s;"></div>
@@ -31,7 +31,6 @@
                 <h1 class="text-4xl md:text-5xl font-black italic tracking-tighter uppercase leading-none">
                     CONTRAST<span class="text-brand-accent drop-shadow-[0_0_15px_rgba(255,59,59,0.5)]">RADIO</span>
                 </h1>
-                <div class="absolute inset-0 bg-gradient-to-tr from-brand-accent/5 to-transparent rounded-[2rem] pointer-events-none"></div>
             </div>
             
             <div class="mt-6 flex items-center justify-center gap-3">
@@ -39,23 +38,20 @@
                     <span class="absolute w-3 h-3 bg-brand-accent rounded-full animate-ping opacity-60"></span>
                     <span class="w-2 h-2 rounded-full bg-brand-accent relative z-10"></span>
                 </div>
-                <span class="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-gray-500">Signal Incoming</span>
+                <span class="text-[10px] md:text-xs font-black uppercase tracking-[0.6em] text-gray-500 italic">Signal Incoming</span>
             </div>
         </div>
         
         <div class="mb-16 inline-block overflow-visible max-w-full">
-            <h2 class="text-6xl sm:text-7xl md:text-[9rem] font-black uppercase italic tracking-tighter leading-[0.9] select-none text-center">
+            <h2 class="text-6xl sm:text-7xl md:text-[9.5rem] font-black uppercase italic tracking-tighter leading-[0.8] select-none text-center">
                 <span class="text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] block">COMING</span> 
-                
-                <div class="inline-block mt-2 md:mt-0">
-                    <span class="inline-block text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-brand-accent/80 drop-shadow-[0_0_40px_rgba(255,59,59,0.3)] pr-6 md:pr-10 py-2 -mr-6 md:-mr-10">
-                        SOON
-                    </span><span class="text-brand-accent -ml-4 md:-ml-6 relative z-10 drop-shadow-[0_0_20px_rgba(255,59,59,0.6)]">.</span>
-                </div>
+                <span class="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-brand-accent/80 drop-shadow-[0_0_40px_rgba(255,59,59,0.3)]">
+                    SOON
+                </span>
             </h2>
         </div>
         
-        <div id="countdown" class="grid grid-cols-4 gap-3 md:gap-6 w-full max-w-3xl mx-auto">
+        <div id="countdown" class="grid grid-cols-4 gap-4 md:gap-8 w-full max-w-2xl mx-auto">
             {[ 
                 { id: "days", label: "Days", color: "text-brand-accent" },
                 { id: "hours", label: "Hours", color: "text-white" },
@@ -63,38 +59,32 @@
                 { id: "seconds", label: "Secs", color: "text-white" } 
             ].map((item) => (
                 <div class="flex flex-col items-center">
-                    <div class="bg-brand-surface/40 backdrop-blur-md border border-white/5 rounded-2xl md:rounded-[2rem] w-full aspect-square flex flex-col items-center justify-center shadow-2xl relative overflow-hidden group transition-all hover:border-brand-accent/30">
+                    <div class="bg-brand-surface/40 backdrop-blur-md border border-white/5 rounded-[1.5rem] md:rounded-[2.5rem] w-full aspect-square flex flex-col items-center justify-center shadow-2xl relative overflow-hidden group transition-all hover:border-brand-accent/30">
                         <span id={item.id} class={`${item.color} text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter block tabular-nums leading-none z-10`}>00</span>
-                        
                         <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-brand-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
-                    <span class="mt-3 md:mt-4 text-[9px] md:text-[11px] uppercase tracking-[0.3em] md:tracking-[0.4em] text-gray-500 font-black">{item.label}</span>
+                    <span class="mt-4 text-[9px] md:text-[11px] uppercase tracking-[0.4em] text-gray-600 font-black italic">{item.label}</span>
                 </div>
             ))}
         </div>
     </div>
 
-    <div class="absolute bottom-0 left-0 w-full h-2 flex items-end justify-center gap-[2px] md:gap-1 px-2 opacity-40 z-0">
-        {Array.from({ length: 24 }).map((_, i) => (
-            <div class={`bar flex-1 max-w-[40px] bg-gradient-to-t from-brand-accent to-brand-accent/30 rounded-t-sm`} style={`animation-delay: ${i * 0.1}s`}></div>
+    <div class="absolute bottom-0 left-0 w-full h-12 flex items-end justify-center gap-3 md:gap-6 px-8 opacity-20 z-0">
+        {Array.from({ length: 12 }).map((_, i) => (
+            <div 
+                class="bar flex-1 max-w-[12px] bg-gradient-to-t from-brand-accent to-brand-accent/40 rounded-t-full" 
+                style={`animation-delay: ${i * 0.25}s`}
+            ></div>
         ))}
     </div>
 
     <script is:inline>
-        // Target date fixed to October 22, 2026
         const targetDate = new Date(2026, 9, 22, 11, 0, 0).getTime();
 
         function updateCountdown() {
             const now = new Date().getTime();
             const distance = targetDate - now;
-
-            if (distance < 0) {
-                ["days", "hours", "minutes", "seconds"].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.innerText = "00";
-                });
-                return;
-            }
+            if (distance < 0) return;
 
             const d = Math.floor(distance / (1000 * 60 * 60 * 24));
             const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -119,22 +109,24 @@
 </html>
 
 <style>
-    /* Audio Bar Animation */
+    /* SMOOTH EQ ANIMATION: 
+       Lower peak height (40px) and longer duration (3s) 
+       for a more ambient, rhythmic feel.
+    */
     @keyframes bar-grow { 
-        0%, 100% { height: 10px; opacity: 0.3; } 
-        50% { height: 60px; opacity: 1; } 
+        0%, 100% { height: 10px; opacity: 0.3; transform: scaleY(1); } 
+        50% { height: 45px; opacity: 1; transform: scaleY(1.2); } 
     }
     .bar { 
-        animation: bar-grow 1.5s ease-in-out infinite; 
+        animation: bar-grow 3.5s ease-in-out infinite; 
         min-height: 10px;
         transform-origin: bottom;
     }
 
-    /* Prevent mobile horizontal scroll & bounce */
     html, body {
         overflow: hidden;
         height: 100%;
         width: 100%;
-        background-color: theme('colors.brand.dark');
+        background-color: #0a0a0a;
     }
 </style>
