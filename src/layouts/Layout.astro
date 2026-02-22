@@ -11,6 +11,10 @@ const {
     currentShow = "Contrast Selection" 
 } = Astro.props;
 
+/**
+ * Dynamic Title Logic
+ * If a specific show is playing, we prioritize that in the browser tab
+ */
 const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto DJ Mix" 
     ? `${currentShow} | Contrast Radio` 
     : title;
@@ -40,10 +44,9 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 
         <a class="skip-link" href="#main-content">Skip to content</a>
 
-        <!-- Premium Fixed Header -->
         <header class="fixed w-full top-0 z-50 glass h-16 transition-all duration-300">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
-                <!-- Logo -->
+                
                 <a href="/" class="flex items-center gap-3 group">
                     <div class="w-8 h-8 rounded-full bg-[#9b51e0] flex items-center justify-center text-white group-hover:scale-105 transition-transform shadow-lg shadow-purple-500/20">
                         <i class="fa-solid fa-podcast text-base"></i>
@@ -54,7 +57,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     </div>
                 </a>
 
-                <!-- Desktop Nav -->
                 <nav class="hidden md:flex items-center space-x-8">
                     <a href="/" class="text-[0.7rem] font-black tracking-widest hover:text-[#b77bed] transition-colors uppercase">HOME</a>
                     <a href="/about" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">ABOUT</a>
@@ -64,7 +66,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     <a href="/contact" class="text-[0.7rem] font-black tracking-widest text-gray-400 hover:text-white transition-colors uppercase">CONTACT</a>
                 </nav>
 
-                <!-- Header Actions -->
                 <div class="flex items-center gap-4">
                     <button class="hidden md:flex player-trigger bg-white text-[#13111C] w-36 justify-center py-2 rounded-full font-black text-[0.65rem] tracking-widest hover:bg-gray-200 transition-all items-center gap-2 shadow-xl active:scale-95 uppercase">
                         <i class="fa-solid fa-play text-[10px]"></i> Listen Live
@@ -76,7 +77,6 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             </div>
         </header>
 
-        <!-- Mobile Menu Overlay -->
         <div id="mobile-menu" class="fixed inset-0 bg-[#13111C]/98 backdrop-blur-2xl z-40 hidden flex-col justify-center items-center space-y-8 pt-10">
             <nav class="flex flex-col items-center space-y-8">
                 <a href="/" class="text-3xl font-black text-white hover:text-[#9b51e0]">HOME</a>
@@ -85,16 +85,16 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 <a href="/schedule" class="text-3xl font-black text-gray-400 hover:text-white">SCHEDULE</a>
                 <a href="/gallery" class="text-3xl font-black text-gray-400 hover:text-white">GALLERY</a>
                 <a href="/contact" class="text-3xl font-black text-gray-400 hover:text-white">CONTACT</a>
-                <button class="player-trigger bg-[#9b51e0] text-white w-64 py-4 flex justify-center items-center gap-3 rounded-full font-black text-lg mt-4 shadow-lg shadow-purple-500/30 uppercase tracking-widest"><i class="fa-solid fa-play text-[14px]"></i> Listen Live</button>
+                <button class="player-trigger bg-[#9b51e0] text-white w-64 py-4 flex justify-center items-center gap-3 rounded-full font-black text-lg mt-4 shadow-lg shadow-purple-500/30 uppercase tracking-widest">
+                    <i class="fa-solid fa-play text-[14px]"></i> Listen Live
+                </button>
             </nav>
         </div>
 
-        <!-- Content Slot -->
         <main id="main-content" class="min-h-screen">
             <slot />
         </main>
 
-        <!-- Compact Footer -->
         <footer class="bg-[#0a090f] py-12 border-t border-gray-800/40">
             <div class="container mx-auto px-4 text-center">
                 <div class="flex items-center justify-center gap-2 text-xl font-black mb-6 italic">
@@ -112,10 +112,9 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
             </div>
         </footer>
 
-        <!-- Balanced Persistent Bottom Player -->
         <div class="fixed bottom-0 left-0 w-full glass-player z-50 px-4 py-2.5 shadow-[0_-5px_25px_rgba(0,0,0,0.7)]" transition:persist>
             <div class="container mx-auto flex items-center justify-between gap-4">
-                <!-- Info Section -->
+                
                 <div class="flex items-center gap-3 min-w-0 flex-1 md:flex-none md:w-1/3">
                     <div class="relative w-11 h-11 flex-shrink-0 bg-[#1E1B29] rounded-lg overflow-hidden flex items-center justify-center border border-gray-700/60 shadow-inner group">
                         <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=100&auto=format&fit=crop" alt="Album Art" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
@@ -131,31 +130,26 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     </div>
                 </div>
 
-                <!-- Control Section -->
                 <div class="flex items-center justify-end md:justify-center flex-shrink-0 md:w-1/3">
                     <button id="master-play-btn" class="w-11 h-11 flex-shrink-0 rounded-full bg-white text-[#13111C] flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]" aria-label="Play Stream">
                         <i class="fa-solid fa-play ml-0.5 text-base"></i>
                     </button>
                 </div>
 
-                <!-- Volume Section (Desktop) -->
-                <div class="hidden md:flex items-center justify-end gap-3 w-1/3">
+                <div class="hidden md:flex items-center justify-end gap-3 w-1/3 group">
                     <button id="mute-btn" class="text-gray-500 hover:text-white transition-colors w-5" aria-label="Mute">
-                        <i class="fa-solid fa-volume-high text-sm"></i>
+                        <i id="volume-icon" class="fa-solid fa-volume-high text-sm transition-colors"></i>
                     </button>
                     <div class="w-24 flex items-center">
-                        <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.7">
+                        <input id="volume-slider" class="premium-slider" type="range" min="0" max="1" step="0.01" value="0.7">
                     </div>
                 </div>
             </div>
-            <!-- Persistent Audio Element -->
             <audio id="stream-audio" crossorigin="anonymous" transition:persist></audio>
         </div>
 
-        <!-- Hidden Metadata to bridge data between pages -->
         <div id="show-metadata" data-show={currentShow} hidden></div>
 
-        <!-- COMPREHENSIVE SCRIPTS -->
         <script>
             document.addEventListener('astro:page-load', () => {
                 const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
@@ -163,11 +157,16 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 const menuBtn = document.getElementById('mobile-menu-btn');
                 const mobileMenu = document.getElementById('mobile-menu');
                 const playBtns = document.querySelectorAll('#master-play-btn, .player-trigger');
+                
+                // Fetch elements from DOM
                 const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
                 const muteBtn = document.getElementById('mute-btn');
+                const volumeIcon = document.getElementById('volume-icon');
                 const playerStatusIcon = document.getElementById('player-status-icon');
                 const nowPlayingText = document.getElementById('now-playing');
                 const metaShow = document.getElementById('show-metadata');
+
+                let previousVolume = 0.7;
 
                 // 1. Mobile Menu Toggling
                 menuBtn?.addEventListener('click', () => {
@@ -184,41 +183,60 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     nowPlayingText.innerText = metaShow.getAttribute('data-show') || "Contrast Selection";
                 }
 
-                const updateSliderFill = (val: number) => {
-                    if (volumeSlider) volumeSlider.style.backgroundSize = `${val * 100}% 100%`;
+                /**
+                 * 3. PREMIUM SLIDER VISUALS
+                 * Updates the linear-gradient so the left of the thumb is purple 
+                 * and the right is the dark track grey.
+                 */
+                const updateSliderVisuals = (val: number) => {
+                    // Re-fetch slider to ensure we aren't using a cloned/deleted element
+                    const activeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+                    if (!activeSlider || !volumeIcon) return;
+                    
+                    const percent = val * 100;
+                    activeSlider.style.background = `linear-gradient(to right, #9b51e0 0%, #9b51e0 ${percent}%, #374151 ${percent}%, #374151 100%)`;
+                    
+                    // Update Volume Icon based on level
+                    volumeIcon.className = 'fa-solid ';
+                    if (val === 0) {
+                        volumeIcon.classList.add('fa-volume-xmark', 'text-gray-600');
+                    } else if (val < 0.5) {
+                        volumeIcon.classList.add('fa-volume-low', 'text-gray-400');
+                    } else {
+                        volumeIcon.classList.add('fa-volume-high', 'text-white');
+                    }
                 };
 
                 const updateUIState = (isPlaying: boolean) => {
-                    // Update master button icons
+                    // Sync master play icons
                     document.querySelectorAll('#master-play-btn i').forEach((i: any) => {
                         i.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play ml-0.5';
                     });
                     
-                    // Update status bar icon
+                    // Pulse icon on album art
                     if (isPlaying) {
-                        playerStatusIcon?.classList.remove('hidden');
-                        playerStatusIcon?.classList.add('flex');
+                        playerStatusIcon?.classList.replace('hidden', 'flex');
                     } else {
-                        playerStatusIcon?.classList.remove('flex');
-                        playerStatusIcon?.classList.add('hidden');
+                        playerStatusIcon?.classList.replace('flex', 'hidden');
                     }
                     
-                    // Sync all triggers on the page (Live badges, hero buttons)
+                    // Sync "Listen Live" buttons across the whole page
                     document.querySelectorAll('.player-trigger').forEach((btn: any) => {
                         btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause text-[10px]"></i> PAUSE' : '<i class="fa-solid fa-play text-[10px]"></i> LISTEN LIVE';
                     });
                 };
 
                 if (audio) {
-                    // 3. Audio Continuity: Sync UI if music is already playing from previous page
+                    // CONTINUITY: Check if music is playing from the previous page
                     if (!audio.paused && audio.src !== "") updateUIState(true);
                     
+                    // Init Slider Level & Track Colors
                     if (volumeSlider) {
                         volumeSlider.value = String(audio.volume);
-                        updateSliderFill(audio.volume);
+                        updateSliderVisuals(audio.volume);
                     }
 
-                    // 4. Global Flag Initialization
+                    // Global initialization (runs once per site visit)
                     if (!window.__playerInitialized) {
                         window.__playerInitialized = true;
                         audio.volume = 0.7;
@@ -226,7 +244,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         audio.addEventListener('pause', () => updateUIState(false));
                     }
 
-                    // 5. Safe Event Re-binding (Prevents listener stacking)
+                    // Playback Control Re-binding (Clears listeners by cloning)
                     playBtns.forEach(btn => {
                         const newBtn = btn.cloneNode(true);
                         btn.parentNode?.replaceChild(newBtn, btn);
@@ -235,47 +253,45 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                                 try {
                                     audio.src = STREAM_URL;
                                     await audio.play();
-                                    // FORCE UI UPDATE ON PLAY
                                     updateUIState(true);
                                 } catch (err) { 
-                                    console.error('Playback failed', err);
+                                    console.error('Playback error:', err);
                                     updateUIState(false);
                                 }
                             } else {
                                 audio.pause();
                                 audio.src = "";
-                                // FORCE UI UPDATE ON PAUSE
                                 updateUIState(false);
                             }
                         });
                     });
 
-                    // 6. Volume Control Re-binding
+                    // Volume Input Re-binding
                     if (volumeSlider) {
                         const newSlider = volumeSlider.cloneNode(true) as HTMLInputElement;
                         volumeSlider.parentNode?.replaceChild(newSlider, volumeSlider);
                         newSlider.addEventListener('input', (e) => {
                             const v = parseFloat((e.target as HTMLInputElement).value);
                             audio.volume = v;
-                            updateSliderFill(v);
+                            updateSliderVisuals(v);
                         });
                     }
 
-                    // 7. Mute Logic
+                    // Mute logic with physical thumb "slide"
                     if (muteBtn) {
                         const newMuteBtn = muteBtn.cloneNode(true) as HTMLElement;
                         muteBtn.parentNode?.replaceChild(newMuteBtn, muteBtn);
-                        let prevVol = audio.volume || 0.7;
                         newMuteBtn.addEventListener('click', () => {
+                            const slider = document.getElementById('volume-slider') as HTMLInputElement;
                             if (audio.volume > 0) {
-                                prevVol = audio.volume;
+                                previousVolume = audio.volume;
                                 audio.volume = 0;
-                                if(volumeSlider) volumeSlider.value = "0";
-                                updateSliderFill(0);
+                                if (slider) slider.value = "0";
+                                updateSliderVisuals(0);
                             } else {
-                                audio.volume = prevVol;
-                                if(volumeSlider) volumeSlider.value = String(prevVol);
-                                updateSliderFill(prevVol);
+                                audio.volume = previousVolume;
+                                if (slider) slider.value = String(previousVolume);
+                                updateSliderVisuals(previousVolume);
                             }
                         });
                     }
@@ -286,26 +302,19 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
-    /* CSS Variables for Dark Theme Consistency */
+    /* GLOBAL BRAND STYLES
+       Preserving all variables and foundational dark-theme rules.
+    */
     :root {
         --brand-purple: #9b51e0;
         --brand-dark: #13111C;
         --brand-surface: #1E1B29;
     }
 
-    /* Base Styling */
-    html, body { 
-        background-color: var(--brand-dark); 
-        color: white;
-    }
-
-    /* Reset default link colors shown in screenshot */
-    a {
-        color: inherit;
-        text-decoration: none;
-    }
+    html, body { background-color: var(--brand-dark); color: white; font-family: 'Inter', sans-serif; }
+    a { color: inherit; text-decoration: none; }
     
-    /* Glassmorphism Components */
+    /* GLASSMORPISM UTILITIES */
     .glass { 
         background: rgba(19, 17, 28, 0.75); 
         backdrop-filter: blur(12px); 
@@ -320,16 +329,44 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         border-top: 1px solid rgba(255, 255, 255, 0.1); 
     }
 
-    /* Accessibility: Skip Link */
+    /* ACCESSIBILITY */
     .skip-link { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
-    .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: var(--brand-dark); color: white; border-radius: 0.5rem; text-decoration: none; font-weight: 800; border: 1px solid var(--brand-purple); }
+    .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: var(--brand-dark); color: white; border-radius: 0.5rem; border: 1px solid var(--brand-purple); }
 
-    /* Custom Range Slider */
-    input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: #ffffff; cursor: pointer; margin-top: -4.5px; box-shadow: 0 0 10px rgba(155, 81, 224, 0.5); }
-    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 3px; cursor: pointer; background: rgba(255, 255, 255, 0.1); border-radius: 2px; background-image: linear-gradient(var(--brand-purple), var(--brand-purple)); background-repeat: no-repeat; }
+    /**
+     * PREMIUM SLIDER STYLING
+     * Uses appearance-none to hide default browser look.
+     */
+    .premium-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 5px;
+        background: #374151; /* Dark grey track for un-filled area */
+        border-radius: 999px;
+        cursor: pointer;
+        outline: none;
+    }
 
-    /* Scrollbar */
+    /* Thumb (The White Dot) */
+    .premium-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 14px;
+        width: 14px;
+        border-radius: 50%;
+        background: #ffffff;
+        box-shadow: 0 0 12px rgba(155, 81, 224, 0.4);
+        transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Interaction: Thumb scales and glows more on hover */
+    .premium-slider:hover::-webkit-slider-thumb {
+        transform: scale(1.25);
+        box-shadow: 0 0 15px rgba(155, 81, 224, 0.6);
+    }
+
+    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--brand-dark); }
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
