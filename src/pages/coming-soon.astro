@@ -1,5 +1,5 @@
 ---
-// Final UX Polish: Full-width Studio EQ, Centered Typography, No Full Stop.
+// Final UX Polish: High-Visibility Background, Wall-to-Wall EQ, Perfectly Centered.
 ---
 <!doctype html>
 <html lang="en-GB" class="h-full bg-brand-dark">
@@ -15,14 +15,18 @@
 <body class="h-full flex flex-col items-center justify-center text-white overflow-hidden relative antialiased font-['Inter',sans-serif]">
     
     <div class="absolute inset-0 z-0">
-        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop" alt="" class="w-full h-full object-cover opacity-10 scale-110 pointer-events-none select-none grayscale" />
-        <div class="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-brand-accent/15 rounded-full blur-[120px] animate-pulse pointer-events-none"></div>
-        <div class="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[120px] animate-pulse pointer-events-none" style="animation-delay: 1s;"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/40 via-brand-dark/90 to-brand-dark pointer-events-none"></div>
+        <img 
+            src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop" 
+            alt="" 
+            class="w-full h-full object-cover opacity-25 scale-105 pointer-events-none select-none grayscale" 
+        />
+        <div class="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-brand-accent/20 rounded-full blur-[120px] animate-pulse pointer-events-none"></div>
+        <div class="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-brand-accent/15 rounded-full blur-[120px] animate-pulse pointer-events-none" style="animation-delay: 1s;"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/40 via-brand-dark/80 to-brand-dark pointer-events-none"></div>
         <div class="absolute inset-0 opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none"></div>
     </div>
 
-    <div class="relative z-10 w-full max-w-5xl px-6 py-12 text-center flex flex-col items-center">
+    <div class="relative z-10 w-full max-w-6xl px-6 py-12 text-center flex flex-col items-center">
         
         <div class="mb-10 md:mb-14 flex flex-col items-center">
             <div class="relative inline-flex items-center justify-center bg-brand-surface/40 backdrop-blur-2xl px-10 py-5 rounded-[2rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
@@ -36,20 +40,20 @@
                     <span class="absolute w-3 h-3 bg-brand-accent rounded-full animate-ping opacity-60"></span>
                     <span class="w-2 h-2 rounded-full bg-brand-accent relative z-10"></span>
                 </div>
-                <span class="text-[10px] md:text-xs font-black uppercase tracking-[0.6em] text-gray-500 italic">Signal Incoming</span>
+                <span class="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-gray-500 italic">Signal Incoming</span>
             </div>
         </div>
         
         <div class="mb-14 w-full flex flex-col items-center overflow-visible">
-            <h2 class="text-6xl sm:text-7xl md:text-[9.5rem] font-black uppercase italic tracking-tighter leading-[0.85] select-none text-center">
+            <h2 class="text-7xl sm:text-8xl md:text-[10rem] font-black uppercase italic tracking-tighter leading-[0.8] select-none text-center overflow-visible">
                 <span class="text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] block">COMING</span> 
-                <span class="inline-block text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-brand-accent/80 drop-shadow-[0_0_40px_rgba(255,59,59,0.3)] px-6">
+                <span class="inline-block text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-brand-accent/80 drop-shadow-[0_0_40px_rgba(255,59,59,0.3)] px-8">
                     SOON
                 </span>
             </h2>
         </div>
         
-        <div id="countdown" class="grid grid-cols-4 gap-3 md:gap-8 w-full max-w-2xl mx-auto">
+        <div id="countdown" class="grid grid-cols-4 gap-4 md:gap-8 w-full max-w-2xl mx-auto">
             {[ 
                 { id: "days", label: "Days", color: "text-brand-accent" },
                 { id: "hours", label: "Hours", color: "text-white" },
@@ -61,14 +65,14 @@
                         <span id={item.id} class={`${item.color} text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter block tabular-nums leading-none z-10`}>00</span>
                         <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-brand-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     </div>
-                    <span class="mt-4 text-[8px] md:text-[10px] uppercase tracking-[0.4em] text-gray-600 font-black italic">{item.label}</span>
+                    <span class="mt-4 text-[9px] md:text-[11px] uppercase tracking-[0.4em] text-gray-600 font-black italic">{item.label}</span>
                 </div>
             ))}
         </div>
     </div>
 
-    <div class="absolute bottom-0 left-0 w-full h-16 flex items-end justify-center gap-[2px] md:gap-1 px-0 opacity-25 z-0">
-        {Array.from({ length: 30 }).map((_, i) => (
+    <div class="absolute bottom-0 left-0 w-full h-16 flex items-end justify-between gap-[1px] md:gap-1 px-0 opacity-25 z-0">
+        {Array.from({ length: 60 }).map((_, i) => (
             <div 
                 class="bar flex-1 bg-gradient-to-t from-brand-accent to-brand-accent/40 rounded-t-sm" 
                 style={`animation-delay: ${Math.random() * 2}s`}
@@ -99,15 +103,37 @@
 </html>
 
 <style>
-    /* SMOOTH RHYTHMIC EQ */
+    /* SMOOTH RHYTHMIC EQ: 
+       Slower animation (4s), subtle height change, and a premium color gradient.
+    */
     @keyframes bar-grow { 
-        0%, 100% { height: 10px; opacity: 0.3; transform: scaleY(1); } 
-        50% { height: 60px; opacity: 1; transform: scaleY(1.3); } 
+        0%, 100% { 
+            height: 10px; 
+            opacity: 0.4; /* Slightly higher base opacity for presence */
+            transform: scaleY(1); 
+        } 
+        50% { 
+            height: 45px; /* Reduced peak height for a more controlled feel */
+            opacity: 1; 
+            transform: scaleY(1.1); /*Subtle scale */
+        } 
     }
+
     .bar { 
-        animation: bar-grow 3s ease-in-out infinite; 
+        animation: bar-grow 4s ease-in-out infinite; /* Slower, 4-second loop */
         min-height: 10px;
         transform-origin: bottom;
+        /* PREMIUM GRADIENT: 
+           Fades from your solid brand red at the bottom to a more transparent, 
+           darker red at the top. This adds depth and looks like a real light.
+        */
+        background: linear-gradient(to top, theme('colors.brand.accent') 0%, theme('colors.brand.accent/30') 100%);
     }
-    html, body { overflow: hidden; height: 100%; width: 100%; background-color: #0a0a0a; }
+
+    html, body { 
+        overflow: hidden; 
+        height: 100%; 
+        width: 100%; 
+        background-color: #0a0a0a; 
+    }
 </style>
