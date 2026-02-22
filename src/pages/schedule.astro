@@ -10,11 +10,13 @@ const rawSlots = scheduleDoc?.data?.allSlots || [];
 const allShows = await getCollection('shows');
 const allDjs = await getCollection('djs');
 
-// 2. TIME LOGIC
+// 2. TIME LOGIC (UK Time Synchronization)
 const ukTimeOptions = { timeZone: 'Europe/London' };
 const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
 const currentDayIndex = dateInUK.getDay(); 
 const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
+
+// Mapping for your 1-mon, 2-tue naming convention
 const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
 const currentDayStr = daysArray[currentDayIndex];
 const yesterdayStr = daysArray[(currentDayIndex + 6) % 7];
@@ -26,9 +28,10 @@ function timeToMins(timeStr: string) {
     return h * 60 + m;
 }
 
-// 3. RESOLVE RELATIONSHIPS
+// 3. RESOLVE RELATIONSHIPS & LIVE STATUS
 const scheduleDetailed = rawSlots.map((slot) => {
     const isAutoDj = slot.show === 'Auto DJ' || slot.show === 'auto-dj';
+    
     const showEntry = !isAutoDj ? allShows.find(s => 
         s.id === slot.show || 
         s.data.title === slot.show ||
@@ -36,6 +39,7 @@ const scheduleDetailed = rawSlots.map((slot) => {
     ) : null;
 
     const firstHostId = showEntry?.data?.hosts?.[0];
+    
     const djEntry = firstHostId ? allDjs.find(d => {
         const safeId = d.id.replace(/\.[^/.]+$/, ""); 
         return safeId === firstHostId || d.data.slug === firstHostId || d.id === firstHostId;
@@ -55,7 +59,9 @@ const scheduleDetailed = rawSlots.map((slot) => {
     }
 
     return { 
-        slot, isLive, isAutoDj,
+        slot, 
+        isLive, 
+        isAutoDj,
         showData: showEntry?.data, 
         djData: djEntry?.data,
         displayName: isAutoDj ? "Contrast Selection" : (showEntry?.data.title || slot.show),
@@ -96,27 +102,20 @@ const groupedSchedule = daysOfWeek.map(day => {
     />
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-32">
-        <div class="max-w-5xl mx-auto space-y-24">
+        <div class="max-w-5xl mx-auto space-y-20">
             
             {groupedSchedule.map(dayGroup => (
-                <section class="space-y-10 scroll-mt-32" id={`day-${dayGroup.id}`}>
-                    <div class="sticky z-30 py-6 md:py-8 bg-brand-dark/98 backdrop-blur-2xl border-b border-white/5 flex items-center justify-between transition-all duration-300">
-                        <div class="flex flex-col pt-2 md:pt-4">
-                            <h2 class="text-4xl md:text-6xl font-black uppercase italic tracking-tighter text-white">
-                                {dayGroup.label}
-                            </h2>
-                            {dayGroup.id === currentDayStr && (
-                                <div class="flex items-center gap-3 mt-2 md:hidden">
-                                    <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span>
-                                    <span class="text-[9px] font-black text-brand-accent tracking-[0.2em] uppercase italic">Live Today</span>
-                                </div>
-                            )}
-                        </div>
+                <section class="space-y-8 scroll-mt-28" id={`day-${dayGroup.id}`}>
+                    
+                    <div class="sticky-day-header sticky z-30 py-4 bg-brand-dark/95 backdrop-blur-xl border-b border-white/5 flex items-center justify-between transition-all duration-300">
+                        <h2 class="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-white">
+                            {dayGroup.label}
+                        </h2>
 
                         {dayGroup.id === currentDayStr && (
-                            <div class="hidden md:flex items-center gap-3 pt-4">
-                                <span class="w-2.5 h-2.5 rounded-full bg-brand-accent animate-ping"></span>
-                                <span class="text-[11px] font-black text-brand-accent tracking-[0.3em] uppercase italic">Current Broadcast Day</span>
+                            <div class="flex items-center gap-3">
+                                <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span>
+                                <span class="hidden md:block text-[10px] font-black text-brand-accent tracking-[0.3em] uppercase italic">Live Today</span>
                             </div>
                         )}
                     </div>
@@ -190,13 +189,21 @@ const groupedSchedule = daysOfWeek.map(day => {
 </Layout>
 
 <style is:global>
-    /* EXPLICIT STICKY BUFFER:
-       100px ensures it sits 4px below the 96px header, 
-       eliminating 'chopping' on all devices.
+    /* THE SURGICAL OFFSET:
+       96px (Header) + 2px (Hairline Gap) = 98px.
+       This prevents the 'digging in' without creating a massive void.
     */
-    .sticky {
-        top: 100px !important; 
+    .sticky-day-header {
+        top: 98px !important; 
     }
+
+    /* Mobile specific tweak for even tighter screens */
+    @media (max-width: 768px) {
+        .sticky-day-header {
+            top: 97px !important; 
+        }
+    }
+
     .fa-spin-slow { animation: spin 10s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
