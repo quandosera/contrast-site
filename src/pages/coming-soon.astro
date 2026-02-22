@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Coming Soon | Contrast Radio</title>
+    <title>Launching Soon | Contrast Radio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
@@ -15,58 +15,63 @@
 <body class="h-full flex items-center justify-center text-white overflow-hidden relative antialiased font-['Inter',sans-serif]">
     
     <div class="absolute inset-0 z-0">
-        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1920&auto=format&fit=crop" alt="Radio Studio" class="w-full h-full object-cover opacity-20 scale-110 blur-[2px]" />
-        <div class="absolute inset-0 bg-gradient-to-br from-[#13111C] via-[#13111C]/90 to-black"></div>
-        <div class="absolute top-1/4 -left-20 w-96 h-96 bg-[#9b51e0]/10 rounded-full blur-[120px]"></div>
-        <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-[#9b51e0]/10 rounded-full blur-[120px]"></div>
+        <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1920&auto=format&fit=crop" alt="Radio Studio" class="w-full h-full object-cover opacity-10 scale-110 blur-[3px]" />
+        
+        <div class="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+        
+        <div class="absolute inset-0 bg-gradient-to-b from-[#13111C]/40 via-[#0a090f] to-black"></div>
+        
+        <div class="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-[#9b51e0]/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-[#9b51e0]/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 1s;"></div>
     </div>
 
-    <div class="relative z-10 w-full max-w-2xl px-6 py-12 text-center">
-        <div class="mb-12 inline-block">
-            <div class="relative flex items-center justify-center bg-[#13111C] px-8 py-4 rounded-2xl border border-white/5 shadow-2xl">
-                <h1 class="text-3xl md:text-5xl font-black italic tracking-tighter uppercase leading-none">
-                    CONTRAST<span class="text-[#9b51e0]">RADIO</span>
+    <div class="relative z-10 w-full max-w-4xl px-6 py-12 text-center">
+        
+        <div class="mb-16 inline-block">
+            <div class="relative flex items-center justify-center bg-[#13111C] px-10 py-5 rounded-2xl border border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                <h1 class="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none">
+                    CONTRAST<span class="text-[#9b51e0] drop-shadow-[0_0_15px_rgba(155,81,224,0.5)]">RADIO</span>
                 </h1>
             </div>
-            <div class="mt-4 flex items-center justify-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                <span class="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Signal Incoming</span>
+            <div class="mt-6 flex items-center justify-center gap-3">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                <span class="text-xs font-black uppercase tracking-[0.5em] text-gray-500">Signal Incoming</span>
             </div>
         </div>
         
-        <h2 class="text-5xl md:text-8xl font-black uppercase tracking-tighter mb-12 leading-[0.9]">
-            COMING <br/> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500 text-6xl md:text-8xl">SOON.</span>
+        <h2 class="text-6xl md:text-[9rem] font-black uppercase tracking-tighter mb-16 leading-[0.85] select-none">
+            COMING <br/> 
+            <span class="relative inline-block">
+                <span class="text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">SOON</span>
+                <span class="absolute -inset-1 blur-2xl bg-[#9b51e0]/20 -z-10"></span>
+            </span><span class="text-[#9b51e0]">.</span>
         </h2>
         
-        <div id="countdown" class="flex justify-center gap-4 md:gap-8">
-            <div class="flex flex-col items-center">
-                <span id="days" class="text-3xl md:text-5xl font-black text-[#9b51e0]">00</span>
-                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Days</span>
-            </div>
-            <div class="flex flex-col items-center">
-                <span id="hours" class="text-3xl md:text-5xl font-black text-white">00</span>
-                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Hours</span>
-            </div>
-            <div class="flex flex-col items-center">
-                <span id="minutes" class="text-3xl md:text-5xl font-black text-white">00</span>
-                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Mins</span>
-            </div>
-            <div class="flex flex-col items-center">
-                <span id="seconds" class="text-3xl md:text-5xl font-black text-white">00</span>
-                <span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Secs</span>
-            </div>
+        <div id="countdown" class="flex justify-center gap-6 md:gap-12">
+            {[ 
+                { id: "days", label: "Days", color: "text-[#9b51e0]" },
+                { id: "hours", label: "Hours", color: "text-white" },
+                { id: "minutes", label: "Mins", color: "text-white" },
+                { id: "seconds", label: "Secs", color: "text-white" } 
+            ].map((item) => (
+                <div class="flex flex-col items-center">
+                    <div class="relative group">
+                        <span id={item.id} class={`${item.color} text-4xl md:text-7xl font-black tracking-tighter mb-2 block tabular-nums`}>00</span>
+                        <div class="absolute -bottom-1 left-0 w-full h-[2px] bg-white/5 scale-x-0 group-hover:scale-x-100 transition-transform"></div>
+                    </div>
+                    <span class="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gray-500 font-black">{item.label}</span>
+                </div>
+            ))}
         </div>
     </div>
 
-    <div class="absolute bottom-0 left-0 w-full h-1 flex items-end justify-center gap-1 px-2 opacity-20">
-        <div class="bar w-full h-2 bg-purple-500/30"></div>
-        <div class="bar w-full h-5 bg-purple-500/30"></div>
-        <div class="bar w-full h-8 bg-purple-500/30"></div>
-        <div class="bar w-full h-3 bg-purple-500/30"></div>
+    <div class="absolute bottom-0 left-0 w-full h-1.5 flex items-end justify-center gap-1.5 px-2 opacity-30">
+        {Array.from({ length: 12 }).map((_, i) => (
+            <div class={`bar w-full bg-gradient-to-t from-[#9b51e0] to-white/40`} style={`animation-delay: ${i * 0.15}s`}></div>
+        ))}
     </div>
 
     <script is:inline>
-        // Set target date for 8 months from today
         const targetDate = new Date();
         targetDate.setMonth(targetDate.getMonth() + 8);
 
@@ -79,10 +84,15 @@
             const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const s = Math.floor((distance % (1000 * 60)) / 1000);
 
-            document.getElementById("days").innerText = d.toString().padStart(2, '0');
-            document.getElementById("hours").innerText = h.toString().padStart(2, '0');
-            document.getElementById("minutes").innerText = m.toString().padStart(2, '0');
-            document.getElementById("seconds").innerText = s.toString().padStart(2, '0');
+            const safeSet = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = val.toString().padStart(2, '0');
+            };
+
+            safeSet("days", d);
+            safeSet("hours", h);
+            safeSet("minutes", m);
+            safeSet("seconds", s);
         }
 
         setInterval(updateCountdown, 1000);
@@ -92,10 +102,21 @@
 </html>
 
 <style>
-    /* Pulse bar animation styles */
-    @keyframes bar-grow { 0%, 100% { height: 10px; } 50% { height: 40px; } }
-    .bar { animation: bar-grow 1.5s ease-in-out infinite; border-radius: 2px 2px 0 0; }
-    .bar:nth-child(2) { animation-delay: 0.2s; }
-    .bar:nth-child(3) { animation-delay: 0.4s; }
-    .bar:nth-child(4) { animation-delay: 0.1s; }
+    /* Audio Bar Animation */
+    @keyframes bar-grow { 
+        0%, 100% { height: 8px; opacity: 0.3; } 
+        50% { height: 45px; opacity: 1; } 
+    }
+    .bar { 
+        animation: bar-grow 1.8s ease-in-out infinite; 
+        border-radius: 4px 4px 0 0; 
+        min-height: 8px;
+    }
+
+    /* Prevent mobile horizontal scroll from blurring */
+    html, body {
+        overflow-x: hidden;
+        height: 100%;
+        width: 100%;
+    }
 </style>
