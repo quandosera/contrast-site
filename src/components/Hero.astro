@@ -3,7 +3,7 @@
 interface Props {
   title: string;
   accent: string;
-  subtextText: string;
+  subtextText?: string;
   subtextHighlight?: string;
   bgImage?: string;
 }
@@ -11,48 +11,61 @@ interface Props {
 const { 
   title, 
   accent, 
-  subtextText, 
+  subtextText,
   subtextHighlight,
   bgImage = "https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop" 
 } = Astro.props;
 ---
 
-<section class="relative pt-32 pb-20 md:pt-44 md:pb-28 overflow-hidden border-b border-white/5">
+<section class="relative pt-28 pb-16 md:pt-44 md:pb-28 overflow-hidden border-b border-white/5">
     <div class="absolute inset-0 z-0">
-        <img src={bgImage} alt="Background" class="w-full h-full object-cover opacity-10 scale-105 select-none" />
+        <img src={bgImage} alt="Background" class="w-full h-full object-cover opacity-10 scale-105 select-none pointer-events-none" />
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,59,59,0.15)_0%,transparent_70%)]"></div>
         <div class="absolute inset-0 bg-gradient-to-b from-brand-dark/40 via-brand-dark/90 to-brand-dark"></div>
         <div class="absolute inset-0 opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none"></div>
     </div>
 
-    <div class="container mx-auto px-4 relative z-10 text-center">
-        <div class="mb-10 inline-block overflow-visible">
-            <h1 class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter uppercase italic select-none leading-none">
-                <span class="text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">{title}</span> 
-                <span class="inline-block text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-brand-accent/80 drop-shadow-[0_0_30px_rgba(255,59,59,0.2)] py-2 px-6 -mx-6">
-                    {accent}
-                </span>
-            </h1>
-        </div>
+    <div class="container mx-auto px-4 sm:px-6 relative z-10 flex flex-col items-center text-center">
         
-        <div class="flex justify-center">
-            <div class="inline-flex items-center gap-4 bg-white/[0.03] border border-white/10 backdrop-blur-2xl px-8 py-3.5 rounded-2xl shadow-2xl group transition-all hover:bg-white/[0.05] hover:border-brand-accent/20">
+        <h1 class="flex flex-wrap justify-center items-center gap-x-3 md:gap-x-5 gap-y-1 md:gap-y-2 text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight uppercase italic select-none mb-8">
+            
+            <span class="text-white drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] whitespace-nowrap">
+                {title}
+            </span> 
+            
+            <span class="text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-brand-accent/80 drop-shadow-[0_0_40px_rgba(255,59,59,0.3)] pr-6 py-2 whitespace-nowrap">
+                {accent}
+            </span>
+            
+        </h1>
+        
+        {subtextText && (
+            <div class="inline-flex items-center gap-3 md:gap-4 bg-white/[0.03] border border-white/10 backdrop-blur-2xl px-5 py-2.5 md:px-8 md:py-3.5 rounded-xl md:rounded-2xl shadow-2xl group transition-all hover:bg-white/[0.05] hover:border-brand-accent/30">
+                
                 <div class="flex gap-1">
                     <div class="w-1 h-1 rounded-full bg-brand-accent animate-pulse"></div>
-                    <div class="w-1 h-1 rounded-full bg-brand-accent/40"></div>
-                    <div class="w-1 h-1 rounded-full bg-brand-accent/20"></div>
+                    <div class="w-1 h-1 rounded-full bg-brand-accent/40 hidden sm:block"></div>
                 </div>
 
-                <p class="text-gray-400 font-black tracking-[0.4em] uppercase text-[9px] md:text-[11px] italic">
-                    {subtextText} <span class="mx-2 text-white/20">//</span> <span class="text-white group-hover:text-brand-accent transition-colors">{subtextHighlight}</span>
+                <p class="text-gray-400 font-black tracking-[0.2em] md:tracking-[0.4em] uppercase text-[9px] md:text-[11px] italic whitespace-nowrap">
+                    {subtextText} 
+                    {subtextHighlight && (
+                        <Fragment>
+                            <span class="mx-1 md:mx-2 text-white/20">//</span> 
+                            <span class="text-white group-hover:text-brand-accent transition-colors">{subtextHighlight}</span>
+                        </Fragment>
+                    )}
                 </p>
 
                 <div class="flex gap-1">
-                    <div class="w-1 h-1 rounded-full bg-brand-accent/20"></div>
-                    <div class="w-1 h-1 rounded-full bg-brand-accent/40"></div>
+                    <div class="w-1 h-1 rounded-full bg-brand-accent/40 hidden sm:block"></div>
                     <div class="w-1 h-1 rounded-full bg-brand-accent animate-pulse"></div>
                 </div>
+                
             </div>
-        </div>
+        )}
+        
+        <slot />
+        
     </div>
 </section>

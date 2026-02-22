@@ -5,10 +5,9 @@ export default {
     extend: {
       colors: {
         brand: {
-          // CHANGE THIS LINE to try different colors (Red: #ff3b3b, Purple: #9b51e0)
-          accent: '#ff3b3b', 
-          dark: '#13111C',
-          surface: '#1E1B29',
+          accent: '#ff3b3b',  // Your original great red
+          dark: '#141414',    // Soft, matte onyx gray
+          surface: '#1f1f1f', // Distinctly lighter gray for the cards to show depth
         }
       }
     },
