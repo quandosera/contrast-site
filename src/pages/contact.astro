@@ -1,12 +1,47 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+// 1. DATA FETCHING - For Header Status Sync
+const allShows = await getCollection('shows');
+const scheduleDoc = await getEntry('schedule', 'master');
+const rawSlots = scheduleDoc?.data?.allSlots || [];
+
+// 2. TIME LOGIC (For Header Status)
+const ukTimeOptions = { timeZone: 'Europe/London' };
+const dateInUK = new Date(new Date().toLocaleString('en-US', ukTimeOptions));
+const currentMins = dateInUK.getHours() * 60 + dateInUK.getMinutes();
+const daysArray = ['7-sun', '1-mon', '2-tue', '3-wed', '4-thu', '5-fri', '6-sat'];
+const currentDayStr = daysArray[dateInUK.getDay()];
+
+function timeToMins(timeStr: string) {
+    if (!timeStr) return 0;
+    let [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+}
+
+const currentSlot = rawSlots.find(slot => {
+    if (slot.day !== currentDayStr) return false;
+    const start = timeToMins(slot.startTime);
+    let end = timeToMins(slot.endTime || "00:00");
+    if (end <= start) end += 1440;
+    return currentMins >= start && currentMins < end;
+});
+
+const currentShowName = currentSlot ? 
+    (currentSlot.show === 'Auto DJ' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
+    : "Auto DJ Mix";
 ---
 
-<Layout title="Contact Us | Contrast Radio">
+<Layout title="Contact Us | Contrast Radio" currentShow={currentShowName}>
     
     <section class="relative pt-32 pb-20 overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80" alt="Radio Studio Broadcasting" class="w-full h-full object-cover opacity-20" />
+            <img 
+                src="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0" 
+                alt="Radio Studio Mixing Desk" 
+                class="w-full h-full object-cover opacity-20" 
+            />
             <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#13111C]/80 to-[#13111C]"></div>
         </div>
         <div class="container mx-auto px-4 relative z-10 text-center">
@@ -146,7 +181,6 @@ import Layout from '../layouts/Layout.astro';
                 const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
                 const originalBtnText = submitBtn.innerHTML;
                 
-                // UI Feedback: Loading
                 submitBtn.innerHTML = 'SENDING... <i class="fa-solid fa-circle-notch fa-spin text-[10px]"></i>';
                 submitBtn.disabled = true;
                 
@@ -184,7 +218,6 @@ import Layout from '../layouts/Layout.astro';
                     submitBtn.innerHTML = originalBtnText;
                     submitBtn.disabled = false;
                     
-                    // Auto-hide status after 6 seconds
                     setTimeout(() => {
                         result.classList.add('hidden');
                     }, 6000);

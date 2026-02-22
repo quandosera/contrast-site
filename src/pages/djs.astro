@@ -1,12 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection, getEntry } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 
 // 1. DATA FETCHING
 const allDjs = await getCollection('djs');
 const allShows = await getCollection('shows');
 
-// Fetch current show data for the header status
+// Fetch current show data for the header status with fallback
 const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
 
@@ -37,23 +37,19 @@ const currentShowName = currentSlot ?
 
 // 3. FILTERING & SORTING LOGIC
 const sortedDjs = allDjs
-    // Only show DJs where 'active' is true (or not explicitly set to false)
     .filter(dj => dj.data.active !== false)
-    // Sort primarily by 'rank' number, then alphabetically by name for ties
     .sort((a, b) => {
-        const rankA = a.data.rank ?? 99; // Fallback to 99 if rank is missing
+        const rankA = a.data.rank ?? 99; 
         const rankB = b.data.rank ?? 99;
-        
         if (rankA !== rankB) return rankA - rankB;
-        
         const nameA = a.data.name || a.id;
         const nameB = b.data.name || b.id;
         return nameA.localeCompare(nameB);
     });
 
-// 4. PREPARE CONTENT
+// 4. PREPARE CONTENT (Astro 5 Render)
 const processedDjs = await Promise.all(sortedDjs.map(async (dj) => {
-    const { Content } = await dj.render();
+    const { Content } = await render(dj);
     return { ...dj, Content };
 }));
 ---
@@ -62,7 +58,11 @@ const processedDjs = await Promise.all(sortedDjs.map(async (dj) => {
     
     <section class="relative pt-32 pb-20 overflow-hidden">
         <div class="absolute inset-0 z-0">
-            <img src="https://images.unsplash.com/photo-1571266028243-3716f02d2d2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" alt="DJ Decks" class="w-full h-full object-cover opacity-20" />
+            <img 
+                src="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0" 
+                alt="Radio Studio Mixing Desk" 
+                class="w-full h-full object-cover opacity-20" 
+            />
             <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#13111C]/80 to-[#13111C]"></div>
         </div>
         <div class="container mx-auto px-4 relative z-10 text-center">
@@ -115,7 +115,7 @@ const processedDjs = await Promise.all(sortedDjs.map(async (dj) => {
                             )}
                         </div>
 
-                        <div class="text-sm text-gray-400 leading-relaxed line-clamp-2 mt-2 group-hover:text-gray-300 transition-colors">
+                        <div class="text-sm text-gray-400 leading-relaxed line-clamp-3 mt-2 group-hover:text-gray-300 transition-colors">
                             <dj.Content />
                         </div>
                     </div>
