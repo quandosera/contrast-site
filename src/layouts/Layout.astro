@@ -100,15 +100,15 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
         </main>
 
         {showFooter && (
-            <footer class="bg-[#050505] pt-12 pb-24 border-t border-white/5 relative z-10">
-                <div class="container mx-auto px-6 text-center">
+            <footer class="bg-[#050505] pt-8 pb-24 border-t border-white/5 relative z-10">
+                <div class="container mx-auto px-4 text-center">
                     
-                    <div class="mb-8">
-                        <h4 class="text-[8px] font-black uppercase tracking-[0.4em] text-gray-600 mb-6 italic opacity-60">
+                    <div class="mb-6 overflow-hidden">
+                        <h4 class="text-[8px] font-black uppercase tracking-[0.4em] text-gray-700 mb-4 italic opacity-60">
                             Station Partners
                         </h4>
                         
-                        <div class="flex flex-wrap justify-center items-center gap-x-8 gap-y-6 md:gap-x-12 opacity-30 grayscale hover:opacity-100 transition-all duration-700">
+                        <div class="flex items-center justify-start md:justify-center overflow-x-auto no-scrollbar gap-x-8 px-4 opacity-30 grayscale hover:opacity-100 transition-all duration-700">
                             <div class="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white whitespace-nowrap">
                                 <i class="fa-solid fa-building text-brand-accent/60"></i> Sion Spaces
                             </div>
@@ -124,8 +124,8 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                         </div>
                     </div>
 
-                    <div class="pt-6 border-t border-white/[0.03] max-w-xs mx-auto">
-                        <p class="text-gray-700 text-[8px] uppercase tracking-[0.5em] font-black opacity-40">
+                    <div class="pt-4 border-t border-white/[0.02] max-w-[150px] mx-auto">
+                        <p class="text-gray-800 text-[7px] uppercase tracking-[0.5em] font-black opacity-40">
                             &copy; {new Date().getFullYear()} Contrast Radio
                         </p>
                     </div>
@@ -167,6 +167,7 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     if (icon) icon.className = !expanded ? 'fa-solid fa-xmark text-3xl' : 'fa-solid fa-bars text-2xl';
                 });
 
+                // Auto-close menu on link click
                 const mobileLinks = mobileMenu?.querySelectorAll('a');
                 mobileLinks?.forEach(link => {
                     link.addEventListener('click', () => {
@@ -186,27 +187,27 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
 </html>
 
 <style is:global>
-    /* MARQUEE TEXT FIX: 
-       Apply '.player-marquee' to the text container in Player.astro 
-       to prevent truncation seen in image_30d03d.png 
-    */
-    .player-marquee {
-        white-space: nowrap;
-        overflow: hidden;
-        display: block;
-        mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-    }
-    
-    .player-marquee:hover span {
-        display: inline-block;
-        animation: marquee 10s linear infinite;
-        padding-left: 100%;
+    /* PLAYER MARQUEE SYSTEM: Prevents text truncation from image_30d03d.png */
+    .player-marquee-container {
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
     }
 
-    @keyframes marquee {
-        0% { transform: translate(0, 0); }
-        100% { transform: translate(-100%, 0); }
+    .player-marquee-inner {
+        display: flex;
+        width: max-content;
+        animation: marquee-infinite 15s linear infinite;
+        will-change: transform;
     }
+
+    @keyframes marquee-infinite {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-33.333%); }
+    }
+
+    /* FOOTER UTILITIES */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
     .skip-link { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
     .skip-link:focus { position: fixed; top: 1rem; left: 1rem; z-index: 9999; padding: 0.75rem 1.5rem; background: theme('colors.brand.dark'); color: white; border-radius: 0.5rem; border: 1px solid theme('colors.brand.accent'); }
