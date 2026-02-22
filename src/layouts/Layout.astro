@@ -36,13 +36,13 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
     </head>
     <body class="antialiased text-white selection:bg-brand-accent/30 bg-brand-dark font-['Inter',sans-serif]">
 
-        <a class="skip-link" href="#main-content">Skip to content</a>
+        <a class="sr-only-focusable" href="#main-content">Skip to content</a>
 
         <header id="main-header" class="fixed w-full top-0 z-50 h-24 transition-all duration-500 ease-in-out">
             <div class="container mx-auto px-6 sm:px-8 lg:px-12 flex items-center justify-between h-full max-w-screen-2xl relative z-10">
                 
                 <a href="/" class="flex items-center gap-5 group">
-                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-brand-accent flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-brand-accent flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-[0_0_30px_theme('colors.brand.accent/40')]">
                         <i class="fa-solid fa-podcast text-lg md:text-xl"></i>
                     </div>
                     <div class="flex flex-col justify-center">
@@ -73,17 +73,18 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     </button>
                 </div>
             </div>
+            
             <div id="header-bg" class="absolute inset-0 bg-brand-dark/0 backdrop-blur-0 transition-all duration-500 pointer-events-none border-b border-white/0"></div>
         </header>
 
         <div id="mobile-menu" class="fixed inset-0 bg-brand-dark/98 backdrop-blur-3xl z-40 hidden flex-col justify-center items-center pt-10">
             <nav class="flex flex-col items-center space-y-5">
-                <a href="/" class="text-3xl font-black text-white italic uppercase tracking-tighter">HOME</a>
-                <a href="/about" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter">ABOUT</a>
-                <a href="/djs" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter">DJ'S</a>
-                <a href="/schedule" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter">SCHEDULE</a>
-                <a href="/gallery" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter">GALLERY</a>
-                <a href="/contact" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter">CONTACT</a>
+                <a href="/" class="text-3xl font-black text-white italic uppercase tracking-tighter hover:text-brand-accent transition-colors">HOME</a>
+                <a href="/about" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">ABOUT</a>
+                <a href="/djs" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">DJ'S</a>
+                <a href="/schedule" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">SCHEDULE</a>
+                <a href="/gallery" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">GALLERY</a>
+                <a href="/contact" class="text-3xl font-black text-gray-400 italic uppercase tracking-tighter hover:text-white transition-colors">CONTACT</a>
             </nav>
         </div>
 
@@ -103,9 +104,11 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                     if (window.scrollY > 40) {
                         headerBg?.classList.replace('bg-brand-dark/0', 'bg-brand-dark/90');
                         headerBg?.classList.replace('backdrop-blur-0', 'backdrop-blur-2xl');
+                        headerBg?.classList.replace('border-white/0', 'border-white/10');
                     } else {
                         headerBg?.classList.replace('bg-brand-dark/90', 'bg-brand-dark/0');
                         headerBg?.classList.replace('backdrop-blur-2xl', 'backdrop-blur-0');
+                        headerBg?.classList.replace('border-white/10', 'border-white/0');
                     }
                 };
 
@@ -113,21 +116,80 @@ const pageTitle = currentShow !== "Contrast Selection" && currentShow !== "Auto 
                 handleScroll();
 
                 menuBtn?.addEventListener('click', () => {
+                    const expanded = menuBtn.getAttribute('aria-expanded') === 'true';
+                    menuBtn.setAttribute('aria-expanded', String(!expanded));
                     mobileMenu?.classList.toggle('hidden');
                     mobileMenu?.classList.toggle('flex');
-                    document.body.classList.toggle('overflow-hidden');
+                    document.body.classList.toggle('overflow-hidden'); 
+                    
+                    const icon = menuBtn.querySelector('i');
+                    if (icon) icon.className = !expanded ? 'fa-solid fa-xmark text-3xl' : 'fa-solid fa-bars text-2xl';
+                });
+
+                const mobileLinks = mobileMenu?.querySelectorAll('a');
+                mobileLinks?.forEach(link => {
+                    link.addEventListener('click', () => {
+                        mobileMenu?.classList.add('hidden');
+                        mobileMenu?.classList.remove('flex');
+                        document.body.classList.remove('overflow-hidden');
+                        menuBtn?.setAttribute('aria-expanded', 'false');
+                        const icon = menuBtn?.querySelector('i');
+                        if (icon) icon.className = 'fa-solid fa-bars text-2xl';
+                    });
                 });
             }
+
             document.addEventListener('astro:page-load', initHeader);
         </script>
     </body>
 </html>
 
 <style is:global>
+    /* FIX: Hides the "Skip to Content" text unless focused by a keyboard */
+    .sr-only-focusable {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+    .sr-only-focusable:focus {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 9999;
+        width: auto;
+        height: auto;
+        padding: 0.75rem 1.5rem;
+        background: #ff3b3b; /* Matches your brand-accent */
+        color: white;
+        border-radius: 999px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 12px;
+        clip: auto;
+    }
+
+    /* PLAYER MARQUEE SYSTEM */
     .player-marquee-container {
         mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
     }
-    .player-marquee-inner { display: flex; width: max-content; animation: marquee-infinite 15s linear infinite; will-change: transform; }
-    @keyframes marquee-infinite { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .player-marquee-inner {
+        display: flex;
+        width: max-content;
+        animation: marquee-infinite 15s linear infinite;
+        will-change: transform;
+    }
+    @keyframes marquee-infinite {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    img { backface-visibility: hidden; transform-style: preserve-3d; }
 </style>
