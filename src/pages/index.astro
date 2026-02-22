@@ -46,7 +46,7 @@ function timeToMins(timeStr: string, isEndTime: boolean = false) {
     const str = String(timeStr).trim();
     let [h, m] = str.split(':').map(Number);
     if (h === 24) h = 0;
-    if (isEndTime && h === 0 && m === 0) return 1440;
+    if (isEndTime && h === 0 && m === 1440) return 1440; // Quick fix for full day
     return h * 60 + m;
 }
 
@@ -224,21 +224,21 @@ const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0,
         <section id="sponsors" class="pt-24 pb-12 border-t border-white/5 relative">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12">
-                    <span class="text-[10px] font-black tracking-[0.4em] text-gray-500 uppercase italic opacity-60">Station Partners</span>
+                    <span class="text-[10px] font-black tracking-[0.4em] text-gray-400 uppercase italic opacity-80">Station Partners</span>
                 </div>
                 
-                <div class="grid grid-cols-2 md:flex md:flex-wrap justify-center items-center gap-8 md:gap-20 opacity-40 hover:opacity-100 transition-all duration-700 grayscale hover:grayscale-0">
-                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105">
-                        <i class="fa-solid fa-building text-brand-accent/60"></i> SION SPACES
+                <div class="grid grid-cols-2 md:flex md:flex-wrap justify-center items-center gap-8 md:gap-20 opacity-70 hover:opacity-100 transition-all duration-700 grayscale hover:grayscale-0">
+                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105 hover:text-brand-accent">
+                        <i class="fa-solid fa-building text-gray-400"></i> SION SPACES
                     </div>
-                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105">
-                        <i class="fa-solid fa-house text-brand-accent/60"></i> HYDE & ROWE
+                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105 hover:text-brand-accent">
+                        <i class="fa-solid fa-house text-gray-400"></i> HYDE & ROWE
                     </div>
-                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105">
-                        <i class="fa-solid fa-martini-glass text-brand-accent/60"></i> BARRY'S BAR
+                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105 hover:text-brand-accent">
+                        <i class="fa-solid fa-martini-glass text-gray-400"></i> BARRY'S BAR
                     </div>
-                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105">
-                        <i class="fa-solid fa-car text-brand-accent/60"></i> SAYEZ CAR CARE
+                    <div class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105 hover:text-brand-accent">
+                        <i class="fa-solid fa-car text-gray-400"></i> SAYEZ CAR CARE
                     </div>
                 </div>
             </div>
