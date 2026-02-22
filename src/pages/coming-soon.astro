@@ -72,12 +72,21 @@
     </div>
 
     <script is:inline>
-        const targetDate = new Date();
-        targetDate.setMonth(targetDate.getMonth() + 8);
+        /** * FIXED TARGET DATE: October 22, 2026, 11:00 AM
+         * JavaScript months are 0-indexed (Jan=0, Oct=9)
+         */
+        const targetDate = new Date(2026, 9, 22, 11, 0, 0).getTime();
 
         function updateCountdown() {
             const now = new Date().getTime();
             const distance = targetDate - now;
+
+            // If countdown is finished
+            if (distance < 0) {
+                const units = ["days", "hours", "minutes", "seconds"];
+                units.forEach(id => document.getElementById(id).innerText = "00");
+                return;
+            }
 
             const d = Math.floor(distance / (1000 * 60 * 60 * 24));
             const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -95,8 +104,10 @@
             safeSet("seconds", s);
         }
 
-        setInterval(updateCountdown, 1000);
+        // Run immediately to avoid 00 flash
         updateCountdown();
+        // Update every second
+        setInterval(updateCountdown, 1000);
     </script>
 </body>
 </html>
@@ -113,7 +124,6 @@
         min-height: 8px;
     }
 
-    /* Prevent mobile horizontal scroll from blurring */
     html, body {
         overflow-x: hidden;
         height: 100%;
