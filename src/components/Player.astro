@@ -13,34 +13,35 @@ const {
 const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 ---
 
-<div class="fixed bottom-0 left-0 w-full bg-brand-surface/95 backdrop-blur-3xl z-50 px-4 py-3 md:py-5 border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.8)]" transition:persist>
+<div class="fixed bottom-0 left-0 w-full bg-brand-surface/98 backdrop-blur-2xl z-50 px-5 py-4 md:py-5 border-t border-white/10 shadow-[0_-20px_50px_rgba(0,0,0,0.9)] transform-gpu" style="will-change: transform; transform: translateZ(0);" transition:persist>
+    
     <div class="container mx-auto flex items-center justify-between md:grid md:grid-cols-3 max-w-7xl">
         
-        <div class="flex items-center gap-3 md:gap-4 min-w-0 pr-4">
-            <div class="relative w-11 h-11 md:w-16 md:h-16 flex-shrink-0 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
-                <i id="player-vinyl" class="fa-solid fa-compact-disc text-2xl md:text-5xl text-zinc-800 animate-spin-slow pause-spin"></i>
+        <div class="flex items-center gap-4 min-w-0 pr-4">
+            <div class="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
+                <i id="player-vinyl" class="fa-solid fa-compact-disc text-3xl md:text-5xl text-zinc-800 animate-spin-slow pause-spin"></i>
                 <div id="player-status-icon" class="absolute inset-0 bg-black/40 hidden items-center justify-center">
-                    <i class="fa-solid fa-chart-simple text-brand-accent text-lg animate-pulse"></i>
+                    <i class="fa-solid fa-chart-simple text-brand-accent text-xl animate-pulse"></i>
                 </div>
             </div>
             
             <div class="flex flex-col min-w-0 overflow-hidden">
-                <span class="text-[8px] md:text-xs font-black text-brand-accent tracking-[0.3em] uppercase flex items-center gap-1.5 mb-0.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-brand-accent animate-ping"></span> NOW PLAYING
+                <span class="text-[10px] md:text-xs font-black text-brand-accent tracking-[0.3em] uppercase flex items-center gap-1.5 mb-1">
+                    <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span> NOW PLAYING
                 </span>
                 
-                <div class="player-marquee-container relative w-full overflow-hidden h-4 md:h-7">
-                    <div class="player-marquee-inner flex whitespace-nowrap italic font-black text-white text-[11px] md:text-lg uppercase">
-                        <span class="pr-8">{displayInfo}</span>
-                        <span class="pr-8">{displayInfo}</span>
+                <div class="player-marquee-container relative w-full overflow-hidden h-5 md:h-7">
+                    <div class="player-marquee-inner flex whitespace-nowrap italic font-black text-white text-xs md:text-lg uppercase">
+                        <span class="pr-10">{displayInfo}</span>
+                        <span class="pr-10">{displayInfo}</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="flex md:justify-center flex-shrink-0">
-            <button id="master-play-btn" class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-brand-accent text-white flex items-center justify-center hover:scale-110 transition-all border-2 border-brand-accent/50 shadow-lg">
-                <i class="fa-solid fa-play ml-1 text-lg md:text-2xl"></i>
+            <button id="master-play-btn" class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-brand-accent text-white flex items-center justify-center hover:scale-110 active:scale-90 transition-all border-2 border-brand-accent/50 shadow-[0_0_30px_rgba(255,59,59,0.3)]">
+                <i class="fa-solid fa-play ml-1 text-xl md:text-2xl"></i>
             </button>
         </div>
 
@@ -54,6 +55,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         </div>
 
     </div>
+    <div class="h-[env(safe-area-inset-bottom)] w-full"></div>
     <audio id="stream-audio" crossorigin="anonymous" transition:persist></audio>
 </div>
 
@@ -73,11 +75,11 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         if (isPlaying) {
             vinyl?.classList.remove('pause-spin');
             statusIcon?.classList.replace('hidden', 'flex');
-            if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-stop text-lg md:text-2xl';
+            if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-stop text-xl md:text-2xl';
         } else {
             vinyl?.classList.add('pause-spin');
             statusIcon?.classList.replace('flex', 'hidden');
-            if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-play ml-1 text-lg md:text-2xl';
+            if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-play ml-1 text-xl md:text-2xl';
         }
 
         document.querySelectorAll('.player-trigger, .nav-player-trigger').forEach((btn: any) => {
@@ -153,7 +155,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 </script>
 
 <style is:global>
-    .animate-spin-slow { animation: spin 4s linear infinite; }
+    .animate-spin-slow { animation: spin 5s linear infinite; }
     .pause-spin { animation-play-state: paused !important; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -163,7 +165,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         background: rgba(255,255,255,0.1); outline: none;
     }
     .premium-slider::-webkit-slider-thumb {
-        -webkit-appearance: none; height: 14px; width: 14px;
+        -webkit-appearance: none; height: 16px; width: 16px;
         border-radius: 50%; background: #ffffff; cursor: pointer;
         box-shadow: 0 0 10px theme('colors.brand.accent/50');
     }
