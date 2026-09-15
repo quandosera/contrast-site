@@ -1,6 +1,6 @@
 slug: test-show
 title: "Test Show"
-active: true
+active: false
 hosts:
   - DJ Test
 genre: Hip Hop

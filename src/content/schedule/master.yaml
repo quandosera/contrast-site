@@ -7,7 +7,7 @@ allSlots:
   - day: 1-mon
     startTime: '12:00'
     endTime: '14:00'
-    show: Rice & Peas
+    show: The n8v Show
   - day: 1-mon
     startTime: '14:00'
     endTime: '00:00'
@@ -21,7 +21,7 @@ allSlots:
   - day: 2-tue
     startTime: '09:00'
     endTime: '11:00'
-    show: Rice & Peas
+    show: The n8v Show
   - day: 2-tue
     startTime: '11:00'
     endTime: '00:00'
@@ -35,7 +35,7 @@ allSlots:
   - day: 3-wed
     startTime: '18:00'
     endTime: '20:00'
-    show: Rice & Peas
+    show: The n8v Show
   - day: 3-wed
     startTime: '20:00'
     endTime: '00:00'
@@ -49,7 +49,7 @@ allSlots:
   - day: 4-thu
     startTime: '14:00'
     endTime: '16:00'
-    show: Rice & Peas
+    show: The n8v Show
   - day: 4-thu
     startTime: '16:00'
     endTime: '00:00'
@@ -63,7 +63,7 @@ allSlots:
   - day: 5-fri
     startTime: '20:00'
     endTime: '22:00'
-    show: Test Show
+    show: The n8v Show
   - day: 5-fri
     startTime: '22:00'
     endTime: '00:00'
@@ -77,7 +77,7 @@ allSlots:
   - day: 6-sat
     startTime: '10:00'
     endTime: '12:00'
-    show: Rice & Peas
+    show: The n8v Show
   - day: 6-sat
     startTime: '12:00'
     endTime: '20:00'
@@ -85,7 +85,7 @@ allSlots:
   - day: 6-sat
     startTime: '20:00'
     endTime: '22:00'
-    show: Test Show
+    show: The n8v Show
   - day: 6-sat
     startTime: '22:00'
     endTime: '00:00'
@@ -99,7 +99,7 @@ allSlots:
   - day: 7-sun
     startTime: '14:00'
     endTime: '16:00'
-    show: Rice & Peas
+    show: The n8v Show
   - day: 7-sun
     startTime: '16:00'
     endTime: '00:00'
