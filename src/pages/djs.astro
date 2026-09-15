@@ -82,7 +82,7 @@ const processedDjs = await Promise.all(sortedDjs.map(async (dj) => {
                         <div class="absolute inset-0 bg-brand-accent/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
                             <div class="flex gap-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
                                 {dj.data.socials?.instagram && (
-                                    <a href={`https://instagram.com/${dj.data.socials.instagram}`} target="_blank" class="w-12 h-12 rounded-full bg-white text-brand-dark flex items-center justify-center text-xl hover:scale-125 hover:bg-brand-accent hover:text-white transition-all shadow-2xl" aria-label="Instagram">
+                                    <a href={dj.data.socials.instagram === '#' ? '#' : (dj.data.socials.instagram.startsWith('http') ? dj.data.socials.instagram : `https://instagram.com/${dj.data.socials.instagram}`)} target={dj.data.socials.instagram === '#' ? undefined : "_blank"} rel={dj.data.socials.instagram === '#' ? undefined : "noopener noreferrer"} class="w-12 h-12 rounded-full bg-white text-brand-dark flex items-center justify-center text-xl hover:scale-125 hover:bg-brand-accent hover:text-white transition-all shadow-2xl" aria-label="Instagram">
                                         <i class="fa-brands fa-instagram"></i>
                                     </a>
                                 )}
