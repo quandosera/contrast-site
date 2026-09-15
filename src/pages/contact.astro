@@ -62,27 +62,48 @@ const currentShowName = currentSlot ?
                     </p>
                 </div>
 
-                <div class="grid grid-cols-1 gap-6">
-                    {[
-                        { label: "General Enquiries", link: "info@n8v.uk", icon: "fa-envelope" },
-                        { label: "Music Submissions", link: "promo@n8v.uk", icon: "fa-music" },
-                        { label: "Studio WhatsApp", link: "+44 7700 900077", icon: "fa-whatsapp", brand: "fa-brands" }
-                    ].map(item => (
-                        <div class="group flex items-center gap-6 p-8 bg-brand-surface/40 border border-white/5 rounded-[2rem] transition-all duration-500 hover:border-brand-accent/30 hover:bg-brand-surface/60 backdrop-blur-md relative overflow-hidden">
-                            <div class="w-14 h-14 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent text-xl group-hover:scale-110 group-hover:bg-brand-accent group-hover:text-white transition-all duration-500 shadow-xl">
-                                <i class={`${item.brand || 'fa-solid'} ${item.icon}`}></i>
+                <div class="space-y-6">
+                    <div class="p-8 bg-brand-surface/40 border border-white/5 rounded-[2rem] backdrop-blur-md relative overflow-hidden transition-all duration-500 hover:border-brand-accent/30">
+                        <div class="flex items-start gap-5">
+                            <div class="w-12 h-12 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent text-lg flex-shrink-0 mt-0.5">
+                                <i class="fa-solid fa-tower-broadcast"></i>
                             </div>
-                            <div class="relative z-10">
-                                <span class="block text-[9px] font-black text-gray-500 uppercase tracking-[0.3em] mb-1">{item.label}</span>
-                                {item.link.includes('@') ? (
-                                    <a href={`mailto:${item.link}`} class="text-white font-black text-lg hover:text-brand-accent transition-colors italic tracking-tight">{item.link}</a>
-                                ) : (
-                                    <span class="text-white font-black text-lg italic tracking-tight">{item.link}</span>
-                                )}
+                            <div class="space-y-2">
+                                <h3 class="text-white font-black uppercase italic tracking-tight text-base">Studio Shoutouts & Dedications</h3>
+                                <p class="text-sm text-gray-400 leading-relaxed font-medium">
+                                    Locked into a live session? Use the direct form to transmit your shoutouts, listener requests, or message straight to the studio.
+                                </p>
                             </div>
-                            <div class="absolute inset-0 bg-gradient-to-tr from-brand-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </div>
-                    ))}
+                    </div>
+
+                    <div class="p-8 bg-brand-surface/40 border border-white/5 rounded-[2rem] backdrop-blur-md relative overflow-hidden transition-all duration-500 hover:border-brand-accent/30">
+                        <div class="flex items-start gap-5">
+                            <div class="w-12 h-12 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent text-lg flex-shrink-0 mt-0.5">
+                                <i class="fa-solid fa-compact-disc"></i>
+                            </div>
+                            <div class="space-y-2">
+                                <h3 class="text-white font-black uppercase italic tracking-tight text-base">Music Submissions & Guest Mixes</h3>
+                                <p class="text-sm text-gray-400 leading-relaxed font-medium">
+                                    We support underground producers, sound systems, and selectors. Send links to your dubplates, mixes, or unreleased material through the form.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-8 bg-brand-surface/40 border border-white/5 rounded-[2rem] backdrop-blur-md relative overflow-hidden transition-all duration-500 hover:border-brand-accent/30">
+                        <div class="flex items-start gap-5">
+                            <div class="w-12 h-12 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent text-lg flex-shrink-0 mt-0.5">
+                                <i class="fa-solid fa-comments"></i>
+                            </div>
+                            <div class="space-y-2">
+                                <h3 class="text-white font-black uppercase italic tracking-tight text-base">General Enquiries</h3>
+                                <p class="text-sm text-gray-400 leading-relaxed font-medium">
+                                    For community feedback, collaboration proposals, or general station enquiries, drop us a note and we'll get back to you.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="space-y-8">
