@@ -19,11 +19,17 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     <div class="container mx-auto flex items-center justify-between md:grid md:grid-cols-3 max-w-7xl">
         
         <div class="flex items-center gap-4 min-w-0 pr-4">
-            <div class="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
-                <img id="player-album-art" class="absolute inset-0 w-full h-full object-cover hidden" alt="Now Playing Album Art" />
-                <i id="player-vinyl" class="fa-solid fa-compact-disc text-3xl md:text-5xl text-zinc-800 animate-spin-slow pause-spin"></i>
-                <div id="player-status-icon" class="absolute inset-0 bg-black/40 hidden items-center justify-center">
-                    <i class="fa-solid fa-chart-simple text-brand-accent text-xl animate-pulse"></i>
+            <div class="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-zinc-900/90 rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
+                <!-- Vinyl Record with Red Center -->
+                <div id="player-vinyl" class="relative w-10 h-10 md:w-12 md:h-12 rounded-full bg-zinc-950 border-2 border-zinc-800 flex items-center justify-center shadow-inner animate-spin-slow pause-spin">
+                    <div class="absolute inset-1 rounded-full border border-zinc-800/80"></div>
+                    <div class="absolute inset-2 rounded-full border border-zinc-850/60"></div>
+                    <div class="w-3.5 h-3.5 rounded-full bg-brand-accent flex items-center justify-center shadow-sm">
+                        <div class="w-1 h-1 rounded-full bg-zinc-950"></div>
+                    </div>
+                </div>
+                <div id="player-status-icon" class="absolute inset-0 bg-black/40 hidden items-center justify-center backdrop-blur-[1px]">
+                    <i class="fa-solid fa-chart-simple text-white text-base md:text-lg animate-pulse drop-shadow-[0_0_6px_rgba(255,59,59,0.8)]"></i>
                 </div>
             </div>
             
@@ -205,10 +211,17 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         const streamer = live?.streamer_name?.trim() || (isLive ? 'Resident DJ' : '');
         const song = data.now_playing?.song;
 
+        const broadcastStart = Number(live?.broadcast_start || 0);
+        const playedAt = Number(data.now_playing?.played_at || 0);
+
+        // A track was actually triggered during this live session only if played_at >= broadcastStart
+        // If played_at < broadcastStart, it's leftover metadata from the AutoDJ song played before the DJ joined!
+        const isLiveTrack = Boolean(isLive && broadcastStart > 0 && playedAt >= (broadcastStart - 5));
+
         let displayMarquee = '';
         let metaTitle = 'Live Broadcast';
         let metaArtist = 'n8v radio';
-        let metaArt = live?.art || song?.art || STATION_LOGO_PATH;
+        const metaArt = STATION_LOGO_PATH;
 
         const rawTitle = song?.title?.trim() || '';
         const rawArtist = song?.artist?.trim() || '';
@@ -222,15 +235,15 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         if (isLive) {
             // Case 1: LIVE DJ STREAMING
             metaArtist = streamer || 'Resident DJ';
-            if (!isOfflineTrack && rawTitle) {
+            if (isLiveTrack && !isOfflineTrack && rawTitle) {
                 metaTitle = rawTitle;
                 const artistPart = rawArtist && rawArtist.toLowerCase() !== metaArtist.toLowerCase()
                     ? `${rawArtist} - `
                     : '';
                 displayMarquee = `LIVE: ${metaArtist} — ${artistPart}${rawTitle}`;
             } else {
-                metaTitle = 'Live Broadcast';
-                displayMarquee = `LIVE: ${metaArtist} — LIVE BROADCAST`;
+                metaTitle = 'Live Vinyl Selection';
+                displayMarquee = `LIVE: ${metaArtist} — LIVE VINYL SELECTION`;
             }
         } else if (!isOfflineTrack && rawTitle) {
             // Case 2: AUTO DJ / PLAYLIST STREAMING (Genuine song playing)
@@ -244,7 +257,6 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             displayMarquee = defaultText;
             metaArtist = 'Resident DJ';
             metaTitle = defaultText;
-            metaArt = STATION_LOGO_PATH;
         }
 
         currentMetadata = {
@@ -259,24 +271,6 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         spans.forEach((span) => {
             span.textContent = displayMarquee.toUpperCase();
         });
-
-        // Update album art thumbnail if present
-        const artImg = document.getElementById('player-album-art') as HTMLImageElement;
-        const vinyl = document.getElementById('player-vinyl');
-        if (artImg && metaArt && metaArt !== STATION_LOGO_PATH) {
-            artImg.src = metaArt;
-            artImg.onload = () => {
-                artImg.classList.remove('hidden');
-                vinyl?.classList.add('hidden');
-            };
-            artImg.onerror = () => {
-                artImg.classList.add('hidden');
-                vinyl?.classList.remove('hidden');
-            };
-        } else if (artImg) {
-            artImg.classList.add('hidden');
-            vinyl?.classList.remove('hidden');
-        }
 
         // Dynamically update Homepage Live Transmission Beacon if present on the page
         const ping = document.getElementById('live-indicator-ping');
