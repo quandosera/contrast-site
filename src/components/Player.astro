@@ -224,9 +224,10 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             metaArtist = streamer || 'Resident DJ';
             if (!isOfflineTrack && rawTitle) {
                 metaTitle = rawTitle;
-                displayMarquee = rawArtist 
-                    ? `LIVE: ${metaArtist} — ${rawArtist} - ${rawTitle}` 
-                    : `LIVE: ${metaArtist} — ${rawTitle}`;
+                const artistPart = rawArtist && rawArtist.toLowerCase() !== metaArtist.toLowerCase()
+                    ? `${rawArtist} - `
+                    : '';
+                displayMarquee = `LIVE: ${metaArtist} — ${artistPart}${rawTitle}`;
             } else {
                 metaTitle = 'Live Broadcast';
                 displayMarquee = `LIVE: ${metaArtist} — LIVE BROADCAST`;
