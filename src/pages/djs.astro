@@ -65,7 +65,7 @@ const processedDjs = await Promise.all(sortedDjs.map(async (dj) => {
         bgImage="https://images.unsplash.com/photo-1566612453429-50faafea3e5f?q=80&w=1740&auto=format&fit=crop"
     />
 
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-16 pb-32">
         <div class={processedDjs.length === 1 ? "max-w-md mx-auto" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"}>
             {processedDjs.map(dj => (
                 <div class="group relative flex flex-col bg-brand-surface/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] overflow-hidden transition-all duration-700 hover:border-brand-accent/30 hover:shadow-[0_30px_60px_rgba(0,0,0,0.5)] hover:-translate-y-2">
