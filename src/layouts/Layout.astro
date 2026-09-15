@@ -43,10 +43,9 @@ const pageTitle = currentShow !== "n8v Selection" && currentShow !== "Auto DJ Mi
         <meta name="twitter:description" content="n8v.uk — The Next Movement. Independent community radio." />
         <meta name="twitter:image" content="https://n8v.uk/images/n8v.png" />
 
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/site.webmanifest" />
 
@@ -54,6 +53,7 @@ const pageTitle = currentShow !== "n8v Selection" && currentShow !== "Auto DJ Mi
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     </head>
@@ -169,6 +169,26 @@ const pageTitle = currentShow !== "n8v Selection" && currentShow !== "Auto DJ Mi
 </html>
 
 <style is:global>
+    /* Custom Sleek Dark Scrollbar */
+    html {
+        scrollbar-color: #27272a #0b0b0b;
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0b0b0b;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #3f3f46;
+    }
+
     /* Accessibility: Visual Hide Utility */
     .sr-only-focusable {
         position: absolute;
@@ -215,5 +235,29 @@ const pageTitle = currentShow !== "n8v Selection" && currentShow !== "Auto DJ Mi
         100% { transform: translateX(-50%); }
     }
 
-    img { backface-visibility: hidden; transform-style: preserve-3d; }
+    /* Centralized Smooth Spin Animations */
+    @keyframes spin-clockwise {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow { animation: spin-clockwise 6s linear infinite; }
+    .fa-spin-slow { animation: spin-clockwise 12s linear infinite; }
+    .pause-spin { animation-play-state: paused !important; }
+
+    /* Performance: Smooth Image Rendering */
+    img {
+        backface-visibility: hidden;
+    }
+
+    /* Accessibility: Respect Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+        .player-marquee-inner,
+        .animate-spin-slow,
+        .fa-spin-slow,
+        .animate-ping,
+        .animate-pulse {
+            animation: none !important;
+            transform: none !important;
+        }
+    }
 </style>

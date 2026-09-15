@@ -179,12 +179,8 @@ const groupedSchedule = daysOfWeek.map(day => {
 </Layout>
 
 <style is:global>
-    /* FIXED: Adjusted to 96px to account for the h-24 navigation header.
-       This prevents the "chopping" of the day headers.
-    */
+    /* Sticky day header offset to account for h-24 navigation bar */
     .sticky {
         top: 96px !important; 
     }
-    .fa-spin-slow { animation: spin 10s linear infinite; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
