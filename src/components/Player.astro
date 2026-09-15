@@ -395,6 +395,68 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         });
     }
 
+    async function togglePlayback() {
+        const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+        if (!audio) return;
+
+        const active = isStreamActive(audio);
+
+        if (!active && !isReconnecting) {
+            // USER INITIATED PLAYBACK
+            userWantsPlayback = true;
+            reconnectAttempts = 0;
+            isReconnecting = false;
+            if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+
+            audio.src = getFreshStreamUrl();
+            audio.load();
+            try {
+                await audio.play();
+            } catch (err) {
+                console.error("[n8v Radio] Playback error:", err);
+                scheduleReconnect();
+            }
+        } else {
+            // USER INITIATED STOP
+            userWantsPlayback = false;
+            isReconnecting = false;
+            reconnectAttempts = 0;
+            if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+            if (stallTimeoutId) clearTimeout(stallTimeoutId);
+
+            audio.pause();
+            audio.src = "";
+        }
+        syncAllButtons();
+    }
+
+    function setPlayerVolume(targetVolume: number) {
+        const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+        const slider = document.getElementById('volume-slider') as HTMLInputElement;
+        const volIcon = document.getElementById('volume-icon');
+        if (!audio) return;
+
+        const clamped = Math.max(0, Math.min(1, Math.round(targetVolume * 100) / 100));
+        audio.volume = clamped;
+        if (clamped > 0) previousVolume = clamped;
+
+        const ACCENT_COLOR = '#ff3b3b';
+        const p = clamped * 100;
+
+        if (slider) {
+            slider.value = clamped.toString();
+            slider.style.background = `linear-gradient(to right, ${ACCENT_COLOR} 0%, ${ACCENT_COLOR} ${p}%, rgba(255,255,255,0.1) ${p}%, rgba(255,255,255,0.1) 100%)`;
+        }
+
+        if (volIcon) {
+            volIcon.className = clamped === 0 
+                ? 'fa-solid fa-volume-xmark text-brand-accent' 
+                : clamped < 0.5 
+                    ? 'fa-solid fa-volume-low text-gray-300' 
+                    : 'fa-solid fa-volume-high text-white';
+        }
+    }
+
     function initPlayer() {
         const audio = document.getElementById('stream-audio') as HTMLAudioElement;
         if (!audio) return;
@@ -403,39 +465,42 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         initAzuraCastSSE();
 
         if (!window.__eventListenersBound) {
+            // Click Delegation
             document.addEventListener('click', async (e) => {
                 const target = (e.target as HTMLElement).closest('#master-play-btn, .player-trigger, .nav-player-trigger');
                 if (!target) return;
+                togglePlayback();
+            });
 
-                const active = isStreamActive(audio);
+            // Keyboard Controls (Desktop)
+            // Spacebar: Play/Pause, M: Mute, Up/Down: Volume (+/- 5%)
+            const isTyping = (el: Element | null): boolean => {
+                if (!el) return false;
+                const tag = el.tagName.toLowerCase();
+                if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+                if (el.getAttribute('contenteditable') === 'true') return true;
+                return false;
+            };
 
-                if (!active && !isReconnecting) {
-                    // USER INITIATED PLAYBACK
-                    userWantsPlayback = true;
-                    reconnectAttempts = 0;
-                    isReconnecting = false;
-                    if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+            document.addEventListener('keydown', (e: KeyboardEvent) => {
+                if (isTyping(document.activeElement)) return;
 
-                    audio.src = getFreshStreamUrl();
-                    audio.load();
-                    try {
-                        await audio.play();
-                    } catch (err) {
-                        console.error("[n8v Radio] Playback error:", err);
-                        scheduleReconnect();
-                    }
-                } else {
-                    // USER INITIATED STOP
-                    userWantsPlayback = false;
-                    isReconnecting = false;
-                    reconnectAttempts = 0;
-                    if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
-                    if (stallTimeoutId) clearTimeout(stallTimeoutId);
+                const currentAudio = document.getElementById('stream-audio') as HTMLAudioElement;
+                if (!currentAudio) return;
 
-                    audio.pause();
-                    audio.src = "";
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlayback();
+                } else if (e.key === 'm' || e.key === 'M') {
+                    e.preventDefault();
+                    setPlayerVolume(currentAudio.volume > 0 ? 0 : previousVolume);
+                } else if (e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    setPlayerVolume(currentAudio.volume + 0.05);
+                } else if (e.code === 'ArrowDown') {
+                    e.preventDefault();
+                    setPlayerVolume(currentAudio.volume - 0.05);
                 }
-                syncAllButtons();
             });
 
             // Resiliency & Health Event Listeners
@@ -481,42 +546,21 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             window.__eventListenersBound = true;
         }
 
-        // --- Volume Slider Logic (Unchanged) ---
+        // --- Volume Slider Initialization ---
         const slider = document.getElementById('volume-slider') as HTMLInputElement;
-        const volIcon = document.getElementById('volume-icon');
         const muteBtn = document.getElementById('mute-btn');
 
         if (slider) {
-            // FIX: Using hardcoded hex to ensure gradient reliability
-            const ACCENT_COLOR = '#ff3b3b'; 
-
-            const updateVisuals = (v: number) => {
-                const p = v * 100;
-                // Applies the red accent fill to the left of the thumb
-                slider.style.background = `linear-gradient(to right, ${ACCENT_COLOR} 0%, ${ACCENT_COLOR} ${p}%, rgba(255,255,255,0.1) ${p}%, rgba(255,255,255,0.1) 100%)`;
-                
-                if (volIcon) {
-                    volIcon.className = v === 0 ? 'fa-solid fa-volume-xmark text-brand-accent' : v < 0.5 ? 'fa-solid fa-volume-low text-gray-300' : 'fa-solid fa-volume-high text-white';
-                }
-            };
-
-            // Initialize slider position based on current audio volume
-            slider.value = audio.volume.toString();
-            updateVisuals(audio.volume);
+            setPlayerVolume(audio.volume);
 
             slider.oninput = (e) => {
                 const v = parseFloat((e.target as HTMLInputElement).value);
-                audio.volume = v;
-                updateVisuals(v);
-                if (v > 0) previousVolume = v;
+                setPlayerVolume(v);
             };
 
             if (muteBtn) {
                 muteBtn.onclick = () => {
-                    // Toggle between 0 and the last known volume
-                    audio.volume = audio.volume > 0 ? 0 : previousVolume;
-                    slider.value = audio.volume.toString();
-                    updateVisuals(audio.volume);
+                    setPlayerVolume(audio.volume > 0 ? 0 : previousVolume);
                 };
             }
         }

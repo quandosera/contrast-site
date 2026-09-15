@@ -32,6 +32,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return context.redirect("/coming-soon");
     }
 
-    // 7. Proceed normally
-    return next();
+    // 7. Proceed normally with Edge Caching for public GET responses
+    const response = await next();
+
+    // Cache public HTML pages at Vercel's global Edge CDN (30s fresh, 5m stale-while-revalidate)
+    // Exclude Keystatic admin panel and API routes from caching
+    if (
+        !isLocked &&
+        context.request.method === "GET" &&
+        !currentPath.startsWith("/keystatic") &&
+        !currentPath.startsWith("/api") &&
+        response.status === 200
+    ) {
+        response.headers.set("Cache-Control", "public, s-maxage=30, stale-while-revalidate=300");
+    }
+
+    return response;
 });

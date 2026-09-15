@@ -72,7 +72,7 @@ const processedDjs = await Promise.all(sortedDjs.map(async (dj) => {
                     
                     <div class="relative aspect-square overflow-hidden bg-gray-900">
                         {dj.data.avatar ? (
-                            <img src={dj.data.avatar} alt={dj.data.name || dj.id} class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1" />
+                            <img src={dj.data.avatar} alt={dj.data.name || dj.id} loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1" />
                         ) : (
                             <div class="w-full h-full flex items-center justify-center text-gray-800">
                                 <i class="fa-solid fa-user text-6xl opacity-20"></i>

@@ -153,7 +153,7 @@ const groupedSchedule = daysOfWeek.map(day => {
                                         </div>
                                         <div class={`w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-xl transition-all duration-700 shadow-2xl ${item.isLive ? 'ring-2 ring-brand-accent scale-110' : 'bg-gray-800 border border-gray-700 grayscale opacity-40'}`}>
                                             {item.djData?.avatar && !item.isAutoDj ? (
-                                                <img src={item.djData.avatar} alt={item.djData?.name} class="w-full h-full object-cover" />
+                                                <img src={item.djData.avatar} alt={item.djData?.name} loading="lazy" decoding="async" class="w-full h-full object-cover" />
                                             ) : (
                                                 <i class={`fa-solid ${item.isAutoDj ? 'fa-compact-disc' : 'fa-user'} ${item.isLive && item.isAutoDj ? 'fa-spin-slow' : ''}`}></i>
                                             )}
