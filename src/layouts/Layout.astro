@@ -6,11 +6,13 @@ import Player from '../components/Player.astro';
 interface Props {
     title?: string;
     currentShow?: string;
+    djName?: string;
 }
 
 const { 
     title = "n8v.uk | The Next Movement",
-    currentShow = "n8v Selection" 
+    currentShow = "n8v Selection",
+    djName = "n8v DJ"
 } = Astro.props;
 
 const pageTitle = currentShow !== "n8v Selection" && currentShow !== "Auto DJ Mix" 
@@ -114,7 +116,7 @@ const pageTitle = currentShow !== "n8v Selection" && currentShow !== "Auto DJ Mi
             <slot />
         </main>
 
-        <Player currentShow={currentShow} />
+        <Player currentShow={currentShow} djName={djName} />
 
         <script>
             function initHeader() {

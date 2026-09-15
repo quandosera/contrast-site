@@ -34,7 +34,7 @@ const currentSlot = rawSlots.find(slot => {
 
 const currentShowName = currentSlot ? 
     (currentSlot.show === 'Auto DJ' ? "n8v Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
-    : "Auto DJ Mix";
+    : "n8v Selection";
 
 // 3. FILTERING & SORTING LOGIC
 const sortedDjs = allDjs

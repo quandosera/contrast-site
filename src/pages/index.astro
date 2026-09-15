@@ -83,11 +83,11 @@ const displayedShows = relevantShows.slice(0, 5).map(show => ({
 }));
 
 const liveShow = displayedShows.find(show => show.isLive);
-const currentShowName = liveShow ? liveShow.displayName : "Auto DJ Mix";
-const currentDJName = liveShow ? (liveShow.isAutoDj ? "n8v radio" : (liveShow.djData?.name || liveShow.djId || "Guest DJ")) : "n8v radio";
+const currentShowName = liveShow ? liveShow.displayName : "n8v Selection";
+const currentDJName = liveShow ? (liveShow.isAutoDj ? "n8v radio" : (liveShow.djData?.name || liveShow.djId || "Resident DJ")) : "n8v radio";
 ---
 
-<Layout title="n8v.uk | The Next Movement" currentShow={currentShowName}>
+<Layout title="n8v.uk | The Next Movement" currentShow={currentShowName} djName={currentDJName}>
     
     <section class="relative h-[90vh] min-h-[700px] flex items-center justify-center overflow-hidden border-b border-white/5">
         <div class="absolute inset-0 z-0 bg-brand-dark">
