@@ -33,7 +33,7 @@ const currentSlot = rawSlots.find(slot => {
 });
 
 const currentShowName = currentSlot ? 
-    (currentSlot.show === 'Auto DJ' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
+    (currentSlot.show === 'Auto DJ' ? "n8v Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
     : "Auto DJ Mix";
 
 // 3. FILTERING & SORTING LOGIC
@@ -55,7 +55,7 @@ const processedDjs = await Promise.all(sortedDjs.map(async (dj) => {
 }));
 ---
 
-<Layout title="Our Residents | Contrast Radio" currentShow={currentShowName}>
+<Layout title="Our Residents | n8v.uk" currentShow={currentShowName}>
     
     <Hero 
         title="OUR" 

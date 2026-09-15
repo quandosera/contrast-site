@@ -32,11 +32,11 @@ const currentSlot = rawSlots.find(slot => {
 });
 
 const currentShowName = currentSlot ? 
-    (currentSlot.show === 'Auto DJ' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
+    (currentSlot.show === 'Auto DJ' ? "n8v Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
     : "Auto DJ Mix";
 ---
 
-<Layout title="Live Chat | Contrast Radio" currentShow={currentShowName}>
+<Layout title="Live Chat | n8v.uk" currentShow={currentShowName}>
     
     <Hero 
         title="COMMUNITY" 
@@ -67,7 +67,7 @@ const currentShowName = currentSlot ?
             <div class="w-full h-[1px] bg-gradient-to-r from-transparent via-brand-accent/20 to-transparent mt-12"></div>
             
             <p class="mt-6 text-center text-gray-600 text-[10px] uppercase tracking-[0.4em] italic opacity-50">
-                Contrast Radio Community Frequency // Moderated Environment
+                n8v Community Frequency // Moderated Environment
             </p>
         </div>
     </div>

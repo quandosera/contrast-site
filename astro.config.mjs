@@ -7,6 +7,7 @@ import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://n8v.uk',
   // SWITCHING TO SERVER MODE:
   // This is required so that server-side logic (like the Astro.redirect
   // check in your Layout frontmatter) runs on every single visit, 

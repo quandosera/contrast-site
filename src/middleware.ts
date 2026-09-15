@@ -11,7 +11,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const currentPath = url.pathname;
 
     // 3. Check for bypass key
-    const hasBypassKey = url.searchParams.get("secret_bypass") === "contrastRadioDev2026";
+    const bypassParam = url.searchParams.get("secret_bypass");
+    const hasBypassKey = bypassParam === "n8vRadioDev2026" || bypassParam === "contrastRadioDev2026";
 
     // 4. Check if already on the coming soon page
     const isComingSoonPage = currentPath.startsWith("/coming-soon");

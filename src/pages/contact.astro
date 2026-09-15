@@ -30,11 +30,11 @@ const currentSlot = rawSlots.find(slot => {
 });
 
 const currentShowName = currentSlot ? 
-    (currentSlot.show === 'Auto DJ' ? "Contrast Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
+    (currentSlot.show === 'Auto DJ' ? "n8v Selection" : (allShows.find(s => s.id === currentSlot.show)?.data.title || "Unknown")) 
     : "Auto DJ Mix";
 ---
 
-<Layout title="Contact Us | Contrast Radio" currentShow={currentShowName}>
+<Layout title="Contact Us | n8v.uk" currentShow={currentShowName}>
     
     <Hero 
         title="GET IN" 
@@ -64,8 +64,8 @@ const currentShowName = currentSlot ?
 
                 <div class="grid grid-cols-1 gap-6">
                     {[
-                        { label: "General Enquiries", link: "info@contrastradio.com", icon: "fa-envelope" },
-                        { label: "Music Submissions", link: "promo@contrastradio.com", icon: "fa-music" },
+                        { label: "General Enquiries", link: "info@n8v.uk", icon: "fa-envelope" },
+                        { label: "Music Submissions", link: "promo@n8v.uk", icon: "fa-music" },
                         { label: "Studio WhatsApp", link: "+44 7700 900077", icon: "fa-whatsapp", brand: "fa-brands" }
                     ].map(item => (
                         <div class="group flex items-center gap-6 p-8 bg-brand-surface/40 border border-white/5 rounded-[2rem] transition-all duration-500 hover:border-brand-accent/30 hover:bg-brand-surface/60 backdrop-blur-md relative overflow-hidden">
@@ -106,7 +106,7 @@ const currentShowName = currentSlot ?
                     
                     <form action="https://api.web3forms.com/submit" method="POST" class="space-y-6" id="contact-form">
                         <input type="hidden" name="access_key" value="0093b5ba-b719-4189-b369-4a09b42259d2">
-                        <input type="hidden" name="subject" value="New Message from Contrast Radio Website">
+                        <input type="hidden" name="subject" value="New Message from n8v.uk Website">
                         <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
 
                         <div class="space-y-3">

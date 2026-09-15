@@ -6,8 +6,8 @@ interface Props {
 }
 
 const { 
-    currentShow = "Contrast Selection", 
-    djName = "Contrast DJ" 
+    currentShow = "n8v Selection", 
+    djName = "n8v DJ" 
 } = Astro.props;
 
 // Combining them for the scrolling marquee
@@ -63,25 +63,25 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 
 <script>
     const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
-    // IMPORTANT: Ensure your image is moved to public/images/contrast.png
-    const STATION_LOGO_PATH = '/images/contrast.png';
+    // IMPORTANT: Ensure your image is moved to public/images/n8v.png
+    const STATION_LOGO_PATH = '/images/n8v.png';
     let previousVolume = 0.8;
 
     // --- NEW FUNCTION: MEDIA SESSION API ---
     function updateMediaSession() {
         if ('mediaSession' in navigator) {
             // Grabs whatever is currently showing in the marquee
-            const marqueeText = document.querySelector('.marquee-text-source')?.textContent || "CONTRAST RADIO";
+            const marqueeText = document.querySelector('.marquee-text-source')?.textContent || "N8V RADIO";
             
             // Default fallback values
-            let artistStr = "Contrast Radio";
+            let artistStr = "n8v radio";
             let titleStr = "Live Broadcast";
 
             // Tries to split "DJ NAME - SHOW NAME"
             if (marqueeText.includes(' - ')) {
                 const parts = marqueeText.split(' - ');
-                artistStr = parts[0] || "Contrast DJ";
-                titleStr = parts[1] || "Contrast Selection";
+                artistStr = parts[0] || "n8v DJ";
+                titleStr = parts[1] || "n8v Selection";
             } else {
                  // If format is different, just show the whole text as title
                 titleStr = marqueeText;
@@ -91,7 +91,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: titleStr,
                 artist: artistStr,
-                album: "Contrast Radio - The Next Movement",
+                album: "n8v radio - The Next Movement",
                 artwork: [
                     // We use the same high-res image for all sizes; modern OSs handle scaling.
                     { src: STATION_LOGO_PATH, sizes: '96x96',   type: 'image/png' },
