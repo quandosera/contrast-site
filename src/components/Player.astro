@@ -20,6 +20,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         
         <div class="flex items-center gap-4 min-w-0 pr-4">
             <div class="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-brand-dark rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
+                <img id="player-album-art" class="absolute inset-0 w-full h-full object-cover hidden" alt="Now Playing Album Art" />
                 <i id="player-vinyl" class="fa-solid fa-compact-disc text-3xl md:text-5xl text-zinc-800 animate-spin-slow pause-spin"></i>
                 <div id="player-status-icon" class="absolute inset-0 bg-black/40 hidden items-center justify-center">
                     <i class="fa-solid fa-chart-simple text-brand-accent text-xl animate-pulse"></i>
@@ -37,7 +38,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                 
                 <div class="player-marquee-container relative w-full overflow-hidden h-5 md:h-7">
                     <div class="player-marquee-inner flex whitespace-nowrap italic font-black text-white text-xs md:text-lg uppercase">
-                        <span class="pr-10 marquee-text-source">{displayInfo}</span>
+                        <span class="pr-10 marquee-text-source" data-default={displayInfo}>{displayInfo}</span>
                         <span class="pr-10">{displayInfo}</span>
                     </div>
                 </div>
@@ -66,7 +67,16 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 </div>
 
 <script>
-    const STREAM_URL = 'https://s10.myradiostream.com:35080/listen.mp3';
+    declare global {
+        interface Window {
+            __eventListenersBound?: boolean;
+            __azuracastPollingStarted?: boolean;
+            __mediaSessionHandlersSet?: boolean;
+        }
+    }
+
+    const STREAM_URL = 'https://radio.n8v.uk/listen/n8v/radio.mp3';
+    const AZURACAST_API_URL = 'https://radio.n8v.uk/api/nowplaying/1';
     // IMPORTANT: Ensure your image is moved to public/images/n8v.png
     const STATION_LOGO_PATH = '/images/n8v.png';
     let previousVolume = 0.8;
@@ -77,6 +87,14 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     let reconnectTimeoutId: any = null;
     let stallTimeoutId: any = null;
     let isReconnecting = false;
+
+    // --- METADATA STATE ---
+    let currentMetadata = {
+        title: 'Live Broadcast',
+        artist: 'n8v radio',
+        album: 'n8v radio - The Next Movement',
+        artwork: STATION_LOGO_PATH
+    };
 
     function getFreshStreamUrl() {
         const separator = STREAM_URL.includes('?') ? '&' : '?';
@@ -118,65 +136,150 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     }
 
     // --- MEDIA SESSION API ---
-    function updateMediaSession() {
-        if ('mediaSession' in navigator) {
-            const marqueeText = document.querySelector('.marquee-text-source')?.textContent || "N8V RADIO";
-            
-            let artistStr = "n8v radio";
-            let titleStr = "Live Broadcast";
+    function setupMediaSessionHandlers(audio: HTMLAudioElement) {
+        if (!('mediaSession' in navigator) || window.__mediaSessionHandlersSet) return;
+        window.__mediaSessionHandlersSet = true;
 
-            if (marqueeText.includes(' - ')) {
-                const parts = marqueeText.split(' - ');
-                artistStr = parts[0] || "n8v DJ";
-                titleStr = parts[1] || "n8v Selection";
+        navigator.mediaSession.setActionHandler('play', async () => {
+            userWantsPlayback = true;
+            if (!audio.src || audio.src === "") audio.src = getFreshStreamUrl();
+            try {
+                await audio.play();
+            } catch (e) {
+                console.error("[n8v Radio] Lock screen play error:", e);
+                scheduleReconnect();
+            }
+        });
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+            userWantsPlayback = false;
+            isReconnecting = false;
+            if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+            audio.pause();
+            audio.src = "";
+            syncAllButtons();
+        });
+
+        navigator.mediaSession.setActionHandler('stop', () => {
+            userWantsPlayback = false;
+            isReconnecting = false;
+            if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+            audio.pause();
+            audio.src = "";
+            syncAllButtons();
+        });
+
+        navigator.mediaSession.setActionHandler('seekbackward', null);
+        navigator.mediaSession.setActionHandler('seekforward', null);
+    }
+
+    function updateMediaSession() {
+        if (!('mediaSession' in navigator)) return;
+
+        const art = currentMetadata.artwork || STATION_LOGO_PATH;
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: currentMetadata.title,
+            artist: currentMetadata.artist,
+            album: currentMetadata.album,
+            artwork: [
+                { src: art, sizes: '96x96' },
+                { src: art, sizes: '128x128' },
+                { src: art, sizes: '192x192' },
+                { src: art, sizes: '256x256' },
+                { src: art, sizes: '512x512' }
+            ]
+        });
+    }
+
+    // --- AZURACAST NOW PLAYING METADATA ---
+    async function fetchNowPlaying() {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+            const res = await fetch(AZURACAST_API_URL, {
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const isOnline = Boolean(data.is_online);
+            const live = data.live;
+            const isLive = Boolean(live && live.is_live);
+            const streamer = live?.streamer_name?.trim();
+            const song = data.now_playing?.song;
+
+            let displayMarquee = '';
+            let metaTitle = 'Live Broadcast';
+            let metaArtist = 'n8v radio';
+            let metaArt = STATION_LOGO_PATH;
+
+            const rawTitle = song?.title?.trim() || '';
+            const rawArtist = song?.artist?.trim() || '';
+            const isOfflineTrack = !rawTitle || rawTitle.includes('Offline');
+
+            if (isLive && streamer) {
+                metaArtist = streamer;
+                metaTitle = (!isOfflineTrack && rawTitle) ? rawTitle : 'Live Broadcast';
+                metaArt = live?.art || song?.art || STATION_LOGO_PATH;
+                displayMarquee = (!isOfflineTrack && rawTitle)
+                    ? (rawArtist ? `LIVE: ${streamer} — ${rawArtist} - ${rawTitle}` : `LIVE: ${streamer} — ${rawTitle}`)
+                    : `LIVE: ${streamer}`;
+            } else if (isOnline && !isOfflineTrack) {
+                metaArtist = rawArtist || 'n8v radio';
+                metaTitle = rawTitle;
+                metaArt = song?.art || STATION_LOGO_PATH;
+                displayMarquee = rawArtist ? `${rawArtist} - ${rawTitle}` : rawTitle;
             } else {
-                titleStr = marqueeText;
+                // Station offline or AutoDJ idle: use fallback scheduled info
+                const defaultEl = document.querySelector('.marquee-text-source');
+                const defaultText = defaultEl?.getAttribute('data-default') || defaultEl?.textContent || 'N8V DJ - N8V SELECTION';
+                displayMarquee = defaultText;
+                metaArtist = 'n8v radio';
+                metaTitle = defaultText;
+                metaArt = STATION_LOGO_PATH;
             }
 
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: titleStr,
-                artist: artistStr,
-                album: "n8v radio - The Next Movement",
-                artwork: [
-                    { src: STATION_LOGO_PATH, sizes: '96x96',   type: 'image/png' },
-                    { src: STATION_LOGO_PATH, sizes: '128x128', type: 'image/png' },
-                    { src: STATION_LOGO_PATH, sizes: '192x192', type: 'image/png' },
-                    { src: STATION_LOGO_PATH, sizes: '256x256', type: 'image/png' },
-                    { src: STATION_LOGO_PATH, sizes: '512x512', type: 'image/png' },
-                ]
+            currentMetadata = {
+                title: metaTitle,
+                artist: metaArtist,
+                album: 'n8v radio - The Next Movement',
+                artwork: metaArt
+            };
+
+            // Update marquee spans seamlessly
+            const spans = document.querySelectorAll('.player-marquee-inner span');
+            spans.forEach((span) => {
+                span.textContent = displayMarquee.toUpperCase();
             });
 
-            const audio = document.getElementById('stream-audio') as HTMLAudioElement;
-            if (audio) {
-                navigator.mediaSession.setActionHandler('play', async () => {
-                    userWantsPlayback = true;
-                    if (!audio.src || audio.src === "") audio.src = getFreshStreamUrl();
-                    try {
-                        await audio.play();
-                    } catch (e) {
-                        console.error("Lock screen play error:", e);
-                        scheduleReconnect();
-                    }
-                });
-                navigator.mediaSession.setActionHandler('pause', () => {
-                    userWantsPlayback = false;
-                    isReconnecting = false;
-                    if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
-                    audio.pause();
-                    audio.src = "";
-                    syncAllButtons();
-                });
-                navigator.mediaSession.setActionHandler('stop', () => {
-                    userWantsPlayback = false;
-                    isReconnecting = false;
-                    if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
-                    audio.pause();
-                    audio.src = "";
-                    syncAllButtons();
-                });
-                navigator.mediaSession.setActionHandler('seekbackward', null);
-                navigator.mediaSession.setActionHandler('seekforward', null);
+            // Update album art thumbnail if present
+            const artImg = document.getElementById('player-album-art') as HTMLImageElement;
+            const vinyl = document.getElementById('player-vinyl');
+            if (artImg && metaArt && metaArt !== STATION_LOGO_PATH) {
+                artImg.src = metaArt;
+                artImg.onload = () => {
+                    artImg.classList.remove('hidden');
+                    vinyl?.classList.add('hidden');
+                };
+                artImg.onerror = () => {
+                    artImg.classList.add('hidden');
+                    vinyl?.classList.remove('hidden');
+                };
+            } else if (artImg) {
+                artImg.classList.add('hidden');
+                vinyl?.classList.remove('hidden');
             }
+
+            // Sync MediaSession metadata if currently playing
+            const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+            if (isStreamActive(audio)) {
+                updateMediaSession();
+            }
+        } catch (_) {
+            // Silently swallow network / CORS / timeout errors
         }
     }
 
@@ -233,6 +336,16 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     function initPlayer() {
         const audio = document.getElementById('stream-audio') as HTMLAudioElement;
         if (!audio) return;
+
+        setupMediaSessionHandlers(audio);
+
+        if (!window.__azuracastPollingStarted) {
+            window.__azuracastPollingStarted = true;
+            fetchNowPlaying();
+            setInterval(fetchNowPlaying, 15000);
+        } else {
+            fetchNowPlaying();
+        }
 
         if (!window.__eventListenersBound) {
             document.addEventListener('click', async (e) => {
