@@ -63,23 +63,10 @@ const flyers = defineCollection({
   }),
 });
 
-/**
- * 5. DJ Order Collection
- * Explicitly defined to stop "Auto-generating collections" warnings.
- */
-const djOrder = defineCollection({
-  loader: glob({ pattern: "**/*{.md,.mdoc}", base: "./src/content/dj-order" }),
-  schema: z.object({
-    name: z.string().optional(),
-    rank: z.number().optional().default(99),
-  }),
-});
-
-// Final exports - 'episodes' removed.
+// Final exports
 export const collections = { 
   djs, 
   shows, 
   schedule, 
-  flyers,
-  'dj-order': djOrder 
+  flyers
 };
