@@ -70,7 +70,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     declare global {
         interface Window {
             __eventListenersBound?: boolean;
-            __azuracastPollingStarted?: boolean;
+            __azuracastSSEActive?: boolean;
             __mediaSessionHandlersSet?: boolean;
         }
     }
@@ -95,6 +95,10 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         album: 'n8v radio - The Next Movement',
         artwork: STATION_LOGO_PATH
     };
+
+    let latestNowPlayingData: any = null;
+    let sseSource: EventSource | null = null;
+    let fallbackPollIntervalId: any = null;
 
     function getFreshStreamUrl() {
         const separator = STREAM_URL.includes('?') ? '&' : '?';
@@ -191,7 +195,87 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         });
     }
 
-    // --- AZURACAST NOW PLAYING METADATA ---
+    // --- AZURACAST NOW PLAYING METADATA LOGIC ---
+    function applyNowPlayingData(data: any) {
+        if (!data) return;
+        latestNowPlayingData = data;
+
+        const isOnline = Boolean(data.is_online);
+        const live = data.live;
+        const isLive = Boolean(live && live.is_live);
+        const streamer = live?.streamer_name?.trim();
+        const song = data.now_playing?.song;
+
+        let displayMarquee = '';
+        let metaTitle = 'Live Broadcast';
+        let metaArtist = 'n8v radio';
+        let metaArt = STATION_LOGO_PATH;
+
+        const rawTitle = song?.title?.trim() || '';
+        const rawArtist = song?.artist?.trim() || '';
+        const isOfflineTrack = !rawTitle || rawTitle.includes('Offline');
+
+        if (isLive && streamer) {
+            metaArtist = streamer;
+            metaTitle = (!isOfflineTrack && rawTitle) ? rawTitle : 'Live Broadcast';
+            metaArt = live?.art || song?.art || STATION_LOGO_PATH;
+            displayMarquee = (!isOfflineTrack && rawTitle)
+                ? (rawArtist ? `LIVE: ${streamer} — ${rawArtist} - ${rawTitle}` : `LIVE: ${streamer} — ${rawTitle}`)
+                : `LIVE: ${streamer}`;
+        } else if (isOnline && !isOfflineTrack) {
+            metaArtist = rawArtist || 'n8v radio';
+            metaTitle = rawTitle;
+            metaArt = song?.art || STATION_LOGO_PATH;
+            displayMarquee = rawArtist ? `${rawArtist} - ${rawTitle}` : rawTitle;
+        } else {
+            // Station offline or AutoDJ idle: use fallback scheduled info
+            const defaultEl = document.querySelector('.marquee-text-source');
+            const defaultText = defaultEl?.getAttribute('data-default') || defaultEl?.textContent || 'N8V DJ - N8V SELECTION';
+            displayMarquee = defaultText;
+            metaArtist = 'n8v radio';
+            metaTitle = defaultText;
+            metaArt = STATION_LOGO_PATH;
+        }
+
+        currentMetadata = {
+            title: metaTitle,
+            artist: metaArtist,
+            album: 'n8v radio - The Next Movement',
+            artwork: metaArt
+        };
+
+        // Update marquee spans seamlessly
+        const spans = document.querySelectorAll('.player-marquee-inner span');
+        spans.forEach((span) => {
+            span.textContent = displayMarquee.toUpperCase();
+        });
+
+        // Update album art thumbnail if present
+        const artImg = document.getElementById('player-album-art') as HTMLImageElement;
+        const vinyl = document.getElementById('player-vinyl');
+        if (artImg && metaArt && metaArt !== STATION_LOGO_PATH) {
+            artImg.src = metaArt;
+            artImg.onload = () => {
+                artImg.classList.remove('hidden');
+                vinyl?.classList.add('hidden');
+            };
+            artImg.onerror = () => {
+                artImg.classList.add('hidden');
+                vinyl?.classList.remove('hidden');
+            };
+        } else if (artImg) {
+            artImg.classList.add('hidden');
+            vinyl?.classList.remove('hidden');
+        }
+
+        // Sync MediaSession metadata if currently playing
+        const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+        if (isStreamActive(audio)) {
+            updateMediaSession();
+        }
+    }
+
+    // --- AZURACAST NOW PLAYING METADATA (REST FALLBACK) ---
     async function fetchNowPlaying() {
         try {
             const controller = new AbortController();
@@ -204,82 +288,60 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
 
             if (!res.ok) return;
             const data = await res.json();
-
-            const isOnline = Boolean(data.is_online);
-            const live = data.live;
-            const isLive = Boolean(live && live.is_live);
-            const streamer = live?.streamer_name?.trim();
-            const song = data.now_playing?.song;
-
-            let displayMarquee = '';
-            let metaTitle = 'Live Broadcast';
-            let metaArtist = 'n8v radio';
-            let metaArt = STATION_LOGO_PATH;
-
-            const rawTitle = song?.title?.trim() || '';
-            const rawArtist = song?.artist?.trim() || '';
-            const isOfflineTrack = !rawTitle || rawTitle.includes('Offline');
-
-            if (isLive && streamer) {
-                metaArtist = streamer;
-                metaTitle = (!isOfflineTrack && rawTitle) ? rawTitle : 'Live Broadcast';
-                metaArt = live?.art || song?.art || STATION_LOGO_PATH;
-                displayMarquee = (!isOfflineTrack && rawTitle)
-                    ? (rawArtist ? `LIVE: ${streamer} — ${rawArtist} - ${rawTitle}` : `LIVE: ${streamer} — ${rawTitle}`)
-                    : `LIVE: ${streamer}`;
-            } else if (isOnline && !isOfflineTrack) {
-                metaArtist = rawArtist || 'n8v radio';
-                metaTitle = rawTitle;
-                metaArt = song?.art || STATION_LOGO_PATH;
-                displayMarquee = rawArtist ? `${rawArtist} - ${rawTitle}` : rawTitle;
-            } else {
-                // Station offline or AutoDJ idle: use fallback scheduled info
-                const defaultEl = document.querySelector('.marquee-text-source');
-                const defaultText = defaultEl?.getAttribute('data-default') || defaultEl?.textContent || 'N8V DJ - N8V SELECTION';
-                displayMarquee = defaultText;
-                metaArtist = 'n8v radio';
-                metaTitle = defaultText;
-                metaArt = STATION_LOGO_PATH;
-            }
-
-            currentMetadata = {
-                title: metaTitle,
-                artist: metaArtist,
-                album: 'n8v radio - The Next Movement',
-                artwork: metaArt
-            };
-
-            // Update marquee spans seamlessly
-            const spans = document.querySelectorAll('.player-marquee-inner span');
-            spans.forEach((span) => {
-                span.textContent = displayMarquee.toUpperCase();
-            });
-
-            // Update album art thumbnail if present
-            const artImg = document.getElementById('player-album-art') as HTMLImageElement;
-            const vinyl = document.getElementById('player-vinyl');
-            if (artImg && metaArt && metaArt !== STATION_LOGO_PATH) {
-                artImg.src = metaArt;
-                artImg.onload = () => {
-                    artImg.classList.remove('hidden');
-                    vinyl?.classList.add('hidden');
-                };
-                artImg.onerror = () => {
-                    artImg.classList.add('hidden');
-                    vinyl?.classList.remove('hidden');
-                };
-            } else if (artImg) {
-                artImg.classList.add('hidden');
-                vinyl?.classList.remove('hidden');
-            }
-
-            // Sync MediaSession metadata if currently playing
-            const audio = document.getElementById('stream-audio') as HTMLAudioElement;
-            if (isStreamActive(audio)) {
-                updateMediaSession();
-            }
+            applyNowPlayingData(data);
         } catch (_) {
             // Silently swallow network / CORS / timeout errors
+        }
+    }
+
+    // --- AZURACAST REAL-TIME SSE (SERVER-SENT EVENTS) ---
+    function initAzuraCastSSE() {
+        if (window.__azuracastSSEActive) {
+            if (latestNowPlayingData) {
+                applyNowPlayingData(latestNowPlayingData);
+            } else {
+                fetchNowPlaying();
+            }
+            return;
+        }
+        window.__azuracastSSEActive = true;
+
+        // 1. Instant initial REST fetch
+        fetchNowPlaying();
+
+        // 2. Connect to Centrifugo SSE stream
+        if ('EventSource' in window) {
+            try {
+                const sseUrl = 'https://radio.n8v.uk/api/live/nowplaying/sse?cf_connect=' + encodeURIComponent(JSON.stringify({
+                    subs: { 'station:n8v': {} }
+                }));
+
+                sseSource = new EventSource(sseUrl);
+
+                sseSource.onmessage = (event) => {
+                    try {
+                        const parsed = JSON.parse(event.data);
+                        // Centrifugo publication extraction
+                        const npData = parsed.pub?.data?.np || parsed.pub?.data || parsed.data?.np || parsed.data;
+                        if (npData && typeof npData === 'object' && ('station' in npData || 'now_playing' in npData)) {
+                            applyNowPlayingData(npData);
+                        }
+                    } catch (e) {
+                        // ignore ping / unparseable message
+                    }
+                };
+
+                sseSource.onerror = () => {
+                    // Browser automatically reconnects EventSource. Fallback heartbeat ensures continuity.
+                };
+            } catch (err) {
+                console.warn('[n8v Radio] SSE initialization error, relying on background heartbeat:', err);
+            }
+        }
+
+        // 3. Resilient background heartbeat: 30s backup in case SSE is throttled
+        if (!fallbackPollIntervalId) {
+            fallbackPollIntervalId = setInterval(fetchNowPlaying, 30000);
         }
     }
 
@@ -338,14 +400,7 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         if (!audio) return;
 
         setupMediaSessionHandlers(audio);
-
-        if (!window.__azuracastPollingStarted) {
-            window.__azuracastPollingStarted = true;
-            fetchNowPlaying();
-            setInterval(fetchNowPlaying, 15000);
-        } else {
-            fetchNowPlaying();
-        }
+        initAzuraCastSSE();
 
         if (!window.__eventListenersBound) {
             document.addEventListener('click', async (e) => {

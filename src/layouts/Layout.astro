@@ -47,9 +47,13 @@ const pageTitle = currentShow !== "n8v Selection" && currentShow !== "Auto DJ Mi
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <!-- PWA & Mobile Web App Meta -->
         <link rel="manifest" href="/site.webmanifest" />
-
-        <meta name="theme-color" content="#0b0b0b">
+        <meta name="theme-color" content="#0b0b0b" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="n8v" />
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -164,6 +168,15 @@ const pageTitle = currentShow !== "n8v Selection" && currentShow !== "Auto DJ Mi
             }
 
             document.addEventListener('astro:page-load', initHeader);
+
+            // Register Service Worker for PWA Installability
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').catch((err) => {
+                        console.warn('[n8v SW] Registration error:', err);
+                    });
+                });
+            }
         </script>
     </body>
 </html>
