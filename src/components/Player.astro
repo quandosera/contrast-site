@@ -27,8 +27,12 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
             </div>
             
             <div class="flex flex-col min-w-0 overflow-hidden">
-                <span class="text-[10px] md:text-xs font-black text-brand-accent tracking-[0.3em] uppercase flex items-center gap-1.5 mb-1">
-                    <span class="w-2 h-2 rounded-full bg-brand-accent animate-ping"></span> NOW PLAYING
+                <span class="text-[10px] md:text-xs font-black text-brand-accent tracking-[0.3em] uppercase flex items-center gap-2 mb-1">
+                    <span class="relative flex h-2 w-2 items-center justify-center">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-accent opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-accent shadow-[0_0_8px_rgba(255,59,59,0.8)]"></span>
+                    </span>
+                    NOW PLAYING
                 </span>
                 
                 <div class="player-marquee-container relative w-full overflow-hidden h-5 md:h-7">
@@ -250,13 +254,20 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         cursor: pointer;
     }
     
-    /* CHROME/SAFARI THUMB */
+    /* CHROME/SAFARI/EDGE THUMB */
     .premium-slider::-webkit-slider-thumb {
-        -webkit-appearance: none; height: 16px; width: 16px;
+        -webkit-appearance: none; appearance: none;
+        height: 16px; width: 16px;
         border-radius: 50%; background: #ffffff; cursor: pointer;
         box-shadow: 0 0 10px rgba(255, 59, 59, 0.5); /* Red glow */
         border: none;
-        margin-top: -6px; /* Centers thumb on the track */
+        margin: 0; /* Perfectly vertically centered on the 4px track */
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .premium-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.15);
+        box-shadow: 0 0 14px rgba(255, 59, 59, 0.8);
     }
 
     /* FIREFOX THUMB */
@@ -264,5 +275,11 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         height: 16px; width: 16px; border-radius: 50%;
         background: #ffffff; cursor: pointer; border: none;
         box-shadow: 0 0 10px rgba(255, 59, 59, 0.5); /* Red glow */
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .premium-slider::-moz-range-thumb:hover {
+        transform: scale(1.15);
+        box-shadow: 0 0 14px rgba(255, 59, 59, 0.8);
     }
 </style>
