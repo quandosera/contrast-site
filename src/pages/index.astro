@@ -8,7 +8,6 @@ const scheduleDoc = await getEntry('schedule', 'master');
 const rawSlots = scheduleDoc?.data?.allSlots || [];
 const allShows = await getCollection('shows');
 const allDjs = await getCollection('djs');
-const allFlyers = await getCollection('flyers').catch(() => []);
 
 // 2. TIME LOGIC (UK Time Synchronization)
 const ukTimeOptions = { timeZone: 'Europe/London' };
@@ -86,7 +85,6 @@ const displayedShows = relevantShows.slice(0, 5).map(show => ({
 const liveShow = displayedShows.find(show => show.isLive);
 const currentShowName = liveShow ? liveShow.displayName : "Auto DJ Mix";
 const currentDJName = liveShow ? (liveShow.isAutoDj ? "n8v radio" : (liveShow.djData?.name || liveShow.djId || "Guest DJ")) : "n8v radio";
-const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0, 4);
 ---
 
 <Layout title="n8v.uk | The Next Movement" currentShow={currentShowName}>
@@ -198,56 +196,6 @@ const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0,
                 ))}
             </div>
         </section>
-
-        <section id="events">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                <h2 class="text-3xl md:text-4xl font-black flex items-center gap-4 uppercase italic tracking-tighter text-white">
-                    <i class="fa-solid fa-ticket text-brand-accent"></i> Events & Flyers
-                </h2>
-                <a href="/gallery" class="w-fit bg-brand-surface border border-white/5 hover:border-brand-accent/50 text-white font-black text-[10px] px-6 py-3 rounded-full flex items-center gap-3 transition-all shadow-xl uppercase tracking-[0.3em] group">
-                    VIEW GALLERY <i class="fa-solid fa-arrow-right text-[8px] text-brand-accent group-hover:translate-x-1 transition-transform"></i>
-                </a>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                {activeFlyers.map(flyer => (
-                    <button class="flyer-card group relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden aspect-[4/5] bg-brand-surface/50 border border-white/5 text-left transition-all duration-700 hover:-translate-y-3 hover:border-brand-accent/30 hover:shadow-2xl hover:shadow-brand-accent/20 active:scale-95">
-                        {flyer.data.image && <img src={flyer.data.image} alt={flyer.data.title} class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />}
-                        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/20 to-transparent flex flex-col justify-end p-6 md:p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            <span class="text-brand-accent text-[8px] font-black uppercase tracking-[0.3em] mb-2">n8v visual</span>
-                            <h3 class="text-white font-black text-lg leading-tight uppercase italic">{flyer.data.title}</h3>
-                        </div>
-                    </button>
-                ))}
-            </div>
-        </section>
-
-        <section id="sponsors" class="pt-24 pb-12 border-t border-white/5 relative">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <span class="text-[10px] font-black tracking-[0.4em] text-gray-400 uppercase italic opacity-80">Station Partners</span>
-                </div>
-                
-                <div class="grid grid-cols-2 md:flex md:flex-wrap justify-center items-center gap-8 md:gap-20 opacity-70 hover:opacity-100 transition-all duration-700 grayscale hover:grayscale-0">
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105 hover:text-brand-accent">
-                        <i class="fa-solid fa-building text-gray-400"></i> SION SPACES
-                    </a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105 hover:text-brand-accent">
-                        <i class="fa-solid fa-house text-gray-400"></i> HYDE & ROWE
-                    </a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105 hover:text-brand-accent">
-                        <i class="fa-solid fa-martini-glass text-gray-400"></i> BARRY'S BAR
-                    </a>
-                    <a href="#" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center md:justify-start gap-3 font-black text-xs md:text-sm uppercase tracking-widest text-white transition-all hover:scale-105 hover:text-brand-accent">
-                        <i class="fa-solid fa-car text-gray-400"></i> SAYEZ CAR CARE
-                    </a>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <div id="flyer-modal" class="fixed inset-0 z-[60] bg-brand-dark/98 backdrop-blur-3xl hidden flex items-center justify-center p-8 transition-opacity duration-300 opacity-0">
-        <button class="absolute top-8 right-8 text-white hover:text-brand-accent text-6xl transition-all hover:rotate-90 active:scale-90">&times;</button>
-        <img id="modal-img" src="" class="max-w-full max-h-[85vh] object-contain rounded-[2rem] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] scale-95 transition-transform duration-500">
     </div>
 
 </Layout>
@@ -256,37 +204,3 @@ const activeFlyers = allFlyers.sort((a, b) => b.id.localeCompare(a.id)).slice(0,
     .fa-spin-slow { animation: spin 12s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
-
-<script>
-    document.addEventListener('astro:page-load', () => {
-        const flyers = document.querySelectorAll('.flyer-card');
-        const modal = document.getElementById('flyer-modal');
-        const modalImg = document.getElementById('modal-img') as HTMLImageElement;
-        const closeBtn = modal?.querySelector('button');
-
-        flyers.forEach(card => card.addEventListener('click', () => {
-            const img = card.querySelector('img');
-            if (img && modal && modalImg) {
-                modalImg.src = img.src;
-                modal.classList.remove('hidden');
-                setTimeout(() => { 
-                    modal.classList.replace('opacity-0', 'opacity-100'); 
-                    modalImg.classList.replace('scale-95', 'scale-100'); 
-                }, 10);
-                document.body.style.overflow = 'hidden';
-            }
-        }));
-
-        const closeModal = () => {
-            if (modal && modalImg) {
-                modal.classList.replace('opacity-100', 'opacity-0');
-                modalImg.classList.replace('scale-100', 'scale-95');
-                setTimeout(() => { modal.classList.add('hidden'); document.body.style.overflow = ''; }, 300);
-            }
-        };
-
-        closeBtn?.addEventListener('click', closeModal);
-        modal?.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-    });
-</script>
