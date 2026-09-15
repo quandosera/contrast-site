@@ -200,39 +200,48 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         if (!data) return;
         latestNowPlayingData = data;
 
-        const isOnline = Boolean(data.is_online);
         const live = data.live;
         const isLive = Boolean(live && live.is_live);
-        const streamer = live?.streamer_name?.trim();
+        const streamer = live?.streamer_name?.trim() || (isLive ? 'Resident DJ' : '');
         const song = data.now_playing?.song;
 
         let displayMarquee = '';
         let metaTitle = 'Live Broadcast';
         let metaArtist = 'n8v radio';
-        let metaArt = STATION_LOGO_PATH;
+        let metaArt = live?.art || song?.art || STATION_LOGO_PATH;
 
         const rawTitle = song?.title?.trim() || '';
         const rawArtist = song?.artist?.trim() || '';
-        const isOfflineTrack = !rawTitle || rawTitle.includes('Offline');
 
-        if (isLive && streamer) {
-            metaArtist = streamer;
-            metaTitle = (!isOfflineTrack && rawTitle) ? rawTitle : 'Live Broadcast';
-            metaArt = live?.art || song?.art || STATION_LOGO_PATH;
-            displayMarquee = (!isOfflineTrack && rawTitle)
-                ? (rawArtist ? `LIVE: ${streamer} — ${rawArtist} - ${rawTitle}` : `LIVE: ${streamer} — ${rawTitle}`)
-                : `LIVE: ${streamer}`;
-        } else if (isOnline && !isOfflineTrack) {
+        // Check if track is a genuine track title and not an offline placeholder
+        const isOfflineTrack = !rawTitle || 
+                               rawTitle.includes('Offline') || 
+                               rawTitle.toLowerCase() === 'offline' ||
+                               rawTitle.includes('🔴');
+
+        if (isLive) {
+            // Case 1: LIVE DJ STREAMING
+            metaArtist = streamer || 'Resident DJ';
+            if (!isOfflineTrack && rawTitle) {
+                metaTitle = rawTitle;
+                displayMarquee = rawArtist 
+                    ? `LIVE: ${metaArtist} — ${rawArtist} - ${rawTitle}` 
+                    : `LIVE: ${metaArtist} — ${rawTitle}`;
+            } else {
+                metaTitle = 'Live Broadcast';
+                displayMarquee = `LIVE: ${metaArtist} — LIVE BROADCAST`;
+            }
+        } else if (!isOfflineTrack && rawTitle) {
+            // Case 2: AUTO DJ / PLAYLIST STREAMING (Genuine song playing)
             metaArtist = rawArtist || 'n8v radio';
             metaTitle = rawTitle;
-            metaArt = song?.art || STATION_LOGO_PATH;
             displayMarquee = rawArtist ? `${rawArtist} - ${rawTitle}` : rawTitle;
         } else {
-            // Station offline or AutoDJ idle: use fallback scheduled info
+            // Case 3: Station idle / offline loop -> Display scheduled resident info
             const defaultEl = document.querySelector('.marquee-text-source');
-            const defaultText = defaultEl?.getAttribute('data-default') || defaultEl?.textContent || 'N8V DJ - N8V SELECTION';
+            const defaultText = defaultEl?.getAttribute('data-default') || defaultEl?.textContent || 'RESIDENT DJ - THE N8V SHOW';
             displayMarquee = defaultText;
-            metaArtist = 'n8v radio';
+            metaArtist = 'Resident DJ';
             metaTitle = defaultText;
             metaArt = STATION_LOGO_PATH;
         }
@@ -266,6 +275,33 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         } else if (artImg) {
             artImg.classList.add('hidden');
             vinyl?.classList.remove('hidden');
+        }
+
+        // Dynamically update Homepage Live Transmission Beacon if present on the page
+        const ping = document.getElementById('live-indicator-ping');
+        const dot = document.getElementById('live-indicator-dot');
+        const text = document.getElementById('live-indicator-text');
+        const onAir = document.getElementById('hero-on-air-dj');
+
+        if (text) {
+            if (isLive) {
+                text.textContent = 'LIVE STUDIO TRANSMISSION';
+                ping?.classList.remove('bg-gray-500');
+                ping?.classList.add('bg-brand-accent', 'animate-ping');
+                dot?.classList.remove('bg-gray-500');
+                dot?.classList.add('bg-brand-accent');
+                if (onAir) onAir.textContent = streamer || 'Resident DJ';
+            } else {
+                const isScheduledLive = text.getAttribute('data-scheduled-live') === 'true';
+                if (!isScheduledLive) {
+                    text.textContent = 'AUTOMATED SIGNAL ACTIVE';
+                    ping?.classList.remove('bg-brand-accent', 'animate-ping');
+                    ping?.classList.add('bg-gray-500');
+                    dot?.classList.remove('bg-brand-accent');
+                    dot?.classList.add('bg-gray-500');
+                    if (onAir) onAir.textContent = onAir.getAttribute('data-default-dj') || 'n8v radio';
+                }
+            }
         }
 
         // Sync MediaSession metadata if currently playing

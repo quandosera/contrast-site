@@ -101,10 +101,10 @@ const currentDJName = liveShow ? (liveShow.isAutoDj ? "n8v radio" : (liveShow.dj
             
             <div class="inline-flex items-center gap-3 bg-white/[0.03] border border-white/10 backdrop-blur-2xl px-6 py-2.5 rounded-full mb-8 md:mb-12 shadow-2xl">
                 <div class="relative flex items-center justify-center">
-                    <span class={`w-2.5 h-2.5 rounded-full ${liveShow ? 'bg-brand-accent animate-ping' : 'bg-gray-500'}`}></span>
-                    <span class={`absolute w-2.5 h-2.5 rounded-full ${liveShow ? 'bg-brand-accent' : 'bg-gray-500'}`}></span>
+                    <span id="live-indicator-ping" class={`w-2.5 h-2.5 rounded-full ${liveShow ? 'bg-brand-accent animate-ping' : 'bg-gray-500'}`}></span>
+                    <span id="live-indicator-dot" class={`absolute w-2.5 h-2.5 rounded-full ${liveShow ? 'bg-brand-accent' : 'bg-gray-500'}`}></span>
                 </div>
-                <span class="text-[10px] md:text-[11px] font-black tracking-[0.4em] text-white uppercase italic">
+                <span id="live-indicator-text" data-scheduled-live={String(Boolean(liveShow))} class="text-[10px] md:text-[11px] font-black tracking-[0.4em] text-white uppercase italic">
                     {liveShow ? 'LIVE STUDIO TRANSMISSION' : 'AUTOMATED SIGNAL ACTIVE'}
                 </span>
             </div>
@@ -126,7 +126,7 @@ const currentDJName = liveShow ? (liveShow.isAutoDj ? "n8v radio" : (liveShow.dj
                     <div class="flex items-center justify-center gap-3">
                         <div class="h-[1px] w-6 md:w-8 bg-brand-accent/40"></div>
                         <p class="text-xs md:text-lg text-white font-black uppercase italic tracking-widest leading-none">
-                            On Air: <span class="text-brand-accent drop-shadow-md">{currentDJName}</span>
+                            On Air: <span id="hero-on-air-dj" data-default-dj={currentDJName} class="text-brand-accent drop-shadow-md">{currentDJName}</span>
                         </p>
                         <div class="h-[1px] w-6 md:w-8 bg-brand-accent/40"></div>
                     </div>
