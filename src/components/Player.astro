@@ -71,33 +71,73 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     const STATION_LOGO_PATH = '/images/n8v.png';
     let previousVolume = 0.8;
 
-    // --- NEW FUNCTION: MEDIA SESSION API ---
+    // --- RECONNECTION & STREAM HEALTH STATE ---
+    let userWantsPlayback = false;
+    let reconnectAttempts = 0;
+    let reconnectTimeoutId: any = null;
+    let stallTimeoutId: any = null;
+    let isReconnecting = false;
+
+    function getFreshStreamUrl() {
+        const separator = STREAM_URL.includes('?') ? '&' : '?';
+        return `${STREAM_URL}${separator}_t=${Date.now()}`;
+    }
+
+    function scheduleReconnect() {
+        if (!userWantsPlayback) return;
+        if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+
+        reconnectAttempts++;
+        // Exponential backoff: ~1.2s, 2s, 3.5s, 6s, 10s, 16s, capped at 30s + random jitter
+        const baseDelay = 1200;
+        const maxDelay = 30000;
+        const delay = Math.min(maxDelay, Math.round(baseDelay * Math.pow(1.65, reconnectAttempts - 1))) + Math.floor(Math.random() * 600);
+
+        console.warn(`[n8v Radio] Stream interrupted. Reconnecting in ${(delay / 1000).toFixed(1)}s (Attempt #${reconnectAttempts})...`);
+        isReconnecting = true;
+        syncAllButtons();
+
+        reconnectTimeoutId = setTimeout(async () => {
+            if (!userWantsPlayback) return;
+            const audio = document.getElementById('stream-audio') as HTMLAudioElement;
+            if (!audio) return;
+
+            try {
+                audio.src = getFreshStreamUrl();
+                audio.load();
+                await audio.play();
+                reconnectAttempts = 0;
+                isReconnecting = false;
+                syncAllButtons();
+                console.info("[n8v Radio] Stream connection restored successfully.");
+            } catch (err) {
+                console.warn("[n8v Radio] Reconnect attempt failed. Retrying with backoff...", err);
+                scheduleReconnect();
+            }
+        }, delay);
+    }
+
+    // --- MEDIA SESSION API ---
     function updateMediaSession() {
         if ('mediaSession' in navigator) {
-            // Grabs whatever is currently showing in the marquee
             const marqueeText = document.querySelector('.marquee-text-source')?.textContent || "N8V RADIO";
             
-            // Default fallback values
             let artistStr = "n8v radio";
             let titleStr = "Live Broadcast";
 
-            // Tries to split "DJ NAME - SHOW NAME"
             if (marqueeText.includes(' - ')) {
                 const parts = marqueeText.split(' - ');
                 artistStr = parts[0] || "n8v DJ";
                 titleStr = parts[1] || "n8v Selection";
             } else {
-                 // If format is different, just show the whole text as title
                 titleStr = marqueeText;
             }
 
-            // Update the phone's Now Playing info
             navigator.mediaSession.metadata = new MediaMetadata({
                 title: titleStr,
                 artist: artistStr,
                 album: "n8v radio - The Next Movement",
                 artwork: [
-                    // We use the same high-res image for all sizes; modern OSs handle scaling.
                     { src: STATION_LOGO_PATH, sizes: '96x96',   type: 'image/png' },
                     { src: STATION_LOGO_PATH, sizes: '128x128', type: 'image/png' },
                     { src: STATION_LOGO_PATH, sizes: '192x192', type: 'image/png' },
@@ -106,44 +146,66 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                 ]
             });
 
-            // Ensure lock screen buttons work
             const audio = document.getElementById('stream-audio') as HTMLAudioElement;
             if (audio) {
-                    navigator.mediaSession.setActionHandler('play', () => {
-                    if (!audio.src.includes('listen.mp3')) audio.src = STREAM_URL;
-                    audio.play().catch(e => console.error("Lock screen play error", e));
+                navigator.mediaSession.setActionHandler('play', async () => {
+                    userWantsPlayback = true;
+                    if (!audio.src || audio.src === "") audio.src = getFreshStreamUrl();
+                    try {
+                        await audio.play();
+                    } catch (e) {
+                        console.error("Lock screen play error:", e);
+                        scheduleReconnect();
+                    }
                 });
-                navigator.mediaSession.setActionHandler('pause', () => audio.pause());
-                navigator.mediaSession.setActionHandler('stop', () => {
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    userWantsPlayback = false;
+                    isReconnecting = false;
+                    if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
                     audio.pause();
-                    audio.src = ""; // Clear buffer on stop
+                    audio.src = "";
+                    syncAllButtons();
                 });
-                    // Disable seek buttons for live radio
+                navigator.mediaSession.setActionHandler('stop', () => {
+                    userWantsPlayback = false;
+                    isReconnecting = false;
+                    if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+                    audio.pause();
+                    audio.src = "";
+                    syncAllButtons();
+                });
                 navigator.mediaSession.setActionHandler('seekbackward', null);
                 navigator.mediaSession.setActionHandler('seekforward', null);
             }
         }
     }
-    // ---------------------------------------
 
+    function isStreamActive(audio: HTMLAudioElement | null) {
+        if (!audio) return false;
+        return !audio.paused && !!audio.src && audio.src !== "" && !audio.src.endsWith('/');
+    }
 
     function syncAllButtons() {
         const audio = document.getElementById('stream-audio') as HTMLAudioElement;
         if (!audio) return;
 
-        const isPlaying = !audio.paused && audio.src.includes('listen.mp3');
+        const active = isStreamActive(audio);
         const vinyl = document.getElementById('player-vinyl');
         const statusIcon = document.getElementById('player-status-icon');
         const masterBtn = document.getElementById('master-play-btn');
 
-        if (isPlaying) {
+        if (active || isReconnecting) {
             vinyl?.classList.remove('pause-spin');
             statusIcon?.classList.replace('hidden', 'flex');
-            if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-stop text-xl md:text-2xl';
-            
-            // FIRE THE UPDATE WHEN PLAYING STARTS
-            updateMediaSession();
 
+            if (isReconnecting) {
+                statusIcon!.innerHTML = '<i class="fa-solid fa-rotate text-brand-accent text-base animate-spin"></i>';
+                if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-rotate text-lg md:text-xl animate-spin';
+            } else {
+                statusIcon!.innerHTML = '<i class="fa-solid fa-chart-simple text-brand-accent text-xl animate-pulse"></i>';
+                if (masterBtn?.querySelector('i')) masterBtn.querySelector('i')!.className = 'fa-solid fa-stop text-xl md:text-2xl';
+                updateMediaSession();
+            }
         } else {
             vinyl?.classList.add('pause-spin');
             statusIcon?.classList.replace('flex', 'hidden');
@@ -153,12 +215,17 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
         document.querySelectorAll('.player-trigger, .nav-player-trigger').forEach((btn: any) => {
             const icon = btn.querySelector('i');
             const textSpan = btn.querySelector('.btn-text');
-            if (isPlaying) {
-                if (icon) icon.className = btn.classList.contains('nav-player-trigger') ? 'fa-solid fa-pause btn-icon' : 'fa-solid fa-stop mr-2';
-                if (textSpan) textSpan.textContent = btn.classList.contains('nav-player-trigger') ? 'PAUSE' : 'STOP';
+            const isNav = btn.classList.contains('nav-player-trigger');
+
+            if (isReconnecting) {
+                if (icon) icon.className = 'fa-solid fa-rotate fa-spin mr-2';
+                if (textSpan) textSpan.textContent = isNav ? 'RECONNECTING' : 'RECONNECTING...';
+            } else if (active) {
+                if (icon) icon.className = isNav ? 'fa-solid fa-pause btn-icon' : 'fa-solid fa-stop mr-2';
+                if (textSpan) textSpan.textContent = isNav ? 'PAUSE' : 'STOP';
             } else {
-                if (icon) icon.className = btn.classList.contains('nav-player-trigger') ? 'fa-solid fa-play btn-icon' : 'fa-solid fa-play mr-2';
-                if (textSpan) textSpan.textContent = btn.classList.contains('nav-player-trigger') ? 'LISTEN' : 'TUNE IN NOW';
+                if (icon) icon.className = isNav ? 'fa-solid fa-play btn-icon' : 'fa-solid fa-play mr-2';
+                if (textSpan) textSpan.textContent = isNav ? 'LISTEN' : 'TUNE IN NOW';
             }
         });
     }
@@ -172,23 +239,77 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
                 const target = (e.target as HTMLElement).closest('#master-play-btn, .player-trigger, .nav-player-trigger');
                 if (!target) return;
 
-                // Check if we need to start or stop
-                if (audio.paused || !audio.src.includes('listen.mp3')) {
-                    // STARTING
-                    audio.src = STREAM_URL;
-                    try { await audio.play(); } catch (err) { console.error("Stream error:", err); }
+                const active = isStreamActive(audio);
+
+                if (!active && !isReconnecting) {
+                    // USER INITIATED PLAYBACK
+                    userWantsPlayback = true;
+                    reconnectAttempts = 0;
+                    isReconnecting = false;
+                    if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+
+                    audio.src = getFreshStreamUrl();
+                    audio.load();
+                    try {
+                        await audio.play();
+                    } catch (err) {
+                        console.error("[n8v Radio] Playback error:", err);
+                        scheduleReconnect();
+                    }
                 } else {
-                    // STOPPING
+                    // USER INITIATED STOP
+                    userWantsPlayback = false;
+                    isReconnecting = false;
+                    reconnectAttempts = 0;
+                    if (reconnectTimeoutId) clearTimeout(reconnectTimeoutId);
+                    if (stallTimeoutId) clearTimeout(stallTimeoutId);
+
                     audio.pause();
-                    // Important for live radio: clear source to stop buffering
-                    audio.src = ""; 
+                    audio.src = "";
                 }
                 syncAllButtons();
             });
 
-            // Keep UI synced if audio stops for other reasons (buffering, external pause)
+            // Resiliency & Health Event Listeners
             audio.addEventListener('play', syncAllButtons);
             audio.addEventListener('pause', syncAllButtons);
+
+            audio.addEventListener('playing', () => {
+                if (stallTimeoutId) {
+                    clearTimeout(stallTimeoutId);
+                    stallTimeoutId = null;
+                }
+                reconnectAttempts = 0;
+                isReconnecting = false;
+                syncAllButtons();
+            });
+
+            audio.addEventListener('error', (err) => {
+                console.warn("[n8v Radio] Audio error encountered:", err);
+                if (userWantsPlayback) {
+                    scheduleReconnect();
+                }
+            });
+
+            audio.addEventListener('ended', () => {
+                console.warn("[n8v Radio] Stream ended unexpectedly.");
+                if (userWantsPlayback) {
+                    scheduleReconnect();
+                }
+            });
+
+            audio.addEventListener('waiting', () => {
+                if (userWantsPlayback && !stallTimeoutId) {
+                    stallTimeoutId = setTimeout(() => {
+                        if (userWantsPlayback && audio.readyState < 3) {
+                            console.warn("[n8v Radio] Stream stalled for >6s. Attempting reconnection...");
+                            scheduleReconnect();
+                        }
+                        stallTimeoutId = null;
+                    }, 6000);
+                }
+            });
+
             window.__eventListenersBound = true;
         }
 
