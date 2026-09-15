@@ -19,17 +19,38 @@ const displayInfo = `${djName} - ${currentShow}`.toUpperCase();
     <div class="container mx-auto flex items-center justify-between md:grid md:grid-cols-3 max-w-7xl">
         
         <div class="flex items-center gap-4 min-w-0 pr-4">
-            <div class="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-zinc-900/90 rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
-                <!-- Vinyl Record with Red Center -->
-                <div id="player-vinyl" class="relative w-10 h-10 md:w-12 md:h-12 rounded-full bg-zinc-950 border-2 border-zinc-800 flex items-center justify-center shadow-inner animate-spin-slow pause-spin">
-                    <div class="absolute inset-1 rounded-full border border-zinc-800/80"></div>
-                    <div class="absolute inset-2 rounded-full border border-zinc-850/60"></div>
-                    <div class="w-3.5 h-3.5 rounded-full bg-brand-accent flex items-center justify-center shadow-sm">
-                        <div class="w-1 h-1 rounded-full bg-zinc-950"></div>
-                    </div>
-                </div>
-                <div id="player-status-icon" class="absolute inset-0 bg-black/40 hidden items-center justify-center backdrop-blur-[1px]">
-                    <i class="fa-solid fa-chart-simple text-white text-base md:text-lg animate-pulse drop-shadow-[0_0_6px_rgba(255,59,59,0.8)]"></i>
+            <div class="relative w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-zinc-900/90 rounded-xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl group">
+                <!-- Pro DJ Turntable Vector (Technics SL-1200 Style) -->
+                <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-11 h-11 md:w-12 md:h-12 transition-transform duration-300 group-hover:scale-105">
+                    <!-- Turntable Platter & Vinyl Record (Spins when active) -->
+                    <g id="player-vinyl" class="animate-spin-slow pause-spin" style="transform-origin: 27px 32px;">
+                        <!-- Outer platter rim -->
+                        <circle cx="27" cy="32" r="22" fill="#09090b" stroke="#27272a" stroke-width="1.5"/>
+                        <!-- Vinyl Grooves -->
+                        <circle cx="27" cy="32" r="18" stroke="#1c1c20" stroke-width="1.2"/>
+                        <circle cx="27" cy="32" r="14" stroke="#18181b" stroke-width="1"/>
+                        <circle cx="27" cy="32" r="10" stroke="#222226" stroke-width="0.75" stroke-dasharray="3 2"/>
+                        <!-- Center Label (Red n8v Record) -->
+                        <circle cx="27" cy="32" r="7" fill="#ff3b3b"/>
+                        <!-- Center Spindle -->
+                        <circle cx="27" cy="32" r="1.75" fill="#ffffff"/>
+                    </g>
+                    <!-- Tonearm Assembly (Positioned over the vinyl groove) -->
+                    <circle cx="53" cy="16" r="4.5" fill="#27272a" stroke="#3f3f46" stroke-width="1.2"/>
+                    <circle cx="53" cy="16" r="2" fill="#a1a1aa"/>
+                    <!-- Metallic Tonearm Stem -->
+                    <path d="M53 16 L50 33 L40 40" stroke="#d4d4d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- Cartridge / Stylus Resting on Groove -->
+                    <rect x="36" y="38" width="6" height="3" rx="1" transform="rotate(-35 39 39.5)" fill="#ff3b3b"/>
+                    <!-- Power Strobe Indicator -->
+                    <circle cx="8" cy="51" r="2" fill="#ff3b3b"/>
+                    <!-- Pitch Slider -->
+                    <rect x="54" y="30" width="2" height="18" rx="1" fill="#27272a"/>
+                    <rect x="53" y="38" width="4" height="2.5" rx="0.5" fill="#e4e4e7"/>
+                </svg>
+
+                <div id="player-status-icon" class="absolute inset-0 bg-black/45 hidden items-center justify-center backdrop-blur-[1px]">
+                    <i class="fa-solid fa-chart-simple text-white text-base md:text-lg animate-pulse drop-shadow-[0_0_8px_rgba(255,59,59,0.9)]"></i>
                 </div>
             </div>
             
